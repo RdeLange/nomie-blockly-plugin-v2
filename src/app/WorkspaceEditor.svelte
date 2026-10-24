@@ -25,6 +25,8 @@
     jscode: start?.jscode ?? '',
   });
   let dirty = $state(false);
+  // the details (name, emoji, colour) can be folded away, so the canvas has the whole screen
+  let detailsOpen = $state(true);
   let showConsole = $state(false);
   let running = $state(false);
   let consoleText = $state('');
@@ -120,6 +122,12 @@
     workspace?.highlightBlock(null);
   };
 
+  const toggleDetails = () => {
+    detailsOpen = !detailsOpen;
+    // the canvas changed size, so Blockly has to measure it again
+    queueMicrotask(() => workspace?.resize());
+  };
+
   const stopRun = () => {
     stop.stopped = true;
   };
@@ -131,6 +139,11 @@
   <button class="button" onclick={save} disabled={!dirty}>Save</button>
 </div>
 
+<button class="button plain" style="padding: 4px 0; margin-bottom: 4px" onclick={toggleDetails} aria-expanded={detailsOpen}>
+  {detailsOpen ? '▾ Hide details' : '▸ Show details'}
+</button>
+
+{#if detailsOpen}
 <div class="card">
   <div class="row">
     <span class="emoji" style="background: {draft.color}">{draft.emoji}</span>
@@ -155,6 +168,8 @@
   </div>
 </div>
 
+{/if}
+
 <div class="row" style="margin-bottom: 12px">
   <button class="button" onclick={run} disabled={running}>Run</button>
   <button class="button" onclick={runForDays} disabled={running}>Run for yesterday</button>
@@ -164,7 +179,7 @@
   </button>
 </div>
 
-<div bind:this={host} class="blockly-host"></div>
+<div bind:this={host} class="blockly-host" style="height: {detailsOpen ? '60vh' : '80vh'}"></div>
 
 {#if showConsole}
   <div class="console" style="margin-top: 12px">{consoleText || 'No output yet.'}</div>
