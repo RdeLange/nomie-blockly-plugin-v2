@@ -46,7 +46,7 @@ export const startNomie = (): NomieHandle | undefined => {
     return undefined;
   }
   const plugin = new NomiePlugin({
-    name: 'Nomie Blockly',
+    name: 'Nomie Blockly v2',
     emoji: '🧱',
     description: 'Build small automations from blocks, and run them against your notes.',
     uses: USES,
