@@ -2,7 +2,8 @@
 import type { NomieApi } from '../nomie/api';
 import type { Workspace } from '../domain/workspace';
 import { createRunQueue, runWorkspace, canRun, type RunResult } from '../runtime/run';
-import { runSchedule, type ScheduleOutcome } from '../runtime/scheduler';
+import { isDailyWorkspace, runSchedule, type ScheduleOutcome } from '../runtime/scheduler';
+import { localDayKey, parseDayKey } from '../runtime/dates';
 import { appState } from './state.svelte';
 
 export type Deps = {
@@ -11,6 +12,8 @@ export type Deps = {
 };
 
 const DAY_MS = 24 * 60 * 60 * 1000;
+// how many runs the log keeps
+const LOG_ENTRIES = 40;
 const queue = createRunQueue();
 
 export type RunHooks = {
@@ -74,7 +77,10 @@ export const scheduleNow = async (deps: Deps, now = new Date()): Promise<Schedul
   }
   const lines = outcomes.map(describe);
   appState.lastCentralSchedule = now.toISOString();
-  if (lines.length) appState.centralLog = `Schedule finished ${now.toString()}\n${lines.join('\n')}\n\n${appState.centralLog}`;
+  if (lines.length) {
+    const entry = `Schedule finished ${now.toString()}\n${lines.join('\n')}`;
+    appState.centralLog = [entry, ...appState.centralLog.split('\n\n')].slice(0, LOG_ENTRIES).join('\n\n');
+  }
   deps.save();
   return outcomes;
 };
@@ -93,4 +99,18 @@ export const runFromNote = (deps: Deps, noteText: string) => {
     void runNow(deps, workspace);
   }
   return matches.length;
+};
+
+// Sets the day the next scheduled run starts from, for every daily workspace. Nothing runs now.
+export const setScheduleStart = (deps: Deps, day: string) => {
+  const start = parseDayKey(day);
+  let count = 0;
+  for (const workspace of appState.workspaces) {
+    if (!isDailyWorkspace(workspace.jscode)) continue;
+    workspace.latestrun = start.toISOString();
+    count += 1;
+  }
+  appState.centralLog = [`Next run starts from ${day} (${count} workspace${count === 1 ? '' : 's'})`, ...appState.centralLog.split('\n\n')].slice(0, LOG_ENTRIES).join('\n\n');
+  deps.save();
+  return count;
 };

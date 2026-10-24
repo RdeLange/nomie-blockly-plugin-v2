@@ -1,0 +1,11 @@
+import { chromium } from '/Users/ronalddelange/Library/Mobile Documents/com~apple~CloudDocs/DailyNomie/Development/dailynomie7/node_modules/playwright/index.mjs'
+const browser = await chromium.launch()
+const page = await browser.newPage({ viewport: { width: 390, height: 844 } })
+const errors = []; page.on('pageerror', (e) => errors.push(e.message))
+await page.goto('http://localhost:5010/', { waitUntil: 'load' }); await page.waitForTimeout(1200)
+await page.getByRole('button', { name: 'Add', exact: true }).click(); await page.waitForTimeout(300)
+await page.getByRole('button', { name: 'Add' }).nth(1).click(); await page.waitForTimeout(300)
+await page.getByRole('button', { name: 'Settings' }).click(); await page.waitForTimeout(800)
+await page.screenshot({ path: 'settings.png', fullPage: true })
+console.log('has start field', await page.locator('input[placeholder="YYYY-MM-DD"]').count(), 'errors', errors)
+await browser.close()

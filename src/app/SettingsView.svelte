@@ -2,10 +2,39 @@
   import { appState } from './state.svelte';
   import { ui } from './ui.svelte';
   import { actionDeps, askConfirm, notify } from './dialogs';
-  import { scheduleNow } from './actions';
+  import { scheduleNow, setScheduleStart } from './actions';
+  import { isDailyWorkspace, parseTypedDay, scheduleWindow } from '../runtime/scheduler';
+  import { localDayKey } from '../runtime/dates';
   import { parseWorkspaceFile, workspaceToFile, withNewId } from '../domain/workspace';
 
   let importMode = $state<'add' | 'replace'>('add');
+  let startText = $state(localDayKey(new Date()));
+  let startError = $state('');
+
+  const now = new Date();
+  // the daily workspaces, with the days their next run covers
+  const overview = $derived(
+    appState.workspaces.map((w) => ({
+      id: w.id,
+      name: w.displayName,
+      daily: isDailyWorkspace(w.jscode),
+      window: isDailyWorkspace(w.jscode) ? scheduleWindow(w.latestrun, now) : undefined,
+    }))
+  );
+  const dailyCount = $derived(overview.filter((w) => w.daily).length);
+
+  const applyStart = () => {
+    const day = parseTypedDay(startText);
+    if (!day) {
+      startError = 'Type a day as YYYY-MM-DD, for example 2026-10-01.';
+      return;
+    }
+    startError = '';
+    const deps = actionDeps();
+    if (!deps) return;
+    const count = setScheduleStart(deps, day);
+    notify('Scheduler', `The next run starts from ${day} for ${count} workspace${count === 1 ? '' : 's'}.`);
+  };
   let fileInput: HTMLInputElement | undefined = $state();
 
   const runSchedule = async () => {
@@ -61,7 +90,28 @@
   <p><strong>Scheduler</strong></p>
   <p class="muted">Last run: {new Date(appState.lastCentralSchedule).toLocaleString()}</p>
   <p class="muted">Daily workspaces run for the days since their last run, up to yesterday.</p>
-  <button class="button" onclick={runSchedule}>Run the schedule now</button>
+  <p class="muted">Next run starts from</p>
+  <div class="row">
+    <input class="input grow" inputmode="numeric" placeholder="YYYY-MM-DD" bind:value={startText} />
+    <button class="button" onclick={applyStart}>Set</button>
+  </div>
+  {#if startError}
+    <p class="muted" style="color: var(--ios-danger)">{startError}</p>
+  {/if}
+  <p class="muted" style="margin-top: 12px">Daily workspaces ({dailyCount})</p>
+  {#each overview.filter((w) => w.daily) as item (item.id)}
+    <div class="row" style="margin-top: 6px">
+      <span class="grow">{item.name}</span>
+      <span class="muted">
+        {item.window ? `${localDayKey(item.window.start)} to ${localDayKey(item.window.end)}` : ''}
+      </span>
+    </div>
+  {:else}
+    <p class="muted">No workspace has a daily schedule. Set one with the Scheduler block in the editor.</p>
+  {/each}
+  <div class="row" style="margin-top: 12px">
+    <button class="button" onclick={runSchedule}>Run the schedule now</button>
+  </div>
   {#if appState.centralLog}
     <div class="console" style="margin-top: 12px">{appState.centralLog}</div>
   {/if}

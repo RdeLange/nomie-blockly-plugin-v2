@@ -20,12 +20,28 @@ export type ScheduleOutcome = {
   result: RunResult | 'skipped';
 };
 
-// The days to run: from the last run (or 30 days back, when there was none) to yesterday, both at 13:00
+// The most days one scheduled run covers. After a long time off, the scheduler catches up this far, not further back.
+export const MAX_CATCH_UP_DAYS = 60;
+
+// The days to run: from the last run (or 30 days back, when there was none) to yesterday, both at local midnight.
+// The start never goes further back than MAX_CATCH_UP_DAYS.
 export const scheduleWindow = (latestrun: string | undefined, now: Date) => {
-  const last = latestrun ? new Date(latestrun) : addDays(now, -30);
-  const start = parseDayKey(localDayKey(isNaN(last.getTime()) ? addDays(now, -30) : last));
   const end = parseDayKey(localDayKey(addDays(now, -1)));
+  const earliest = addDays(end, -(MAX_CATCH_UP_DAYS - 1));
+  const last = latestrun ? new Date(latestrun) : undefined;
+  let start = last && !isNaN(last.getTime()) ? parseDayKey(localDayKey(last)) : addDays(end, -29);
+  if (start < earliest) start = earliest;
   return { start, end };
+};
+
+// A day typed in the settings, 'YYYY-MM-DD'. Undefined when it is not a real day.
+export const parseTypedDay = (text: string): string | undefined => {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(text.trim());
+  if (!match) return undefined;
+  const [year, month, day] = match.slice(1).map(Number);
+  const date = new Date(year, month - 1, day);
+  if (date.getFullYear() !== year || date.getMonth() !== month - 1 || date.getDate() !== day) return undefined;
+  return localDayKey(date);
 };
 
 export const isDailyWorkspace = (jscode: string): boolean =>
