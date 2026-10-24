@@ -619,14 +619,14 @@ var objectCreateMutator = {
     // Rebuild block.
     if (this.numFields > 0) {
       this.appendDummyInput('with')
-      .setAlign(Blockly.ALIGN_RIGHT)
+      .setAlign(Blockly.inputs.Align.RIGHT)
       .appendField("with fields");
     }
     for (let i = 1; i <= this.numFields; i++) {
       const fieldName = this.fields[i - 1];
       this.appendValueInput("field_input" + i)
         .setCheck(null)
-        .setAlign(Blockly.ALIGN_RIGHT)
+        .setAlign(Blockly.inputs.Align.RIGHT)
         .appendField(new Blockly.FieldTextInput(fieldName), "field" + i);
     }
   },
