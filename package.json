@@ -1,0 +1,29 @@
+{
+  "name": "nomie-blockly-plugin-v2",
+  "version": "2.0.0",
+  "private": true,
+  "description": "Nomie Blockly v2: build automations from blocks and run them against your Nomie notes",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "test": "vitest run",
+    "check": "svelte-check --tsconfig ./tsconfig.json"
+  },
+  "dependencies": {
+    "@blockly/field-date": "^13.4.0",
+    "@blockly/theme-dark": "^13.4.0",
+    "blockly": "^13.4.0",
+    "js-interpreter": "^6.0.2"
+  },
+  "devDependencies": {
+    "@sveltejs/vite-plugin-svelte": "^5.1.1",
+    "@types/node": "^22.20.5",
+    "jsdom": "^26.1.0",
+    "svelte": "^5.57.2",
+    "svelte-check": "^4.7.7",
+    "typescript": "^5.9.3",
+    "vite": "^6.4.5",
+    "vitest": "^3.2.7"
+  }
+}
