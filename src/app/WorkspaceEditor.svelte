@@ -136,7 +136,15 @@
 <div class="header">
   <button class="button plain" onclick={back}>Back</button>
   <h1 class="title" style="font-size: 22px">{draft.displayName || 'Workspace'}</h1>
-  <button class="button" onclick={save} disabled={!dirty}>Save</button>
+  <div class="row">
+    <button class="button" onclick={run} disabled={running}>Run</button>
+    <button class="button" onclick={runForDays} disabled={running}>Run for yesterday</button>
+    <button class="button plain" onclick={stopRun} disabled={!running}>Stop</button>
+    <button class="button plain" onclick={() => (showConsole = !showConsole)}>
+      {showConsole ? 'Hide console' : 'Console'}
+    </button>
+    <button class="button" onclick={save} disabled={!dirty}>Save</button>
+  </div>
 </div>
 
 <button class="button plain" style="padding: 4px 0; margin-bottom: 4px" onclick={toggleDetails} aria-expanded={detailsOpen}>
@@ -169,15 +177,6 @@
 </div>
 
 {/if}
-
-<div class="row" style="margin-bottom: 12px">
-  <button class="button" onclick={run} disabled={running}>Run</button>
-  <button class="button" onclick={runForDays} disabled={running}>Run for yesterday</button>
-  <button class="button plain" onclick={stopRun} disabled={!running}>Stop</button>
-  <button class="button plain grow" style="text-align: right" onclick={() => (showConsole = !showConsole)}>
-    {showConsole ? 'Hide console' : 'Show console'}
-  </button>
-</div>
 
 <div bind:this={host} class="blockly-host" style="height: {detailsOpen ? '60vh' : '80vh'}"></div>
 
