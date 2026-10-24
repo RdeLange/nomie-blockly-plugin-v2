@@ -5,6 +5,18 @@
 import * as Blockly from 'blockly';
 import { Order, type JavascriptGenerator } from 'blockly/javascript';
 
+// Blockly 13 removed Blockly.Mutator.reconnect. This puts a connection back into an input after the mutator changed the block.
+const reconnectMutatorInput = (connection: any, block: any, inputName: string): boolean => {
+  const input = block.getInput(inputName);
+  if (!input || !connection) return false;
+  try {
+    input.connection.connect(connection);
+    return true;
+  } catch {
+    return false;
+  }
+};
+
 export const defineLegacyBlocks = (js: JavascriptGenerator) => {
   const legacyBlocks: Record<string, unknown> = {};
   const defineJsonBlocks = (items: unknown[]) => Blockly.defineBlocksWithJsonArray(items);
@@ -562,7 +574,7 @@ var objectCreateMutator = {
     this.updateShape();
     // Reconnect any child blocks.
     for (let i = 1; i <= this.numFields; i++) {
-      Blockly.Mutator.reconnect(connectionsToRestore[i], this, 'field_input' + i);
+      reconnectMutatorInput(connectionsToRestore[i], this, 'field_input' + i);
     }
   },
 
