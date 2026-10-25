@@ -24,8 +24,8 @@
     if (!deps) return;
     const lines: string[] = [];
     const result = await runNow(deps, workspace, { output: (text) => lines.push(text) });
-    const text = lines.join('\n') || (result.ok ? 'Done.' : 'Stopped.');
-    notify(workspace.displayName, text);
+    // a successful run is quiet, as in the editor: the list shows its last run. A failure still says why.
+    if (!result.ok) notify(workspace.displayName, lines.join('\n') || 'Stopped.');
   };
 
   const info = (workspace: Workspace) => notify(workspace.displayName, workspace.description || 'No description yet.');
