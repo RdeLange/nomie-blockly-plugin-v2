@@ -140,7 +140,9 @@ export const defineNomieBlocks = () => {
         { type: 'input_value', name: 'Date', check: 'Day' },
       ],
       inputsInline: false,
-      output: null,
+      // an action: it sits in a script stack, like wait and the console blocks
+      previousStatement: null,
+      nextStatement: null,
       colour: NOMIE_COLOUR,
     },
     {
@@ -244,7 +246,7 @@ export const registerNomieGenerators = (js: JavascriptGenerator) => {
     const value = g.valueToCode(block, 'Value', Order.ATOMIC);
     const tracker = g.valueToCode(block, 'Tracker', Order.ATOMIC);
     const date = g.valueToCode(block, 'Date', Order.ATOMIC);
-    return [`logValue(${value},${tracker},${date})`, Order.NONE];
+    return `logValue(${value},${tracker},${date});\n`;
   };
 
   js.forBlock['s4e_httprequest'] = (block: Block, g) => [

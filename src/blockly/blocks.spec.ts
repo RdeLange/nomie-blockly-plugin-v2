@@ -38,3 +38,33 @@ describe('the palette', () => {
     });
   }
 });
+
+// Actions (they do something, like waiting or logging) sit in a script stack, so they need a previous and a next
+// statement connection. Values (they give a result) need an output connection, so they fit into an input.
+describe('the Nomie blocks have the connections they need', () => {
+  setupBlockly();
+  const ACTIONS = ['wait_seconds', 'pushto_console', 'pushto_webconsole', 'display', 's4e_logvalue'];
+  const VALUES = ['s4e_dayvalue', 's4e_periodvalue', 's4e_daypicker', 's4e_periodpicker', 's4e_statspicker', 's4e_datepicker', 's4e_trackers', 's4e_httprequest'];
+  for (const type of ACTIONS) {
+    it(`${type} is a statement: it has a previous and a next connection`, () => {
+      const workspace = new Blockly.Workspace();
+      try {
+        const block = workspace.newBlock(type);
+        expect(Boolean(block.previousConnection && block.nextConnection)).toBe(true);
+      } finally {
+        workspace.dispose();
+      }
+    });
+  }
+  for (const type of VALUES) {
+    it(`${type} is a value: it has an output connection`, () => {
+      const workspace = new Blockly.Workspace();
+      try {
+        const block = workspace.newBlock(type);
+        expect(Boolean(block.outputConnection)).toBe(true);
+      } finally {
+        workspace.dispose();
+      }
+    });
+  }
+});
