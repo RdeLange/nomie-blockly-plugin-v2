@@ -4,6 +4,7 @@
   import { javascriptGenerator } from 'blockly/javascript';
   import darkTheme from '@blockly/theme-dark';
   import { toolbox } from '../blockly/toolbox';
+  import { loadWorkspace } from '../blockly/setup';
     import { appState } from './state.svelte';
   import { ui } from './ui.svelte';
   import { actionDeps, askConfirm, notify } from './dialogs';
@@ -33,6 +34,7 @@
   let highlighted = $state<string | null>(null);
   let host: HTMLDivElement | undefined = $state();
   let workspace: Blockly.WorkspaceSvg | undefined;
+  let restoreTrackers: (() => void) | undefined;
   const stop = { stopped: false };
 
   const scale = start?.workspacePosition?.scale ?? 0.8;
@@ -47,7 +49,8 @@
       move: { scrollbars: true, drag: true, wheel: true },
       grid: { spacing: 20, length: 3, colour: '#ccc', snap: true },
     });
-    if (draft.xml) Blockly.Xml.domToWorkspace(Blockly.utils.xml.textToDom(draft.xml), workspace);
+    // the saved trackers stay in the dropdowns while the editor is open (see loadWorkspace)
+    if (draft.xml) restoreTrackers = loadWorkspace(workspace, draft.xml);
     workspace.addChangeListener((event) => {
       if (event.isUiEvent) return;
       draft.xml = Blockly.Xml.domToPrettyText(Blockly.Xml.workspaceToDom(workspace!));
@@ -56,7 +59,10 @@
     });
   });
 
-  onDestroy(() => workspace?.dispose());
+  onDestroy(() => {
+    restoreTrackers?.();
+    workspace?.dispose();
+  });
 
   const output = (text: string) => {
     consoleText = consoleText ? `${consoleText}\n${text}` : text;

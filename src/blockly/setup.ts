@@ -44,4 +44,15 @@ export const generateCode = (workspaceBlocks: string): string => {
   }
 };
 
+// Loads a saved workspace into a Blockly workspace (the editor uses this too). The trackers the workspace was saved with
+// stay in the Tracker dropdowns while it is loaded, so a tracker missing from the recent notes is not replaced.
+// The returned function puts the previous options back; the editor calls it when it closes.
+export const loadWorkspace = (workspace: Blockly.Workspace, workspaceBlocks: string): (() => void) => {
+  setupBlockly();
+  const previous = currentTrackerOptions();
+  setTrackerOptions(() => [...previous(), ...trackersUsedIn(workspaceBlocks)]);
+  Blockly.Xml.domToWorkspace(Blockly.utils.xml.textToDom(workspaceBlocks), workspace);
+  return () => setTrackerOptions(previous);
+};
+
 export { Blockly, javascriptGenerator };
