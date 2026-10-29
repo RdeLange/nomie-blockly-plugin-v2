@@ -18,6 +18,8 @@ export type ScheduleOutcome = {
   from?: string;
   to?: string;
   result: RunResult | 'skipped';
+  // what the run showed (display messages and errors), without the end marker
+  output?: string[];
 };
 
 // The most days one scheduled run covers. After a long time off, the scheduler catches up this far, not further back.
@@ -71,12 +73,16 @@ export const runSchedule = async (
       start: new Date(start.getFullYear(), start.getMonth(), start.getDate(), 13),
       end: new Date(end.getFullYear(), end.getMonth(), end.getDate(), 13),
     };
+    const shown: string[] = [];
     const result = await runWorkspace({
       api,
       jscode: workspace.jscode,
       scheduled: true,
       schedule: window,
-      output: onOutput,
+      output: (text) => {
+        shown.push(text);
+        onOutput?.(text);
+      },
     });
     outcomes.push({
       id: workspace.id,
@@ -84,6 +90,7 @@ export const runSchedule = async (
       from: localDayKey(start),
       to: localDayKey(end),
       result,
+      output: shown.filter((text) => text !== '<< Program complete >>'),
     });
   }
   return outcomes;

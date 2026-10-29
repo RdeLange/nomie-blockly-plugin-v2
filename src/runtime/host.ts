@@ -55,9 +55,11 @@ export const installHost = (interpreter: any, scope: any, ctx: HostContext) => {
   // output that goes to the browser console
   native('consolelog', (text) => console.log(text));
   native('highlightBlock', (id) => ctx.highlight(String(id ?? '')));
-  // a message to the user; scheduled runs stay quiet, as in v1
+  // a message to the user. A manual run shows it in a dialog. A scheduled run has no dialog (as in v1), so the
+  // message goes to the run's output, and the scheduler puts it in the schedule log in Settings.
   native('display', (text) => {
-    if (!ctx.scheduled) ctx.api.alert('Message', String(text ?? ''));
+    if (ctx.scheduled) ctx.output(String(text ?? ''));
+    else ctx.api.alert('Message', String(text ?? ''));
   });
   asyncFn('prompt', (text) => ctx.api.prompt('Message', String(text ?? '')), 1);
 

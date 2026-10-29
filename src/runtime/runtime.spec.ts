@@ -112,10 +112,13 @@ describe('running a workspace', () => {
     expect(highlights.length).toBeGreaterThan(0);
   });
 
-  it('stays quiet about display() when scheduled', async () => {
-    const { api, alerts } = fakeApi([]);
-    await runWorkspace({ api, jscode: example.jscode, scheduled: true, schedule: window });
+  it('has no dialog for display() when scheduled, and its message goes to the run output', async () => {
+    const day = localDayKey(new Date(Date.now() - 86400000));
+    const { api, alerts } = fakeApi([moodNote(day, 6)]);
+    const lines: string[] = [];
+    await runWorkspace({ api, jscode: example.jscode, scheduled: true, schedule: window, output: (t) => lines.push(t) });
     expect(alerts).toEqual([]);
+    expect(lines.join('\n')).toContain('Your average mood score yesterday was 6');
   });
 
   it('reports a runtime error instead of stalling', async () => {

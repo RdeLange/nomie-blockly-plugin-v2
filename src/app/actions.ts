@@ -58,10 +58,14 @@ export const runRange = (deps: Deps, workspace: Workspace, start: Date, end: Dat
     })
   );
 
+// One entry in the schedule log: the result, then what the run showed, indented.
 const describe = (outcome: ScheduleOutcome): string => {
   if (outcome.result === 'skipped') return `${outcome.displayName}: not scheduled`;
-  if (outcome.result.ok) return `${outcome.displayName}: ran ${outcome.from} to ${outcome.to}`;
-  return `${outcome.displayName}: failed (${outcome.result.error})`;
+  const shown = (outcome.output ?? []).map((text) => `  ${text}`);
+  const head = outcome.result.ok
+    ? `${outcome.displayName}: ran ${outcome.from} to ${outcome.to}`
+    : `${outcome.displayName}: failed (${outcome.result.error})`;
+  return [head, ...shown].join('\n');
 };
 
 // Runs the daily workspaces. A workspace's last run moves on only when its run succeeded.
