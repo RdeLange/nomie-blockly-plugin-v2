@@ -2,19 +2,19 @@
   {
     "name": "starter",
     "displayName": "Kick Start",
-    "description": "a very simple workspace to be used as a starter",
+    "description": "A starter: sets a variable inside the Scheduler block and shows it in the console. Build from here.",
     "color": "#C47ADA",
     "emoji": "𓇬",
     "active": true,
     "block": "",
-    "workspaceBlocks": "<xml xmlns=\"https://developers.google.com/blockly/xml\"><variables><variable id=\"Id^|ebDg)v~9]7OwAH0/\">Meaning of Life</variable></variables><block type=\"variables_set\" id=\"jq;8i6!`[5_Yur!a=RAA\" x=\"-170\" y=\"10\"><field name=\"VAR\" id=\"Id^|ebDg)v~9]7OwAH0/\">Meaning of Life</field><value name=\"VALUE\"><block type=\"math_arithmetic\" id=\"o6xW$V!JjL?sI=ovZpf7\"><field name=\"OP\">ADD</field><value name=\"A\"><block type=\"math_number\" id=\"R9u3Hf3GKpCy))d_`V)y\"><field name=\"NUM\">40</field></block></value><value name=\"B\"><block type=\"math_number\" id=\";hL)Id6A51S(.@IM$`3J\"><field name=\"NUM\">2</field></block></value></block></value></block></xml>",
+    "workspaceBlocks": "<xml xmlns=\"https://developers.google.com/blockly/xml\"><variables><variable id=\"Id^|ebDg)v~9]7OwAH0/\">Meaning of Life</variable></variables><block type=\"s4eblocklyframe\" id=\"kickstart-frame\" x=\"20\" y=\"20\"><field name=\"NAME\">none</field><statement name=\"script\"><block type=\"variables_set\" id=\"jq;8i6!`[5_Yur!a=RAA\"><field name=\"VAR\" id=\"Id^|ebDg)v~9]7OwAH0/\">Meaning of Life</field><value name=\"VALUE\"><block type=\"math_arithmetic\" id=\"o6xW$V!JjL?sI=ovZpf7\"><field name=\"OP\">ADD</field><value name=\"A\"><block type=\"math_number\" id=\"R9u3Hf3GKpCy))d_`V)y\"><field name=\"NUM\">40</field></block></value><value name=\"B\"><block type=\"math_number\" id=\";hL)Id6A51S(.@IM$`3J\"><field name=\"NUM\">2</field></block></value></block></value><next><block type=\"pushto_console\" id=\"kickstart-console\"><value name=\"Value\"><block type=\"variables_get\" id=\"kickstart-get\"><field name=\"VAR\" id=\"Id^|ebDg)v~9]7OwAH0/\">Meaning of Life</field></block></value></block></next></block></statement></block></xml>",
     "workspacePosition": {
       "scrollX": 148.5,
       "scrollY": 208,
       "scale": 0.8
     },
-    "jscode": "Meaning-of_Life=42;",
-    "schedule": "daily"
+    "jscode": "var Meaning_of_Life;\n\n\nhighlightBlock('kickstart-frame');\ns4eblocklyframe = \"activated\";\nvar schedule = \"none\";\nif (schedule == \"daily\") {\nvar scheduler = scheduler_activated();\nvar schedulerstart = scheduler_start();\nvar schedulerend = scheduler_end();\n}\nelse {var scheduler = false;\nvar schedulerstart = new Date();\nvar schedulerend = new Date();}\nvar loop = new Date(schedulerstart);\nwhile(loop <= schedulerend){\n  highlightBlock('jq;8i6!`[5_Yur!a=RAA');\n  Meaning_of_Life = 40 + 2;\n  highlightBlock('kickstart-console');\n  alert(Meaning_of_Life);var newDate = loop.setDate(loop.getDate() + 1);\nloop = new Date(newDate);}\n",
+    "schedule": "none"
   },
   {
     "name": "Retrieve Data Example",
@@ -31,7 +31,7 @@
       "scale": 0.7390763408212112
     },
     "jscode": "var Result;\n\n\nhighlightBlock('g6el^Wf4(dl(d_yF73c*');\ns4eblocklyframe = \"activated\";\nvar schedule = \"none\";\nif (schedule == \"daily\") {\nvar scheduler = scheduler_activated();\nvar schedulerstart = scheduler_start();\nvar schedulerend = scheduler_end();\n}\nelse {var scheduler = false;\nvar schedulerstart = new Date();\nvar schedulerend = new Date();}\nvar loop = new Date(schedulerstart);\nwhile(loop <= schedulerend){\n  highlightBlock('r:g^PAEjvN!dHKBU1fW)');\n  Result = (fetchDayValue((\"#mood\"),(getdate(\"yesterday\",loop)),(\"avg\")));\n  highlightBlock('r%#Q;2tRTO2x$$.p@2AG');\n  display(('Your average mood score yesterday was ' + String(Result)));var newDate = loop.setDate(loop.getDate() + 1);\nloop = new Date(newDate);}\n",
-    "schedule": "daily"
+    "schedule": "none"
   },
   {
     "name": "Retrieve Statistics Example",
@@ -48,7 +48,7 @@
       "scale": 0.6063000196706313
     },
     "jscode": "var Result;\n\n\nhighlightBlock('g6el^Wf4(dl(d_yF73c*');\ns4eblocklyframe = \"activated\";\nvar schedule = \"none\";\nif (schedule == \"daily\") {\nvar scheduler = scheduler_activated();\nvar schedulerstart = scheduler_start();\nvar schedulerend = scheduler_end();\n}\nelse {var scheduler = false;\nvar schedulerstart = new Date();\nvar schedulerend = new Date();}\nvar loop = new Date(schedulerstart);\nwhile(loop <= schedulerend){\n  highlightBlock('r:g^PAEjvN!dHKBU1fW)');\n  Result = (fetchPeriodValue((window.prompt('Which keyword would you like to search for?')),(\"LAST30DAYS\"),(\"sum\")));\n  highlightBlock('r%#Q;2tRTO2x$$.p@2AG');\n  display(('Your keyword was found in ' + String(String(Result) + ' log entries')));var newDate = loop.setDate(loop.getDate() + 1);\nloop = new Date(newDate);}\n",
-    "schedule": "daily"
+    "schedule": "none"
   },
   {
     "name": "Get Temperature",
@@ -65,6 +65,6 @@
       "scale": 0.45947426705971206
     },
     "jscode": "var WeatherData, Temperature;\n\n\nhighlightBlock('2gL!0USa-$;~A}l9%ObA');\ns4eblocklyframe = \"activated\";\nvar schedule = \"none\";\nif (schedule == \"daily\") {\nvar scheduler = scheduler_activated();\nvar schedulerstart = scheduler_start();\nvar schedulerend = scheduler_end();\n}\nelse {var scheduler = false;\nvar schedulerstart = new Date();\nvar schedulerend = new Date();}\nvar loop = new Date(schedulerstart);\nwhile(loop <= schedulerend){\n  highlightBlock('D,_9OcF,J0fd3mO*n:XW');\n  WeatherData = (httpRequest('https://api.openweathermap.org/data/2.5/weather?q=Amsterdam&APPID=YOUR_OPENWEATHER_KEY&lang=fr&units=metric'));\n  highlightBlock('RN/on=49vX][VL*xb.I=');\n  Temperature = (((JSON.parse(WeatherData))['main'])['temp']);\n  highlightBlock('+d5L=OvH|3R3^QZ0.81s');\n  consolelog(Temperature);\n  highlightBlock('6jAJsn^y)9B./h6|2j{7');\n  display((String('The temperature in Amsterdam is ' + String(Temperature)) + ' degrees'));var newDate = loop.setDate(loop.getDate() + 1);\nloop = new Date(newDate);}\n",
-    "schedule": "daily"
+    "schedule": "none"
   }
 ]
