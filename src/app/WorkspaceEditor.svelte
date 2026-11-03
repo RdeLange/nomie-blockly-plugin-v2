@@ -15,10 +15,10 @@
   import { appState } from './state.svelte';
   import { ui } from './ui.svelte';
   import { actionDeps, askConfirm } from './dialogs';
-  import { runDays, runNow } from './actions';
+  import { runDays, runNow, tryWithNote } from './actions';
   import { localDayKey } from '../runtime/dates';
   import { scheduleWindow, type DayOutcome } from '../runtime/scheduler';
-  import { checkWorkspace, type Problem } from '../blockly/compile';
+  import { checkWorkspace, type Problem, workspaceInfo } from '../blockly/compile';
   import type { RunResult } from '../runtime/run';
   import type { Workspace } from '../domain/workspace';
   import { newWorkspaceFromBlocks } from './editing';
@@ -65,6 +65,10 @@
   // what the blocks say, kept up to date as they change
   let problems = $state<Array<Problem & { label: string }>>([]);
   let daily = $state(start?.schedule === 'daily');
+  // the tracker of the When-note block, when the workspace runs on notes
+  let noteTracker = $state<string | undefined>(undefined);
+  // the note typed in Try with a note
+  let tryText = $state('');
   let reads = $state<string[]>([]);
   let writes = $state<string[]>([]);
 
@@ -197,6 +201,7 @@
     }
     problems = found.map((p) => ({ ...p, label: p.blockId ? (workspace!.getBlockById(p.blockId)?.toString(40) ?? '') : '' }));
     daily = workspace.getBlocksByType('s4eblocklyframe', false).some((b) => b.isEnabled() && b.getFieldValue('NAME') === 'daily');
+    noteTracker = workspaceInfo(draft.xml).note;
     const tracker = (block: Blockly.Block, input: string) => block.getInputTargetBlock(input)?.getFieldValue('Trackers');
     const unique = (list: Array<string | undefined>) => [...new Set(list.filter((t): t is string => Boolean(t) && t !== '#none'))];
     writes = unique(workspace.getBlocksByType('s4e_logvalue', false).map((b) => tracker(b, 'Tracker')));
@@ -346,6 +351,10 @@
       return failed ? failed.result : { ok: true, steps: 0 };
     });
 
+  // Try with a note: the typed note runs the workspace as if it was saved today, in test mode
+  const tryNote = () =>
+    startRun(`Trying with ${tryText}…`, (deps) => tryWithNote(deps, draftWorkspace(), tryText, { output, highlight, stop, onProgress }));
+
   const runForYesterday = () => runOverDays(yesterdayKey(), yesterdayKey(), 'Running for yesterday…');
   const runTheseDays = () => runOverDays(daysFrom, daysTo, `Running ${daysFrom} to ${daysTo}…`);
 
@@ -472,6 +481,7 @@
             <div class="ed-summary">
               <strong>Schedule</strong>
               <span>{daily ? 'Daily: runs for each day since its last run, up to yesterday.' : 'Not scheduled. Set the Scheduler block to Daily to run it every day.'}</span>
+              {#if noteTracker}<span>Runs when {noteTracker} is logged</span>{/if}
               {#if reads.length}<span>Reads {reads.join(', ')}</span>{/if}
               {#if writes.length}<span>Writes to {writes.join(', ')}</span>{/if}
             </div>
@@ -500,6 +510,13 @@
               <button class="nb-btn primary" onclick={run} disabled={running}><Icon name="play" size={16} />Run now</button>
               <button class="nb-btn" onclick={stopRun} disabled={!running}><Icon name="stop" size={16} />Stop</button>
             </div>
+            <strong class="ed-heading">Try with a note</strong>
+            <div class="ed-days-form">
+              <label class="ed-field grow">Note<input bind:value={tryText} placeholder="#mood(2) #run" /></label>
+              <button class="nb-btn" onclick={tryNote} disabled={running || !tryText.trim()}><Icon name="play" size={16} />Try</button>
+            </div>
+            <p class="ed-hint">Runs the workspace as if this note was saved today. It is a test run: no notes are written.</p>
+
             <strong class="ed-heading">Before a run</strong>
             {#if problems.length === 0}
               <p class="ed-ok"><Icon name="check" size={16} />No problems found.</p>

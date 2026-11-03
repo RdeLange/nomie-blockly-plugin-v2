@@ -78,6 +78,8 @@ class AppState {
   centralLog = $state('');
   scheduleDays = $state<Record<string, DayRecord[]>>({});
   memory = $state<Record<string, Memory>>({});
+  // when a workspace was paused for running too often from notes (not saved: the pause is short)
+  notePauses = $state<Record<string, number>>({});
   secrets = $state<Record<string, string>>({});
   loaded = $state(false);
 

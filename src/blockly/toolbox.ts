@@ -62,6 +62,11 @@ export const toolbox = (nomieName: string = NOMIE_CATEGORY): ToolboxDefinition =
           block('s4e_secret'),
           label('Frame'),
           block('s4eblocklyframe'),
+          block('s4e_whennote'),
+          label('This note'),
+          block('s4e_notevalue'),
+          block('s4e_notetext'),
+          block('s4e_noteday'),
         ],
       },
       {

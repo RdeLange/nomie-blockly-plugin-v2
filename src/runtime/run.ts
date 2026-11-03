@@ -3,6 +3,7 @@
 import type { NomieApi } from '../nomie/api';
 import { createInterpreter, type HostTimeouts, type ScheduleWindow } from './host';
 import type { Memory } from './memory';
+import type { TriggerNote } from './note-trigger';
 
 // The interpreter runs in slices of this many milliseconds, and the page gets a turn between slices. Without this,
 // an endless loop froze Nomie, and Stop was never read.
@@ -34,6 +35,8 @@ export type RunOptions = {
   memory?: Memory;
   // the secrets from Settings; their values are masked in everything the run shows
   secrets?: Record<string, string>;
+  // the note that started the run (a When-note workspace reads it; see note-trigger.ts)
+  note?: TriggerNote;
 };
 
 // blockId: the block that was running when the run failed (only known when the code highlights its blocks)
@@ -86,6 +89,7 @@ export const runWorkspace = (options: RunOptions): Promise<RunResult> =>
       memory,
       secrets,
       redact,
+      note: options.note,
     };
     const fail = (error: string) => {
       const shown = redact(error);

@@ -4,7 +4,8 @@ import { appState } from '../app/state.svelte';
 import { ui } from '../app/ui.svelte';
 import { trackerChoices, trackerOptionsNow } from '../app/trackers.svelte';
 import { STORAGE_KEY } from '../app/state.svelte';
-import { scheduleIfDue, runFromNote } from '../app/actions';
+import { scheduleIfDue, runFromNote, runFromNotes } from '../app/actions';
+import { rememberWritten, wasWrittenHere } from '../app/written-notes';
 import { setupBlockly } from '../blockly/setup';
 import { setTrackerPicker } from '../blockly/nomie-blocks';
 
@@ -69,23 +70,15 @@ export const startNomie = (): NomieHandle | undefined => {
     addToMoreMenu: true,
     addToWidgets: true,
   });
-  // Notes this plugin wrote in the last two minutes. A workspace that logs "Run Blockly Workspace: X" must not start
-  // itself again through the note trigger.
-  const written = new Map<string, number>();
   const nomieApi = createNomieApi(plugin);
   // the Tracker dropdown's "Pick from Nomie" opens Nomie's own picker
   setTrackerPicker(() => nomieApi.pickTracker());
   const api: NomieApi = {
     ...nomieApi,
     createNote: (note, end) => {
-      written.set(note, Date.now());
+      rememberWritten(note);
       nomieApi.createNote(note, end);
     },
-  };
-  const writtenByUs = (note: string) => {
-    const now = Date.now();
-    for (const [text, at] of written) if (now - at > 2 * 60_000) written.delete(text);
-    return written.has(note);
   };
 
   // Saving waits for Nomie and says when it failed. Before the stored state is loaded nothing is saved: that would
@@ -130,9 +123,13 @@ export const startNomie = (): NomieHandle | undefined => {
     if (timer) clearInterval(timer);
     timer = setInterval(() => void scheduleIfDue(deps), 60 * 60 * 1000);
   });
-  plugin.onNote((note: { note: string }) => {
+  plugin.onNote((note: { note: string; end?: unknown; elements?: unknown[]; id?: string }) => {
     const text = note?.note ?? '';
-    if (text.includes('Run Blockly Workspace:') && !writtenByUs(text)) runFromNote(deps, text);
+    // a note the plugin wrote does not start a workspace again (see written-notes.ts)
+    if (wasWrittenHere(text)) return;
+    if (text.includes('Run Blockly Workspace:')) runFromNote(deps, text);
+    // a When-note workspace runs when a note with its tracker is saved
+    void runFromNotes(deps, note as Parameters<typeof runFromNotes>[1]);
   });
   handle = { api, save, plugin };
   return handle;

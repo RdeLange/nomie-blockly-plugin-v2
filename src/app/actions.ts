@@ -5,6 +5,8 @@ import { createRunQueue, runWorkspace, RUN_DEADLINE_MS, type RunResult } from '.
 import { MAX_CATCH_UP_DAYS, runSchedule, type DayOutcome, type ScheduledWorkspace, type ScheduleOutcome } from '../runtime/scheduler';
 import type { ScheduleWindow } from '../runtime/host';
 import type { Memory } from '../runtime/memory';
+import { noteTags, triggerFromNote, triggerFromText, type NoteWithElements, type TriggerNote } from '../runtime/note-trigger';
+import { wasWrittenHere } from './written-notes';
 import { compileWorkspace, hasErrors, workspaceInfo, type CompiledWorkspace } from '../blockly/compile';
 import { addDays, localDayKey, parseDayKey } from '../runtime/dates';
 import { appState, type DayRecord } from './state.svelte';
@@ -30,6 +32,8 @@ export type RunHooks = {
   onProgress?: (steps: number) => void;
   // a test run writes no notes. Only the editor's runs use it; the list, the schedule and note triggers never do.
   test?: boolean;
+  // the note that started the run (a When-note workspace), or the note typed in Try with a note
+  note?: TriggerNote;
 };
 
 // Writes the problems the pre-run check found to the run's output, with the block each one is about.
@@ -82,6 +86,7 @@ const runCompiled = (deps: Deps, workspace: Workspace, hooks: RunHooks, schedule
     test: hooks.test,
     memory: appState.memory[workspace.id],
     secrets: { ...appState.secrets },
+    note: hooks.note,
   }).then((result) => {
     // a run that ended well keeps what it remembered; a failed or test run keeps nothing
     if (result.ok && result.memory && !hooks.test) keepMemory(deps, workspace.id, result.memory);
@@ -270,3 +275,85 @@ export const setScheduleStart = (deps: Deps, day: string) => {
   void deps.save();
   return count;
 };
+
+// ---- note triggers (phase 14): a saved note starts the When-note workspaces with its tracker
+
+// A workspace runs at most this many times a minute from notes; past that it is paused, and the list says so
+export const NOTE_RUNS_PER_MINUTE = 5;
+const MINUTE_MS = 60_000;
+// a note runs a workspace once; this is how long the plugin remembers that it did
+const NOTE_MEMORY_MS = 10 * MINUTE_MS;
+// workspace id → when its note runs started (in the last minute)
+const noteRuns = new Map<string, number[]>();
+// workspace id and note → when it ran for that note
+const seenNotes = new Map<string, number>();
+
+// A saved note as Nomie sends it. A note with an id runs a workspace once; without one, its time and text do.
+export type NoteEvent = NoteWithElements & { id?: string };
+
+export type NoteRunOutcome = { id: string; name: string; result: RunResult; output: string[] };
+
+// One run for a note: it goes through the run queue, and its end is written to the log in Settings
+const runForNote = (deps: Deps, workspace: Workspace, trigger: TriggerNote, label: string): Promise<NoteRunOutcome> => {
+  const output: string[] = [];
+  return queue(
+    () =>
+      runCompiled(deps, workspace, { output: (text) => output.push(text), note: trigger }, false, {
+        active: false,
+        start: new Date(),
+        end: new Date(),
+      }),
+    failedRun
+  ).then((result) => {
+    const line = result.ok ? `ran for ${label}` : `failed for ${label} (${result.error})`;
+    appState.centralLog = [`${workspace.displayName}: ${line}`, ...appState.centralLog.split('\n\n')].slice(0, LOG_ENTRIES).join('\n\n');
+    return { id: workspace.id, name: workspace.displayName, result, output: output.filter((t) => !t.startsWith('<< ')) };
+  });
+};
+
+// The When-note workspaces whose tracker is in a saved note run for it, once per note, and at most
+// NOTE_RUNS_PER_MINUTE times a minute. A note the plugin wrote itself starts nothing.
+export const runFromNotes = (deps: Deps, raw: NoteEvent, now = Date.now()): Promise<NoteRunOutcome[]> => {
+  // a note without its elements or its time (not from Nomie) has no trackers, and is saved now
+  const event: NoteEvent = {
+    ...raw,
+    note: raw.note ?? '',
+    elements: Array.isArray(raw.elements) ? raw.elements : [],
+    end: raw.end ?? new Date(now),
+  };
+  if (wasWrittenHere(event.note, now)) return Promise.resolve([]);
+  const tags = noteTags(event);
+  const trigger = triggerFromNote(event);
+  const noteKey = event.id ?? `${String(event.end)}|${event.note}`;
+  const starts: Promise<NoteRunOutcome>[] = [];
+  for (const workspace of appState.workspaces) {
+    const tracker = workspaceInfo(workspace.workspaceBlocks).note;
+    if (!tracker || !tags.includes(tracker)) continue;
+    const seenKey = `${workspace.id}|${noteKey}`;
+    const seenAt = seenNotes.get(seenKey);
+    if (seenAt !== undefined && now - seenAt < NOTE_MEMORY_MS) continue;
+    const recent = (noteRuns.get(workspace.id) ?? []).filter((at) => now - at < MINUTE_MS);
+    if (recent.length >= NOTE_RUNS_PER_MINUTE) {
+      noteRuns.set(workspace.id, recent);
+      appState.notePauses[workspace.id] = now;
+      continue;
+    }
+    seenNotes.set(seenKey, now);
+    noteRuns.set(workspace.id, [...recent, now]);
+    starts.push(runForNote(deps, workspace, trigger, tags.join(' ')));
+  }
+  for (const [key, at] of seenNotes) if (now - at >= NOTE_MEMORY_MS) seenNotes.delete(key);
+  return Promise.all(starts);
+};
+
+// Try with a note: the workspace runs in test mode, as if the typed note ('#mood(2) #run') had been saved today
+export const tryWithNote = (deps: Deps, workspace: Workspace, text: string, hooks: RunHooks = {}): Promise<RunResult> =>
+  queue(
+    () =>
+      runCompiled(deps, workspace, { ...hooks, test: true, note: triggerFromText(text, localDayKey(new Date())) }, false, {
+        active: false,
+        start: new Date(),
+        end: new Date(),
+      }),
+    failedRun
+  );

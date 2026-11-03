@@ -15,7 +15,9 @@
     elements: [{ type: 'tracker', id: 'mood', prefix: '#', value: 4 + (i % 5) }],
   }));
   const store = {};
-  const state = { notes, created: [], dialogs: [], saved: 0, pickers: [], opened: [] };
+  const state = { notes, created: [], dialogs: [], saved: 0, pickers: [], opened: [], noteListeners: [] };
+  // a note saved in Nomie: the plugin's onNote listeners get it, as Nomie sends it (log.expanded())
+  state.fireNote = (note) => state.noteListeners.forEach((fn) => fn(note));
   window.__nomie = state;
 
   class FakeNomiePlugin {
@@ -39,7 +41,9 @@
     }
     onWidget() {}
     onLaunch() {}
-    onNote() {}
+    onNote(fn) {
+      state.noteListeners.push(fn);
+    }
     async searchNotes(term, date, daysBack) {
       const end = new Date(date);
       end.setHours(23, 59, 59, 999);

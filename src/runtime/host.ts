@@ -19,6 +19,8 @@ import {
 import { localDayKey, resolveDay } from './dates';
 import { formatValue } from './format';
 import { memoryProblem, type Memory } from './memory';
+import type { TriggerNote } from './note-trigger';
+import { parseDayKey } from './dates';
 
 export type ScheduleWindow = { active: boolean; start: Date; end: Date };
 
@@ -53,6 +55,8 @@ export type HostContext = {
   secrets?: Record<string, string>;
   // hides secret values in text that leaves the run
   redact?: (text: string) => string;
+  // the note that started this run (a When-note workspace), if any
+  note?: TriggerNote;
 };
 
 // `window.prompt` is what the Text prompt block generates. It is provided here, so workspaces saved with it still run.
@@ -140,6 +144,28 @@ export const installHost = (interpreter: any, scope: any, ctx: HostContext) => {
     else ctx.api.alert('Message', formatValue(value));
   });
   asyncFn('prompt', (text) => ctx.api.prompt('Message', formatValue(text)), 1, timeouts.prompt);
+
+  // The note blocks (phase 14): the note that started the run. Outside a note run they give null.
+  native('noteText', () => ctx.note?.text ?? null);
+  native('noteDay', () => ctx.note?.day ?? null);
+  native('noteValue', (tag) => {
+    const key = String(tag ?? '');
+    const values = ctx.note?.values ?? {};
+    return Object.prototype.hasOwnProperty.call(values, key) ? values[key] : null;
+  });
+  // The start of the day of a When-note block: 13:00 of the note's day. A run for days gives the day it is at; a
+  // manual run gives today.
+  native('triggerStart', () => {
+    if (ctx.note) {
+      const at = parseDayKey(ctx.note.day);
+      at.setHours(13);
+      return at;
+    }
+    if (ctx.schedule.active) return ctx.schedule.start;
+    const now = new Date();
+    now.setHours(13, 0, 0, 0);
+    return now;
+  });
 
   // The day the run is at: the Scheduler block's loop variable. Read from the sandbox, so the code v1 generated
   // (which does not pass it) gets the right day too. Undefined outside a Scheduler block.

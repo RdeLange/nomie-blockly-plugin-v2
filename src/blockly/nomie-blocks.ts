@@ -255,6 +255,41 @@ export const defineNomieBlocks = () => {
       nextStatement: null,
       style: 'nomie_blocks',
     },
+    // A workspace has a Scheduler block (it runs on days) or a When-note block (it runs when a note with the tracker
+    // is saved). The block is a hat: it has no connection above it.
+    {
+      type: 's4e_whennote',
+      message0: 'When a note with %1 is saved %2 %3',
+      args0: [
+        { type: 'input_value', name: 'Tracker', check: 'Tracker' },
+        { type: 'input_dummy' },
+        { type: 'input_statement', name: 'script' },
+      ],
+      style: 'nomie_frame',
+    },
+    // What the note that started a run holds. Outside a note run they give null.
+    {
+      type: 's4e_notevalue',
+      message0: 'value of %1 in this note',
+      args0: [{ type: 'input_value', name: 'Tracker', check: 'Tracker' }],
+      inputsInline: true,
+      output: null,
+      style: 'nomie_blocks',
+    },
+    {
+      type: 's4e_notetext',
+      message0: 'text of this note',
+      args0: [],
+      output: null,
+      style: 'nomie_blocks',
+    },
+    {
+      type: 's4e_noteday',
+      message0: 'day of this note',
+      args0: [],
+      output: null,
+      style: 'nomie_blocks',
+    },
     {
       type: 's4e_lastvalue',
       message0: 'last value of %1 looking back %2 days',
@@ -448,6 +483,22 @@ export const registerNomieGenerators = (js: JavascriptGenerator) => {
   js.forBlock['s4e_lognote'] = (block: Block, g) =>
     `logNote(${input(block, g, 'Text', "''")},${input(block, g, 'Date', '"today"')});\n`;
   js.forBlock['s4e_mylocation'] = () => ['myLocation()', Order.NONE];
+
+  // A When-note block runs its script once, for the day of the note: the same loop as the Scheduler block, over one
+  // day. The day comes from triggerStart(), so the day pickers in the script work as they do in a scheduled run.
+  js.forBlock['s4e_whennote'] = (block: Block, g) => {
+    const script = g.statementToCode(block, 'script');
+    let code = 's4eblocklyframe = "activated";\n';
+    code += 'var schedule = "none";\nvar scheduler = false;\n';
+    code += 'var schedulerstart = triggerStart();\nvar schedulerend = triggerStart();\n';
+    code += 'var loop = new Date(schedulerstart);\nwhile(loop <= schedulerend){\n';
+    code += script;
+    code += 'var newDate = loop.setDate(loop.getDate() + 1);\nloop = new Date(newDate);}\n';
+    return code;
+  };
+  js.forBlock['s4e_notevalue'] = (block: Block, g) => [`noteValue(${input(block, g, 'Tracker', '""')})`, Order.NONE];
+  js.forBlock['s4e_notetext'] = () => ['noteText()', Order.NONE];
+  js.forBlock['s4e_noteday'] = () => ['noteDay()', Order.NONE];
   js.forBlock['s4e_openlink'] = (block: Block, g) => `openLink(${input(block, g, 'Value', "''")});\n`;
 
   js.forBlock['wait_seconds'] = (block: Block) => `waitForSeconds(${Number(block.getFieldValue('SECONDS')) || 0});\n`;
@@ -469,6 +520,10 @@ export const NOMIE_RESERVED_WORDS = [
   'httpRequest',
   'logValue',
   'daysSince',
+  'noteDay',
+  'noteText',
+  'noteValue',
+  'triggerStart',
   'lastValue',
   'logNote',
   'myLocation',

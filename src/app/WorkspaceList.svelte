@@ -3,6 +3,12 @@
   import { ui } from './ui.svelte';
   import { actionDeps, askConfirm, notify } from './dialogs';
   import { runNow } from './actions';
+  const PAUSE_MS = 60_000;
+  // a workspace paused for note runs says so for a minute
+  const pausedByNotes = (w: Workspace) => {
+    const at = appState.notePauses[w.id];
+    return at !== undefined && Date.now() - at < PAUSE_MS;
+  };
   import { newWorkspaceFromBlocks, addWorkspaces, importSummary } from './editing';
   import { parseWorkspaceFile, templateWorkspaces, type Workspace } from '../domain/workspace';
   import { workspaceInfo } from '../blockly/compile';
@@ -121,8 +127,14 @@
         <div class="muted">{workspace.description}</div>
         <div class="row" style="margin-top: 6px">
           <span class="pill" class:on={isDaily(workspace)}>{isDaily(workspace) ? 'Daily' : 'Not scheduled'}</span>
+          {#if workspaceInfo(workspace.workspaceBlocks).note}
+            <span class="pill on">Runs when {workspaceInfo(workspace.workspaceBlocks).note} is logged</span>
+          {/if}
           <span class="muted">Last run: {dayText(workspace.latestrun)}</span>
         </div>
+        {#if pausedByNotes(workspace)}
+          <div class="muted" style="margin-top: 6px">Paused: it ran more than 5 times a minute from notes. It starts again shortly.</div>
+        {/if}
       </div>
     </div>
     <div class="row" style="margin-top: 10px; justify-content: flex-end">

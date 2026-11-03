@@ -20,9 +20,25 @@ export type CompiledWorkspace = {
   problems: Problem[];
   // a short text for each block, to say where a run failed
   labels: Record<string, string>;
+  // the tracker of the When-note block: the workspace runs when a note with it is saved (phase 14)
+  note?: string;
 };
 
 const FRAME = 's4eblocklyframe';
+const WHEN_NOTE = 's4e_whennote';
+// the blocks that read the note which started a run: they give nothing outside a When-note block
+const NOTE_VALUE_BLOCKS = new Set(['s4e_notevalue', 's4e_notetext', 's4e_noteday']);
+
+const insideWhenNote = (block: Blockly.Block): boolean => {
+  for (let b: Blockly.Block | null = block; b; b = b.getSurroundParent()) if (b.type === WHEN_NOTE) return true;
+  return false;
+};
+
+// The tracker a When-note block names
+const trackerOf = (block: Blockly.Block): string | undefined => {
+  const target = block.getInputTargetBlock('Tracker');
+  return target?.type === 's4e_trackers' ? String(target.getFieldValue('Trackers')) : undefined;
+};
 // Blocks that may sit outside the frame: they define something, and run nothing by themselves
 const DEFINITIONS = new Set(['procedures_defnoreturn', 'procedures_defreturn', 'bi_function', 'bi_comment']);
 // The data blocks that cannot do anything without a tracker, and the input that holds it
@@ -40,11 +56,18 @@ export const checkWorkspace = (workspace: Blockly.Workspace, knownSecrets?: stri
   const problems: Problem[] = [];
   const top = workspace.getTopBlocks(true).filter((b) => b.isEnabled());
   const frames = top.filter((b) => b.type === FRAME);
-  if (frames.length === 0) {
-    problems.push({ level: 'error', message: 'This workspace has no Scheduler block. Add one, and put the script inside it.' });
+  const whenNotes = top.filter((b) => b.type === WHEN_NOTE);
+  // a workspace runs on days (the Scheduler block) or when a note is saved (the When-note block), not both
+  if (frames.length && whenNotes.length) {
+    problems.push({
+      level: 'error',
+      message: 'This workspace has a Scheduler block and a When-note block. Keep one: the Scheduler runs on days, the When-note block when a note is saved.',
+    });
+  } else if (frames.length === 0 && whenNotes.length === 0) {
+    problems.push({ level: 'error', message: 'This workspace has no Scheduler block or When-note block. Add one, and put the script inside it.' });
   }
   for (const block of top) {
-    if (block.type === FRAME || DEFINITIONS.has(block.type)) continue;
+    if (block.type === FRAME || block.type === WHEN_NOTE || DEFINITIONS.has(block.type)) continue;
     problems.push({
       blockId: block.id,
       level: 'warning',
@@ -53,6 +76,13 @@ export const checkWorkspace = (workspace: Blockly.Workspace, knownSecrets?: stri
   }
   for (const block of workspace.getAllBlocks(false)) {
     if (!block.isEnabled()) continue;
+    if (NOTE_VALUE_BLOCKS.has(block.type) && !insideWhenNote(block)) {
+      problems.push({
+        blockId: block.id,
+        level: 'warning',
+        message: 'This block reads the note that started the run. Put it inside a When-note block; outside one it gives nothing.',
+      });
+    }
     const needs = NEEDS_TRACKER[block.type];
     if (needs && !block.getInputTargetBlock(needs.input)) {
       problems.push({ blockId: block.id, level: 'error', message: `"${needs.name}" has no tracker. Plug a tracker into it.` });
@@ -104,15 +134,17 @@ export const compileWorkspace = (
       };
     }
     const frames = workspace.getTopBlocks(true).filter((b) => b.type === FRAME && b.isEnabled());
+    const whenNotes = workspace.getTopBlocks(true).filter((b) => b.type === WHEN_NOTE && b.isEnabled());
     const labels: Record<string, string> = {};
     for (const block of workspace.getAllBlocks(false)) labels[block.id] = labelOf(block);
     if (!options.highlight) javascriptGenerator.STATEMENT_PREFIX = null;
     return {
       code: javascriptGenerator.workspaceToCode(workspace),
-      frame: frames.length > 0,
+      frame: frames.length > 0 || whenNotes.length > 0,
       schedule: frames.some((b) => b.getFieldValue('NAME') === 'daily') ? 'daily' : 'none',
       problems: checkWorkspace(workspace, options.knownSecrets),
       labels,
+      note: whenNotes.length ? trackerOf(whenNotes[0]) : undefined,
     };
   } finally {
     javascriptGenerator.STATEMENT_PREFIX = previousPrefix;
@@ -121,12 +153,12 @@ export const compileWorkspace = (
 };
 
 // The list and Settings show whether a workspace is daily. They ask often, so the answer is kept per block text.
-const infoCache = new Map<string, { frame: boolean; schedule: 'none' | 'daily' }>();
+const infoCache = new Map<string, { frame: boolean; schedule: 'none' | 'daily'; note?: string }>();
 export const workspaceInfo = (workspaceBlocks: string) => {
   let info = infoCache.get(workspaceBlocks);
   if (!info) {
     const compiled = compileWorkspace(workspaceBlocks, { highlight: false });
-    info = { frame: compiled.frame, schedule: compiled.schedule };
+    info = { frame: compiled.frame, schedule: compiled.schedule, note: compiled.note };
     if (infoCache.size > 100) infoCache.clear();
     infoCache.set(workspaceBlocks, info);
   }
