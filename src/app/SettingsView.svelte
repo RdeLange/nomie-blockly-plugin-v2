@@ -13,7 +13,8 @@
     return info.frame && info.schedule === 'daily';
   };
   import { localDayKey } from '../runtime/dates';
-  import { parseWorkspaceFile, workspaceToFile, withNewId } from '../domain/workspace';
+  import { parseWorkspaceFile, readBackupMemory, workspaceToFile, withNewId } from '../domain/workspace';
+  import { SECRET_NAME } from '../runtime/secrets';
 
   let importMode = $state<'add' | 'replace'>('add');
   let startText = $state(localDayKey(new Date()));
@@ -50,6 +51,36 @@
   };
   let fileInput: HTMLInputElement | undefined = $state();
 
+  // Secrets: the names are shown, the values are not. A value can be changed or removed, not read back.
+  let secretName = $state('');
+  let secretValue = $state('');
+  let secretError = $state('');
+  let includeMemory = $state(false);
+  const secretNames = $derived(Object.keys(appState.secrets).sort());
+
+  const saveSecret = () => {
+    const name = secretName.trim();
+    if (!SECRET_NAME.test(name)) {
+      secretError = 'A name uses letters, digits, _, - and . only, for example OPENWEATHER_KEY.';
+      return;
+    }
+    if (!secretValue) {
+      secretError = 'Type the value of the secret.';
+      return;
+    }
+    secretError = '';
+    appState.secrets[name] = secretValue;
+    secretName = '';
+    secretValue = '';
+    void actionDeps()?.save();
+  };
+
+  const removeSecret = async (name: string) => {
+    if (!(await askConfirm('Remove the secret?', `${name} is removed. Workspaces that use it will say so before they run.`))) return;
+    delete appState.secrets[name];
+    void actionDeps()?.save();
+  };
+
   const runSchedule = async () => {
     const deps = actionDeps();
     if (!deps) return;
@@ -58,7 +89,8 @@
   };
 
   const exportBackup = () => {
-    const blob = new Blob([workspaceToFile(appState.workspaces)], { type: 'application/json' });
+    // remembered values go into the backup only when asked for; secrets never do
+    const blob = new Blob([workspaceToFile(appState.workspaces, includeMemory ? appState.memory : undefined)], { type: 'application/json' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
     link.download = `blockly-backup-${new Date().toISOString().slice(0, 10)}.json`;
@@ -72,8 +104,11 @@
     input.value = '';
     if (!file) return;
     let workspaces;
+    let memories: Array<Record<string, unknown> | undefined> = [];
     try {
-      workspaces = parseWorkspaceFile(await file.text());
+      const text = await file.text();
+      workspaces = parseWorkspaceFile(text);
+      memories = readBackupMemory(text);
     } catch (error) {
       notify('Import failed', (error as Error).message);
       return;
@@ -85,6 +120,11 @@
     // a backup's workspaces start in test mode, until each one has had a real run in the editor
     const imported = workspaces.map((w) => ({ ...withFreshCode(withNewId(w)), untested: true }));
     appState.workspaces = replace ? imported : [...appState.workspaces, ...imported];
+    // replacing drops the values of the workspaces it replaces; the backup's values go to the new workspaces
+    if (replace) appState.memory = {};
+    imported.forEach((w, i) => {
+      if (memories[i]) appState.memory[w.id] = memories[i] as Record<string, unknown>;
+    });
     actionDeps()?.save();
     notify('Import', `${imported.length} workspace${imported.length === 1 ? '' : 's'} ${replace ? 'replaced' : 'added'}.`);
   };
@@ -133,8 +173,32 @@
 </div>
 
 <div class="card">
+  <p><strong>Secrets</strong></p>
+  <p class="muted">A workspace uses a secret by name, such as an API key, so the key is not in its blocks. Secrets stay on this device: they are never in a backup or a shared workspace.</p>
+  {#each secretNames as name (name)}
+    <div class="row" style="margin-top: 6px">
+      <span class="grow">{name}</span>
+      <span class="muted">••••</span>
+      <button class="button plain" onclick={() => { secretName = name; secretValue = ''; secretError = ''; }}>Change</button>
+      <button class="button plain" onclick={() => removeSecret(name)}>Remove</button>
+    </div>
+  {:else}
+    <p class="muted">No secrets yet.</p>
+  {/each}
+  <div class="row" style="margin-top: 12px">
+    <input class="input" style="flex: 0 0 200px" placeholder="NAME" aria-label="Secret name" bind:value={secretName} />
+    <input class="input" style="flex: 1 1 auto; min-width: 160px" type="password" placeholder="value" aria-label="Secret value" autocomplete="off" bind:value={secretValue} />
+    <button class="button" onclick={saveSecret}>Save</button>
+  </div>
+  {#if secretError}
+    <p class="muted" style="color: var(--ios-danger)">{secretError}</p>
+  {/if}
+</div>
+
+<div class="card">
   <p><strong>Backup</strong></p>
   <p class="muted">A backup is a file with all your workspaces. Nomie Blockly v1 backups import here too.</p>
+  <label class="row muted"><input type="checkbox" bind:checked={includeMemory} /> Include remembered values</label>
   <div class="row">
     <button class="button" onclick={exportBackup}>Export</button>
     <button class="button plain" onclick={() => pick('add')}>Import and add</button>

@@ -9,6 +9,7 @@ import type { NomieApi } from '../nomie/api';
 import { dailyTrackerNote, getDailyTrackerValue, getPeriodTrackerValue, logDailyTrackerValue } from './nomie-data';
 import { localDayKey, resolveDay } from './dates';
 import { formatValue } from './format';
+import { memoryProblem, type Memory } from './memory';
 
 export type ScheduleWindow = { active: boolean; start: Date; end: Date };
 
@@ -35,6 +36,12 @@ export type HostContext = {
   timeouts?: Partial<HostTimeouts>;
   // a test run writes no notes: each write is shown in the output instead
   test?: boolean;
+  // remembered values of the workspace, changed in place by remember and forget (see run.ts)
+  memory?: Memory;
+  // the secrets from Settings, by name; a workspace reads them with secret(name)
+  secrets?: Record<string, string>;
+  // hides secret values in text that leaves the run
+  redact?: (text: string) => string;
 };
 
 // `window.prompt` is what the Text prompt block generates. It is provided here, so workspaces saved with it still run.
@@ -62,6 +69,9 @@ export const webAddress = (text: string): URL | undefined => {
 
 export const installHost = (interpreter: any, scope: any, ctx: HostContext) => {
   const timeouts = { ...DEFAULT_TIMEOUTS, ...ctx.timeouts };
+  const memory: Memory = ctx.memory ?? {};
+  const secrets = ctx.secrets ?? {};
+  const redact = ctx.redact ?? ((text: string) => text);
   const toNative = (value: unknown) => interpreter.pseudoToNative(value);
   const toPseudo = (value: unknown) => interpreter.nativeToPseudo(value ?? null);
 
@@ -110,7 +120,7 @@ export const installHost = (interpreter: any, scope: any, ctx: HostContext) => {
   // output that shows in the console of the workspace
   native('alert', (value) => ctx.output(formatValue(value)));
   // output that goes to the browser console
-  native('consolelog', (value) => console.log(value));
+  native('consolelog', (value) => console.log(typeof value === 'string' ? redact(value) : value));
   native('highlightBlock', (id) => ctx.highlight(String(id ?? '')));
   // a message to the user. A manual run shows it in a dialog. A scheduled run has no dialog (as in v1), so the
   // message goes to the run's output, and the scheduler puts it in the schedule log in Settings.
@@ -126,6 +136,27 @@ export const installHost = (interpreter: any, scope: any, ctx: HostContext) => {
     const loop = toNative(interpreter.getProperty(scope, 'loop'));
     return loop instanceof Date && !isNaN(loop.getTime()) ? loop : undefined;
   };
+
+  // Remembered values. A failure throws, and the run stops with the message (see run.ts).
+  native('remember', (name, value) => {
+    const key = String(name ?? '');
+    const problem = memoryProblem(memory, key, value);
+    if (problem) throw new Error(problem);
+    memory[key] = value;
+  });
+  native('recall', (name, fallback) => {
+    const key = String(name ?? '');
+    return Object.prototype.hasOwnProperty.call(memory, key) ? memory[key] : fallback;
+  });
+  native('forget', (name) => {
+    delete memory[String(name ?? '')];
+  });
+  // A secret is a value from Settings, named by the workspace. The value is never shown: see redact in run.ts.
+  native('secret', (name) => {
+    const key = String(name ?? '');
+    if (!Object.prototype.hasOwnProperty.call(secrets, key)) throw new Error(`Add the secret ${key} in Settings`);
+    return secrets[key];
+  });
 
   native('getdate', (daypicked, date) => resolveDay(String(daypicked), dateFrom(date)));
   native('scheduler_activated', () => ctx.schedule.active);

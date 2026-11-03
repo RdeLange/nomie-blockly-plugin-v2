@@ -4,6 +4,7 @@
 import type { NomieApi } from '../nomie/api';
 import { addDays, localDayKey, parseDayKey } from './dates';
 import { canRun, runWorkspace, type RunResult } from './run';
+import type { Memory } from './memory';
 
 export type ScheduledWorkspace = {
   id: string;
@@ -12,6 +13,8 @@ export type ScheduledWorkspace = {
   latestrun?: string;
   // whether it runs daily, read from its blocks; without it, the code is searched as before
   daily?: boolean;
+  // the values it remembers between runs; each day that runs well carries them to the next day
+  memory?: Memory;
 };
 
 // One day of a scheduled run
@@ -62,13 +65,15 @@ export const isDailyWorkspace = (jscode: string): boolean =>
 const MARKERS = new Set(['<< Program complete >>', '<< Stopped >>']);
 
 // The schedule for the given workspaces, one at a time, one day at a time. Returns what happened to each one.
-// onProgress gets the first day that has not run yet, after every day that ran well; save it as the latestrun.
+// onProgress gets the first day that has not run yet, and the remembered values, after every day that ran well;
+// save both: the day is the latestrun, and the values are what the next day starts from.
 export const runSchedule = async (
   api: NomieApi,
   workspaces: ScheduledWorkspace[],
   now: Date,
   onOutput?: (text: string) => void,
-  onProgress?: (id: string, nextDay: string) => void
+  onProgress?: (id: string, nextDay: string, memory: Memory) => void,
+  secrets: Record<string, string> = {}
 ): Promise<ScheduleOutcome[]> => {
   const outcomes: ScheduleOutcome[] = [];
   for (const workspace of workspaces) {
@@ -83,6 +88,7 @@ export const runSchedule = async (
     }
     const days: DayOutcome[] = [];
     let result: RunResult = { ok: true, steps: 0 };
+    let memory: Memory = { ...(workspace.memory ?? {}) };
     for (let day = start; day <= end; day = addDays(day, 1)) {
       // the window the Scheduler block loops over: this one day, at 13:00
       const at13 = new Date(day.getFullYear(), day.getMonth(), day.getDate(), 13);
@@ -96,14 +102,17 @@ export const runSchedule = async (
           shown.push(text);
           onOutput?.(text);
         },
+        memory,
+        secrets,
       });
+      if (dayResult.ok && dayResult.memory) memory = dayResult.memory;
       days.push({ day: localDayKey(day), result: dayResult, output: shown.filter((text) => !MARKERS.has(text)) });
       if (!dayResult.ok) {
         result = dayResult;
         break;
       }
       result = { ok: true, steps: (result.ok ? result.steps : 0) + dayResult.steps };
-      onProgress?.(workspace.id, localDayKey(addDays(day, 1)));
+      onProgress?.(workspace.id, localDayKey(addDays(day, 1)), memory);
     }
     outcomes.push({
       id: workspace.id,

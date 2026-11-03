@@ -1,6 +1,7 @@
 // The app's state. The storage key and the fields are the same as in v1, so a backup or a stored state moves across.
 import type { Workspace } from '../domain/workspace';
 import { normaliseWorkspace } from '../domain/workspace';
+import { readMemoryMap, type Memory } from '../runtime/memory';
 
 // One day of the last scheduled run of a workspace, as the Run tab shows it
 export type DayRecord = { day: string; ok: boolean; error?: string; output: string[] };
@@ -13,6 +14,10 @@ export type StoredState = {
   centralscheduleslist: string;
   // per workspace id: the days of its last scheduled run (new in v2; v1 ignores it)
   scheduledays: Record<string, DayRecord[]>;
+  // per workspace id: the values it remembers between runs (new in v2; v1 ignores it)
+  memory: Record<string, Memory>;
+  // the secrets from Settings, by name (new in v2; v1 ignores it)
+  secrets: Record<string, string>;
 };
 
 export const STORAGE_KEY = 'blockly';
@@ -38,6 +43,15 @@ const readScheduleDays = (raw: unknown): Record<string, DayRecord[]> => {
   return days;
 };
 
+const readSecrets = (raw: unknown): Record<string, string> => {
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return {};
+  const secrets: Record<string, string> = {};
+  for (const [name, value] of Object.entries(raw as Record<string, unknown>)) {
+    if (typeof value === 'string' && name !== '') secrets[name] = value;
+  }
+  return secrets;
+};
+
 // Reads what was stored. v1 stored the scheduler date as milliseconds, and some workspaces have no fields yet.
 export const readState = (raw: unknown): StoredState => {
   const data = (raw ?? {}) as Record<string, unknown>;
@@ -53,6 +67,8 @@ export const readState = (raw: unknown): StoredState => {
     lastcentralschedule: toIso(data.lastcentralschedule),
     centralscheduleslist: typeof data.centralscheduleslist === 'string' ? data.centralscheduleslist : '',
     scheduledays: readScheduleDays(data.scheduledays),
+    memory: readMemoryMap(data.memory),
+    secrets: readSecrets(data.secrets),
   };
 };
 
@@ -61,6 +77,8 @@ class AppState {
   lastCentralSchedule = $state('');
   centralLog = $state('');
   scheduleDays = $state<Record<string, DayRecord[]>>({});
+  memory = $state<Record<string, Memory>>({});
+  secrets = $state<Record<string, string>>({});
   loaded = $state(false);
 
   load(stored: unknown) {
@@ -69,6 +87,8 @@ class AppState {
     this.lastCentralSchedule = state.lastcentralschedule;
     this.centralLog = state.centralscheduleslist;
     this.scheduleDays = state.scheduledays;
+    this.memory = state.memory;
+    this.secrets = state.secrets;
     this.loaded = true;
   }
 
@@ -78,6 +98,8 @@ class AppState {
       lastcentralschedule: this.lastCentralSchedule,
       centralscheduleslist: this.centralLog,
       scheduledays: $state.snapshot(this.scheduleDays),
+      memory: $state.snapshot(this.memory),
+      secrets: $state.snapshot(this.secrets),
     };
   }
 }

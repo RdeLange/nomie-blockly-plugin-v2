@@ -12,6 +12,8 @@ export type Capabilities = {
   hosts: string[];
   // it calls an address that is put together while it runs
   dynamicRequests: boolean;
+  // the secrets from Settings it asks for, by name (the values are never in a file)
+  secrets: string[];
 };
 
 const READ_BLOCKS: Record<string, string> = { s4e_dayvalue: 'Tracker', s4e_periodvalue: 'Trackable', tracker: '' };
@@ -21,7 +23,7 @@ const unique = (list: string[]) => [...new Set(list.filter(Boolean))];
 export const describeCapabilities = (workspaceBlocks: string): Capabilities => {
   setupBlockly();
   const workspace = new Blockly.Workspace();
-  const caps: Capabilities = { readsNotes: false, reads: [], writes: [], hosts: [], dynamicRequests: false };
+  const caps: Capabilities = { readsNotes: false, reads: [], writes: [], hosts: [], dynamicRequests: false, secrets: [] };
   try {
     readBlocksInto(workspace, workspaceBlocks);
     const trackerIn = (block: Blockly.Block, input: string) => {
@@ -34,8 +36,11 @@ export const describeCapabilities = (workspaceBlocks: string): Capabilities => {
         caps.reads.push(trackerIn(block, READ_BLOCKS[block.type]));
       }
       if (block.type === 's4e_logvalue') caps.writes.push(trackerIn(block, 'Tracker'));
+      if (block.type === 's4e_secret') caps.secrets.push(String(block.getFieldValue('NAME')));
       if (block.type === 's4e_httprequest') {
-        const address = block.getInputTargetBlock('Value');
+        // the address is a text, or a text joined with other parts: the host is in the first text part
+        let address = block.getInputTargetBlock('Value');
+        if (address?.type === 'text_join') address = address.getInputTargetBlock('ADD0');
         const text = address?.type === 'text' ? String(address.getFieldValue('TEXT')) : '';
         try {
           caps.hosts.push(new URL(text).host);
@@ -52,6 +57,7 @@ export const describeCapabilities = (workspaceBlocks: string): Capabilities => {
   caps.reads = unique(caps.reads).filter((t) => t !== '#none');
   caps.writes = unique(caps.writes).filter((t) => t !== '#none');
   caps.hosts = unique(caps.hosts);
+  caps.secrets = unique(caps.secrets);
   return caps;
 };
 
@@ -62,5 +68,6 @@ export const capabilityText = (caps: Capabilities): string => {
   if (caps.writes.length) parts.push(`Writes to ${caps.writes.join(', ')}`);
   for (const host of caps.hosts) parts.push(`Calls ${host}`);
   if (caps.dynamicRequests) parts.push('Calls web addresses it builds while it runs');
+  if (caps.secrets.length) parts.push(`Needs the secret${caps.secrets.length === 1 ? '' : 's'} ${caps.secrets.join(', ')}`);
   return parts.length ? parts.join(' · ') : 'Does not read or write notes, and does not use the network';
 };

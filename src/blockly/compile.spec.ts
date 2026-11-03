@@ -2,7 +2,7 @@
 // field holds a quote or an input is empty, and problems are found before a run starts.
 import { describe, expect, it } from 'vitest';
 import Interpreter from 'js-interpreter';
-import { compileWorkspace } from './compile';
+import { compileWorkspace, secretsUsedIn } from './compile';
 import { runNow } from '../app/actions';
 import { withFreshCode } from '../app/editing';
 import type { Workspace } from '../domain/workspace';
@@ -167,5 +167,29 @@ describe('problems are found before a run (L1)', () => {
     expect(result.ok).toBe(false);
     if (!result.ok) expect(result.blockId).toBe('set');
     expect(lines.join('\n')).toMatch(/in block "set x to/i);
+  });
+});
+
+describe('remembered values and secrets in the blocks (phase 12)', () => {
+  const SECRET = '<block type="s4e_secret"><field name="NAME">OPENWEATHER_KEY</field></block>';
+
+  it('the code names the secret and never holds its value', () => {
+    const compiled = compileWorkspace(xml(frame(`<block type="pushto_console"><value name="Value">${SECRET}</value></block>`)), { highlight: false });
+    expect(compiled.code).toContain('secret("OPENWEATHER_KEY")');
+    expect(compiled.problems).toEqual([]);
+  });
+
+  it('finds the secrets a workspace uses, by name', () => {
+    expect(secretsUsedIn(frame(`<block type="pushto_console"><value name="Value">${SECRET}</value></block>`))).toEqual(['OPENWEATHER_KEY']);
+    expect(secretsUsedIn(frame(''))).toEqual([]);
+  });
+
+  it('warns before a run when a secret the workspace uses is not in Settings yet', () => {
+    const blocks = xml(frame(`<block type="pushto_console"><value name="Value">${SECRET}</value></block>`));
+    const compiled = compileWorkspace(blocks, { highlight: false, knownSecrets: [] });
+    const warning = compiled.problems.find((p) => p.message.includes('OPENWEATHER_KEY'));
+    expect(warning?.level).toBe('warning');
+    expect(warning?.message).toMatch(/Settings/);
+    expect(compileWorkspace(blocks, { highlight: false, knownSecrets: ['OPENWEATHER_KEY'] }).problems).toEqual([]);
   });
 });

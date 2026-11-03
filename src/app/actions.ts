@@ -4,6 +4,7 @@ import type { Workspace } from '../domain/workspace';
 import { createRunQueue, runWorkspace, RUN_DEADLINE_MS, type RunResult } from '../runtime/run';
 import { MAX_CATCH_UP_DAYS, runSchedule, type DayOutcome, type ScheduledWorkspace, type ScheduleOutcome } from '../runtime/scheduler';
 import type { ScheduleWindow } from '../runtime/host';
+import type { Memory } from '../runtime/memory';
 import { compileWorkspace, hasErrors, workspaceInfo, type CompiledWorkspace } from '../blockly/compile';
 import { addDays, localDayKey, parseDayKey } from '../runtime/dates';
 import { appState, type DayRecord } from './state.svelte';
@@ -55,8 +56,18 @@ const reportBlock = (result: RunResult, labels: Record<string, string>, hooks: R
   return result;
 };
 
+// The remembered values of a workspace. A workspace with none has no entry.
+const keepMemory = (deps: Deps, id: string, memory: Memory) => {
+  if (Object.keys(memory).length) appState.memory[id] = memory;
+  else delete appState.memory[id];
+  void deps.save();
+};
+
+// The secret names Settings has: a workspace that uses another one gets a warning before the run
+const knownSecrets = () => Object.keys(appState.secrets);
+
 const runCompiled = (deps: Deps, workspace: Workspace, hooks: RunHooks, scheduled: boolean, schedule: ScheduleWindow) => {
-  const compiled = compileWorkspace(workspace.workspaceBlocks, { highlight: Boolean(hooks.highlight) });
+  const compiled = compileWorkspace(workspace.workspaceBlocks, { highlight: Boolean(hooks.highlight), knownSecrets: knownSecrets() });
   reportProblems(compiled, hooks);
   if (hasErrors(compiled.problems)) return Promise.resolve(firstError(compiled));
   return runWorkspace({
@@ -69,7 +80,13 @@ const runCompiled = (deps: Deps, workspace: Workspace, hooks: RunHooks, schedule
     stop: hooks.stop,
     onProgress: hooks.onProgress,
     test: hooks.test,
-  }).then((result) => reportBlock(result, compiled.labels, hooks));
+    memory: appState.memory[workspace.id],
+    secrets: { ...appState.secrets },
+  }).then((result) => {
+    // a run that ended well keeps what it remembered; a failed or test run keeps nothing
+    if (result.ok && result.memory && !hooks.test) keepMemory(deps, workspace.id, result.memory);
+    return reportBlock(result, compiled.labels, hooks);
+  });
 };
 
 // A manual run of the workspace's blocks, shown as the run goes on. It waits for any run that is already going.
@@ -91,10 +108,13 @@ export const runDays = (deps: Deps, workspace: Workspace, from: string, to: stri
   for (let day = start; day <= end && keys.length < MAX_CATCH_UP_DAYS; day = addDays(day, 1)) keys.push(localDayKey(day));
   return queue(
     async () => {
-      const compiled = compileWorkspace(workspace.workspaceBlocks, { highlight: Boolean(hooks.highlight) });
+      const compiled = compileWorkspace(workspace.workspaceBlocks, { highlight: Boolean(hooks.highlight), knownSecrets: knownSecrets() });
       reportProblems(compiled, hooks);
       if (hasErrors(compiled.problems)) return [{ day: keys[0], result: firstError(compiled), output: [] }];
       const days: DayOutcome[] = [];
+      // each day starts from what the day before remembered
+      const before = appState.memory[workspace.id] ?? {};
+      let memory: Memory = { ...before };
       for (const [i, key] of keys.entries()) {
         hooks.onDay?.(key, i + 1, keys.length);
         hooks.output?.(`— ${key} —`);
@@ -114,11 +134,17 @@ export const runDays = (deps: Deps, workspace: Workspace, from: string, to: stri
           stop: hooks.stop,
           onProgress: hooks.onProgress,
           test: hooks.test,
+          memory,
+          secrets: { ...appState.secrets },
         });
+        if (result.ok && result.memory) memory = result.memory;
         reportBlock(result, compiled.labels, hooks);
         days.push({ day: key, result, output: shown.filter((t) => !t.startsWith('<< ')) });
         if (!result.ok) break;
       }
+      // the values are kept once the whole range has run well, and never by a test run
+      const allWell = days.length > 0 && days.every((d) => d.result.ok);
+      if (allWell && !hooks.test && JSON.stringify(memory) !== JSON.stringify(before)) keepMemory(deps, workspace.id, memory);
       return days;
     },
     (error): DayOutcome[] => [{ day: keys[0], result: { ok: false, error }, output: [] }],
@@ -167,15 +193,17 @@ export const scheduleNow = async (deps: Deps, now = new Date()): Promise<Schedul
       jscode: c.code,
       latestrun: w.latestrun,
       daily: c.frame && c.schedule === 'daily',
+      memory: appState.memory[w.id],
     }));
-  const progress = (id: string, nextDay: string) => {
+  // after each day that ran well: the day it starts from next, and what the day remembered
+  const progress = (id: string, nextDay: string, memory: Memory) => {
     const workspace = appState.workspaces.find((w) => w.id === id);
     if (!workspace) return;
     workspace.latestrun = parseDayKey(nextDay).toISOString();
-    void deps.save();
+    keepMemory(deps, id, memory);
   };
   const ran = await queue(
-    () => runSchedule(deps.api, runnable, now, undefined, progress),
+    () => runSchedule(deps.api, runnable, now, undefined, progress, { ...appState.secrets }),
     (error): ScheduleOutcome[] => [{ id: '', displayName: 'Schedule', result: { ok: false, error } }],
     // the schedule runs every workspace in one task, so it gets a full run's time for every day it may catch up;
     // each run ends on its own long before that, this only guards against something outside the runs being stuck
@@ -186,6 +214,8 @@ export const scheduleNow = async (deps: Deps, now = new Date()): Promise<Schedul
   const kept = Object.fromEntries(Object.entries(appState.scheduleDays).filter(([id]) => appState.workspaces.some((w) => w.id === id)));
   for (const outcome of ran) if (outcome.days?.length) kept[outcome.id] = outcome.days.map(toRecord);
   appState.scheduleDays = kept;
+  // the remembered values of workspaces that were deleted are dropped
+  appState.memory = Object.fromEntries(Object.entries(appState.memory).filter(([id]) => appState.workspaces.some((w) => w.id === id)));
   const lines = outcomes.map(describe);
   appState.lastCentralSchedule = now.toISOString();
   if (lines.length) {

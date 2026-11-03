@@ -6,6 +6,7 @@ import { javascriptGenerator } from 'blockly/javascript';
 import { readBlocksInto, setupBlockly } from './setup';
 import { NEVER_WORKED } from './unsupported';
 import { COMPAT_BLOCKS } from './compat-blocks';
+export { secretsUsedIn } from './nomie-blocks';
 
 const OLD_BLOCKS = new Set<string>(COMPAT_BLOCKS);
 
@@ -33,8 +34,9 @@ const NEEDS_TRACKER: Record<string, { input: string; name: string }> = {
 
 export const hasErrors = (problems: Problem[]) => problems.some((p) => p.level === 'error');
 
-// The problems in a workspace that is loaded (headless here, or the editor's own workspace).
-export const checkWorkspace = (workspace: Blockly.Workspace): Problem[] => {
+// The problems in a workspace that is loaded (headless here, or the editor's own workspace). knownSecrets are the
+// secrets Settings has; a secret the workspace uses that is not among them is a warning before the run.
+export const checkWorkspace = (workspace: Blockly.Workspace, knownSecrets?: string[]): Problem[] => {
   const problems: Problem[] = [];
   const top = workspace.getTopBlocks(true).filter((b) => b.isEnabled());
   const frames = top.filter((b) => b.type === FRAME);
@@ -55,6 +57,16 @@ export const checkWorkspace = (workspace: Blockly.Workspace): Problem[] => {
     if (needs && !block.getInputTargetBlock(needs.input)) {
       problems.push({ blockId: block.id, level: 'error', message: `"${needs.name}" has no tracker. Plug a tracker into it.` });
     }
+    if (block.type === 's4e_secret' && knownSecrets) {
+      const name = block.getFieldValue('NAME');
+      if (name && !knownSecrets.includes(name)) {
+        problems.push({
+          blockId: block.id,
+          level: 'warning',
+          message: `This block uses the secret ${name}, which is not in Settings yet. Add it there before the run.`,
+        });
+      }
+    }
     const never = NEVER_WORKED[block.type];
     if (never) problems.push({ blockId: block.id, level: 'error', message: never });
     else if (OLD_BLOCKS.has(block.type) && block.type !== 'bi_comment') {
@@ -72,7 +84,10 @@ const labelOf = (block: Blockly.Block) => block.toString(60).replace(/\s+/g, ' '
 
 // Compiles the blocks of a workspace. With highlight, every statement first calls highlightBlock(id), so the editor
 // can show which block runs; runs nobody watches leave that out, which makes them about twice as fast.
-export const compileWorkspace = (workspaceBlocks: string, options: { highlight: boolean }): CompiledWorkspace => {
+export const compileWorkspace = (
+  workspaceBlocks: string,
+  options: { highlight: boolean; knownSecrets?: string[] }
+): CompiledWorkspace => {
   setupBlockly();
   const workspace = new Blockly.Workspace();
   const previousPrefix = javascriptGenerator.STATEMENT_PREFIX;
@@ -96,7 +111,7 @@ export const compileWorkspace = (workspaceBlocks: string, options: { highlight: 
       code: javascriptGenerator.workspaceToCode(workspace),
       frame: frames.length > 0,
       schedule: frames.some((b) => b.getFieldValue('NAME') === 'daily') ? 'daily' : 'none',
-      problems: checkWorkspace(workspace),
+      problems: checkWorkspace(workspace, options.knownSecrets),
       labels,
     };
   } finally {

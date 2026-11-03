@@ -38,6 +38,14 @@ describe('generated code matches the code saved by v1', () => {
     expect(generateCode(template.workspaceBlocks)).toBe(template.jscode);
   });
 
+  // phase 12: the key is a secret from Settings, not typed into the template (the expected code changed for this)
+  it('template: Get Temperature reads its key with secret("OPENWEATHER_KEY")', () => {
+    const template = templates.find((t) => t.displayName === 'Retrieve Temperature')!;
+    const code = generateCode(template.workspaceBlocks);
+    expect(code).toContain('secret("OPENWEATHER_KEY")');
+    expect(code).not.toContain('YOUR_OPENWEATHER_KEY');
+  });
+
   // The saved jscode of this template was typed by hand and does not match its blocks (v1 never regenerated it).
   // The blocks are the source, so the test checks the generated variable and the sum, not the old text.
   it('template: Kick Start generates from its blocks', () => {

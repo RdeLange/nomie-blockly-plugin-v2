@@ -2,6 +2,7 @@
 // the other way round. v1 polled with timers for that, and two runs could still overlap.
 import type { NomieApi } from '../nomie/api';
 import { createInterpreter, type HostTimeouts, type ScheduleWindow } from './host';
+import type { Memory } from './memory';
 
 // The interpreter runs in slices of this many milliseconds, and the page gets a turn between slices. Without this,
 // an endless loop froze Nomie, and Stop was never read.
@@ -29,10 +30,29 @@ export type RunOptions = {
   onProgress?: (steps: number) => void;
   // a test run writes no notes (see HostContext.test)
   test?: boolean;
+  // the remembered values before the run (see memory.ts); a copy is changed during the run
+  memory?: Memory;
+  // the secrets from Settings; their values are masked in everything the run shows
+  secrets?: Record<string, string>;
 };
 
 // blockId: the block that was running when the run failed (only known when the code highlights its blocks)
-export type RunResult = { ok: true; steps: number } | { ok: false; error: string; blockId?: string };
+// memory: the remembered values after a run that ended well, when the run changed them (not for a test run)
+export type RunResult =
+  | { ok: true; steps: number; memory?: Memory }
+  | { ok: false; error: string; blockId?: string };
+
+const MASK = '••••';
+// Replaces every secret value in a text. The longest values go first, so a value inside a longer one is not left over.
+export const redactSecrets = (text: string, secrets: Record<string, string>): string =>
+  Object.values(secrets)
+    .filter((value) => value.length > 0)
+    .sort((a, b) => b.length - a.length)
+    .reduce((clean, value) => clean.split(value).join(MASK), text);
+
+// A plain error (from remember, secret or a host call) shows its message; other errors keep their name, as before.
+const errorText = (error: unknown): string =>
+  error instanceof Error && error.constructor === Error ? error.message : String(error);
 
 // A workspace runs when it has a frame ("activated"). A scheduled run also needs a schedule that is not "none".
 export const canRun = (jscode: string, scheduled: boolean): boolean => {
@@ -42,10 +62,16 @@ export const canRun = (jscode: string, scheduled: boolean): boolean => {
 
 export const runWorkspace = (options: RunOptions): Promise<RunResult> =>
   new Promise((resolve) => {
-    const output = options.output ?? (() => undefined);
+    const secrets = options.secrets ?? {};
+    const redact = (text: string) => redactSecrets(text, secrets);
+    const rawOutput = options.output ?? (() => undefined);
+    const output = (text: string) => rawOutput(redact(text));
     const maxSteps = options.maxSteps ?? MAX_STEPS;
     const maxRunMs = options.maxRunMs ?? MAX_RUN_MS;
     let lastBlock = '';
+    // a copy: the caller keeps its own, and gets the changed one back only when the run ends well
+    const memory: Memory = { ...(options.memory ?? {}) };
+    const memoryBefore = JSON.stringify(memory);
     const context = {
       api: options.api,
       scheduled: options.scheduled,
@@ -57,10 +83,14 @@ export const runWorkspace = (options: RunOptions): Promise<RunResult> =>
       },
       timeouts: options.timeouts,
       test: options.test,
+      memory,
+      secrets,
+      redact,
     };
     const fail = (error: string) => {
-      output(`Error: ${error}`);
-      resolve(lastBlock ? { ok: false, error, blockId: lastBlock } : { ok: false, error });
+      const shown = redact(error);
+      output(`Error: ${shown}`);
+      resolve(lastBlock ? { ok: false, error: shown, blockId: lastBlock } : { ok: false, error: shown });
     };
 
     let interpreter: any;
@@ -94,7 +124,8 @@ export const runWorkspace = (options: RunOptions): Promise<RunResult> =>
           }
           if (!interpreter.step()) {
             output('<< Program complete >>');
-            resolve({ ok: true, steps });
+            const changed = !options.test && JSON.stringify(memory) !== memoryBefore;
+            resolve(changed ? { ok: true, steps, memory } : { ok: true, steps });
             return;
           }
           steps += 1;
@@ -105,7 +136,7 @@ export const runWorkspace = (options: RunOptions): Promise<RunResult> =>
         }
       } catch (error) {
         // a runtime error (v1 stopped without a message and the program looked like it was still running)
-        fail(String(error));
+        fail(errorText(error));
         return;
       }
       options.onProgress?.(steps);

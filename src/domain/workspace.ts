@@ -1,5 +1,6 @@
 // A workspace is one Blockly program. The shape is the same as in v1, so .wsp files and backups move between versions.
 import templates from './templates.json';
+import { readMemory, type Memory } from '../runtime/memory';
 
 export type Workspace = {
   id: string;
@@ -71,7 +72,35 @@ export const parseWorkspaceFile = (text: string): Workspace[] => {
 // A copy with a new id, so that importing a file twice gives two workspaces
 export const withNewId = (workspace: Workspace): Workspace => ({ ...workspace, id: newId() });
 
-export const workspaceToFile = (workspaces: Workspace[]): string => JSON.stringify(workspaces, null, 2);
+// The file is a list of workspaces, as v1 wrote it. Remembered values are left out unless they are given: a backup
+// carries them only when the user asks (phase 12). Secrets are never in a file. Each workspace with values gets a
+// `memory` field, which v1 ignores.
+export const workspaceToFile = (workspaces: Workspace[], remembered?: Record<string, Memory>): string =>
+  JSON.stringify(
+    workspaces.map((w) => {
+      const memory = remembered?.[w.id];
+      return memory && Object.keys(memory).length ? { ...w, memory } : w;
+    }),
+    null,
+    2
+  );
+
+// The remembered values in a backup, one entry per workspace in the same order (undefined where there are none).
+export const readBackupMemory = (text: string): Array<Memory | undefined> => {
+  let data: unknown;
+  try {
+    data = JSON.parse(text);
+  } catch {
+    return [];
+  }
+  const list = Array.isArray(data) ? data : [data];
+  return list.map((entry) => {
+    const memory = (entry as Record<string, unknown> | null)?.memory;
+    if (!memory) return undefined;
+    const clean = readMemory(memory);
+    return Object.keys(clean).length ? clean : undefined;
+  });
+};
 
 export const templateWorkspaces = (): Workspace[] =>
   (templates as Array<Record<string, unknown>>).map((template) =>

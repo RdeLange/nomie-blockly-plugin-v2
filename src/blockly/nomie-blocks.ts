@@ -24,6 +24,14 @@ export const trackersUsedIn = (workspaceBlocks: string): TrackerOption[] => {
   return [...new Set(found)].map((tag) => [tag, tag] as TrackerOption);
 };
 
+// The secrets a workspace uses, by name, from its saved blocks (the value is never in the blocks)
+export const secretsUsedIn = (workspaceBlocks: string): string[] => {
+  const found = [...workspaceBlocks.matchAll(/<block type="s4e_secret"[^>]*>\s*<field name="NAME">([^<]*)<\/field>/g)].map((m) =>
+    m[1].replace(/&(amp|lt|gt|quot|apos);/g, (entity) => XML_ENTITIES[entity])
+  );
+  return [...new Set(found.filter((name) => name !== ''))];
+};
+
 // The saved trackers of each workspace, offered in that workspace's dropdowns only. (They used to be added to the
 // one list every workspace shares, and taken out again afterwards.)
 const savedTrackers = new WeakMap<object, TrackerOption[]>();
@@ -199,6 +207,44 @@ export const defineNomieBlocks = () => {
       nextStatement: null,
       style: 'nomie_blocks',
     },
+    {
+      type: 's4e_remember',
+      message0: 'remember %1 as %2',
+      args0: [
+        { type: 'field_input', name: 'NAME', text: 'name' },
+        { type: 'input_value', name: 'VALUE' },
+      ],
+      inputsInline: true,
+      previousStatement: null,
+      nextStatement: null,
+      style: 'nomie_blocks',
+    },
+    {
+      type: 's4e_recall',
+      message0: 'recall %1 or %2',
+      args0: [
+        { type: 'field_input', name: 'NAME', text: 'name' },
+        { type: 'input_value', name: 'DEFAULT' },
+      ],
+      inputsInline: true,
+      output: null,
+      style: 'nomie_blocks',
+    },
+    {
+      type: 's4e_forget',
+      message0: 'forget %1',
+      args0: [{ type: 'field_input', name: 'NAME', text: 'name' }],
+      previousStatement: null,
+      nextStatement: null,
+      style: 'nomie_blocks',
+    },
+    {
+      type: 's4e_secret',
+      message0: 'secret %1',
+      args0: [{ type: 'field_input', name: 'NAME', text: 'name' }],
+      output: null,
+      style: 'nomie_blocks',
+    },
     // Kept so that older workspaces that use it still load. It is not in the palette.
     {
       type: 'tracker',
@@ -283,6 +329,14 @@ export const registerNomieGenerators = (js: JavascriptGenerator) => {
 
   js.forBlock['s4e_httprequest'] = (block: Block, g) => [`httpRequest(${input(block, g, 'Value', "''")})`, Order.NONE];
 
+  // Remembered values and secrets: the names go in with JSON.stringify, and a secret's value is never in the code
+  js.forBlock['s4e_remember'] = (block: Block, g) =>
+    `remember(${quote(block.getFieldValue('NAME'))}, ${input(block, g, 'VALUE', 'null')});\n`;
+  js.forBlock['s4e_recall'] = (block: Block, g) =>
+    [`recall(${quote(block.getFieldValue('NAME'))}, ${input(block, g, 'DEFAULT', 'null')})`, Order.NONE];
+  js.forBlock['s4e_forget'] = (block: Block) => `forget(${quote(block.getFieldValue('NAME'))});\n`;
+  js.forBlock['s4e_secret'] = (block: Block) => [`secret(${quote(block.getFieldValue('NAME'))})`, Order.NONE];
+
   js.forBlock['wait_seconds'] = (block: Block) => `waitForSeconds(${Number(block.getFieldValue('SECONDS')) || 0});\n`;
   js.forBlock['pushto_console'] = (block: Block, g) => `alert(${input(block, g, 'Value', "''")});`;
   js.forBlock['pushto_webconsole'] = (block: Block, g) => `consolelog(${input(block, g, 'Value', "''")});\n`;
@@ -301,6 +355,10 @@ export const NOMIE_RESERVED_WORDS = [
   'highlightBlock',
   'httpRequest',
   'logValue',
+  'forget',
+  'recall',
+  'remember',
+  'secret',
   'scheduler_activated',
   'scheduler_end',
   'scheduler_start',

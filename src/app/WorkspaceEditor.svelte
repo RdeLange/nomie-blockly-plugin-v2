@@ -189,7 +189,7 @@
   // The pre-run check, on the blocks (a warning icon) and in the Run tab; the schedule and the trackers, for Details.
   const readBlocks = () => {
     if (!workspace) return;
-    const found = checkWorkspace(workspace);
+    const found = checkWorkspace(workspace, Object.keys(appState.secrets));
     for (const block of workspace.getAllBlocks(false)) {
       const text = found.filter((p) => p.blockId === block.id).map((p) => p.message).join('\n');
       if (text) block.setWarningText(text);
@@ -280,6 +280,14 @@
     workspaceBlocks: draft.xml,
     jscode: draft.jscode,
   });
+
+  // the values this workspace remembers between runs (Details lists them)
+  const remembered = $derived(Object.entries(appState.memory[id] ?? {}));
+  const forgetAll = async () => {
+    if (!(await askConfirm('Forget all?', 'The values this workspace remembers are deleted. Its next run starts from nothing.'))) return;
+    delete appState.memory[id];
+    void actionDeps()?.save();
+  };
 
   // A run shows the Console tab, unless someone is typing in Details
   const showConsole = () => {
@@ -466,6 +474,17 @@
               <span>{daily ? 'Daily: runs for each day since its last run, up to yesterday.' : 'Not scheduled. Set the Scheduler block to Daily to run it every day.'}</span>
               {#if reads.length}<span>Reads {reads.join(', ')}</span>{/if}
               {#if writes.length}<span>Writes to {writes.join(', ')}</span>{/if}
+            </div>
+            <div class="ed-summary">
+              <strong>Remembered values</strong>
+              {#if remembered.length}
+                {#each remembered as [name, value] (name)}
+                  <span><code>{name}</code> {JSON.stringify(value)}</span>
+                {/each}
+                <button class="nb-btn" onclick={forgetAll}>Forget all</button>
+              {:else}
+                <span>Nothing yet. Remember blocks keep a value for the next run.</span>
+              {/if}
             </div>
           </div>
         {:else if tab === 'run'}
