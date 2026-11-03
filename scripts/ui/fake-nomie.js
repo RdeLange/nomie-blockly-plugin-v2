@@ -14,7 +14,9 @@
     end: day(-i).getTime(),
     elements: [{ type: 'tracker', id: 'mood', prefix: '#', value: 4 + (i % 5) }],
   }));
-  const store = {};
+  // kept in localStorage, so a reload of the page (a new launch of the plugin) finds what was saved
+  const STORE_KEY = 'fake-nomie-store';
+  const store = JSON.parse(window.localStorage.getItem(STORE_KEY) || '{}');
   const state = { notes, created: [], dialogs: [], saved: 0, pickers: [], opened: [], noteListeners: [], widgetListeners: [] };
   // a note saved in Nomie: the plugin's onNote listeners get it, as Nomie sends it (log.expanded())
   state.fireNote = (note) => state.noteListeners.forEach((fn) => fn(note));
@@ -31,6 +33,7 @@
         getItem: (key) => store[key],
         setItem: async (key, value) => {
           store[key] = JSON.parse(JSON.stringify(value));
+          window.localStorage.setItem(STORE_KEY, JSON.stringify(store));
           state.saved += 1;
         },
       };

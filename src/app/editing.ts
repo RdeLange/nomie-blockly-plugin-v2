@@ -2,13 +2,12 @@
 import { newId, withNewId, type Workspace } from '../domain/workspace';
 import { appState } from './state.svelte';
 import { actionDeps } from './dialogs';
-import { generateCode } from '../blockly/setup';
-import { compileWorkspace } from '../blockly/compile';
-import { capabilityText, describeCapabilities } from '../blockly/capabilities';
+import { refreshCompiled } from './compiler';
 
 const FRAME_XML =
   '<xml xmlns="https://developers.google.com/blockly/xml"><block type="s4eblocklyframe" x="20" y="20"><field name="NAME">none</field></block></xml>';
 
+// A new workspace. Its code is made when it is saved, or when it is added (see addWorkspaces).
 export const newWorkspaceFromBlocks = (): Workspace => ({
   id: newId(),
   name: '',
@@ -20,25 +19,26 @@ export const newWorkspaceFromBlocks = (): Workspace => ({
   block: '',
   workspaceBlocks: FRAME_XML,
   workspacePosition: { scrollX: 0, scrollY: 0, scale: 0.8 },
-  jscode: generateCode(FRAME_XML),
+  jscode: '',
   latestrun: '',
   schedule: 'none',
 });
 
-// The stored code of an imported workspace is replaced with the code of its blocks. It is never run (runs compile
-// the blocks), but it goes into exported files and backups, so it should match what the blocks do.
-export const withFreshCode = (workspace: Workspace): Workspace => {
-  const compiled = compileWorkspace(workspace.workspaceBlocks, { highlight: true });
-  const unreadable = compiled.problems.some((p) => /could not be read/.test(p.message));
-  return unreadable ? workspace : { ...workspace, jscode: compiled.code, schedule: compiled.schedule };
+export { FRAME_XML };
+
+// Adds workspaces with new ids, so the same file can be added twice. Each one is compiled from its blocks: a file's
+// code is never kept (phase 16).
+// Returns the workspaces as they were added, with their new ids.
+export const addWorkspaces = async (workspaces: Workspace[]): Promise<Workspace[]> => {
+  const added = await Promise.all(workspaces.map((w) => refreshCompiled(withNewId(w))));
+  appState.workspaces = [...appState.workspaces, ...added];
+  void actionDeps()?.save();
+  return added;
 };
 
-// Adds workspaces with new ids, so the same file can be added twice
-export const addWorkspaces = (workspaces: Workspace[]) => {
-  appState.workspaces = [...appState.workspaces, ...workspaces.map((w) => withFreshCode(withNewId(w)))];
-  actionDeps()?.save();
+// What the workspaces in a file do, one line each, for the question before they are added (review finding C4). The
+// capability reader is Blockly, so it is loaded when the question is asked.
+export const importSummary = async (workspaces: Workspace[]): Promise<string> => {
+  const { capabilityText, describeCapabilities } = await import('../blockly/capabilities');
+  return workspaces.map((w) => `${w.displayName}: ${capabilityText(describeCapabilities(w.workspaceBlocks))}`).join('\n');
 };
-
-// What the workspaces in a file do, one line each, for the question before they are added (review finding C4)
-export const importSummary = (workspaces: Workspace[]): string =>
-  workspaces.map((w) => `${w.displayName}: ${capabilityText(describeCapabilities(w.workspaceBlocks))}`).join('\n');

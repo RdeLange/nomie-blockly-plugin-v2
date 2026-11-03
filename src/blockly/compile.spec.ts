@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 import Interpreter from 'js-interpreter';
 import { compileWorkspace, secretsUsedIn } from './compile';
 import { runNow } from '../app/actions';
-import { withFreshCode } from '../app/editing';
+import { refreshCompiled } from '../app/compiler';
 import type { Workspace } from '../domain/workspace';
 import type { NomieApi } from '../nomie/api';
 
@@ -75,8 +75,8 @@ describe('code that runs comes from the blocks (C3, M6)', () => {
     expect(alerts).toEqual([]);
   });
 
-  it('replaces the stored code of an imported workspace with the code of its blocks', () => {
-    const fresh = withFreshCode(workspaceWith(xml(frame(display(text('real')), 'daily')), 'display("hidden code");'));
+  it('replaces the stored code of an imported workspace with the code of its blocks', async () => {
+    const fresh = await refreshCompiled(workspaceWith(xml(frame(display(text('real')), 'daily')), 'display("hidden code");'));
     expect(fresh.jscode).toContain('display(\'real\')');
     expect(fresh.jscode).not.toContain('hidden code');
     expect(fresh.schedule).toBe('daily');

@@ -2,12 +2,11 @@
 import { createNomieApi, type NomieApi, type TrackerInfo } from './api';
 import { appState } from '../app/state.svelte';
 import { ui } from '../app/ui.svelte';
-import { trackerChoices, trackerOptionsNow } from '../app/trackers.svelte';
+import { trackerChoices } from '../app/trackers.svelte';
 import { STORAGE_KEY, readState } from '../app/state.svelte';
-import { scheduleIfDue, runFromNote, runFromNotes } from '../app/actions';
+import { compileStale, scheduleIfDue, runFromNote, runFromNotes } from '../app/actions';
 import { rememberWritten, wasWrittenHere } from '../app/written-notes';
-import { setupBlockly } from '../blockly/setup';
-import { setTrackerPicker } from '../blockly/nomie-blocks';
+import { setTrackerPicker } from './picker';
 
 declare const NomiePlugin: any;
 
@@ -96,13 +95,14 @@ export const startNomie = (): NomieHandle | undefined => {
   const deps = { api, save };
   let launched = false;
   let timer: ReturnType<typeof setInterval> | undefined;
-  setupBlockly(trackerOptionsNow);
 
   plugin.onRegistered(async () => {
     applyTheme(plugin);
     await plugin.storage.init();
     appState.load(plugin.storage.getItem(STORAGE_KEY));
     ui.ready = true;
+    // a workspace from before the stored code was kept is compiled once, and stored (see compiler.ts)
+    void compileStale(deps);
     void refreshTrackers(api);
     // Nomie may launch the plugin before its storage is ready; the schedule then starts here
     if (launched) void scheduleIfDue(deps);

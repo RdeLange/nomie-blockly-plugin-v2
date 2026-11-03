@@ -8,7 +8,7 @@ import type { Memory } from '../runtime/memory';
 import { noteTags, triggerFromNote, triggerFromText, type NoteWithElements, type TriggerNote } from '../runtime/note-trigger';
 import { wasWrittenHere } from './written-notes';
 import type { WidgetLabelValue } from '../runtime/widget';
-import { compileWorkspace, hasErrors, workspaceInfo, type CompiledWorkspace } from '../blockly/compile';
+import { applyCompiled, codeOf, hasErrors, isCompiled, refreshCompiled, type RunnableCode } from './compiler';
 import { addDays, localDayKey, parseDayKey } from '../runtime/dates';
 import { appState, type DayRecord } from './state.svelte';
 
@@ -38,7 +38,7 @@ export type RunHooks = {
 };
 
 // Writes the problems the pre-run check found to the run's output, with the block each one is about.
-const reportProblems = (compiled: CompiledWorkspace, hooks: RunHooks) => {
+const reportProblems = (compiled: RunnableCode, hooks: RunHooks) => {
   for (const problem of compiled.problems) {
     const label = problem.blockId ? compiled.labels[problem.blockId] : undefined;
     const where = label ? ` (block "${label}")` : '';
@@ -46,7 +46,7 @@ const reportProblems = (compiled: CompiledWorkspace, hooks: RunHooks) => {
   }
 };
 
-const firstError = (compiled: CompiledWorkspace): RunResult => {
+const firstError = (compiled: RunnableCode): RunResult => {
   const problem = compiled.problems.find((p) => p.level === 'error');
   return problem?.blockId
     ? { ok: false, error: problem.message, blockId: problem.blockId }
@@ -75,12 +75,10 @@ const keepWidget = (deps: Deps, id: string, shown: WidgetLabelValue) => {
 };
 
 // The secret names Settings has: a workspace that uses another one gets a warning before the run
-const knownSecrets = () => Object.keys(appState.secrets);
-
-const runCompiled = (deps: Deps, workspace: Workspace, hooks: RunHooks, scheduled: boolean, schedule: ScheduleWindow) => {
-  const compiled = compileWorkspace(workspace.workspaceBlocks, { highlight: Boolean(hooks.highlight), knownSecrets: knownSecrets() });
+const runCompiled = async (deps: Deps, workspace: Workspace, hooks: RunHooks, scheduled: boolean, schedule: ScheduleWindow) => {
+  const compiled = await codeOf(workspace, { highlight: Boolean(hooks.highlight) });
   reportProblems(compiled, hooks);
-  if (hasErrors(compiled.problems)) return Promise.resolve(firstError(compiled));
+  if (hasErrors(compiled.problems)) return firstError(compiled);
   return runWorkspace({
     api: deps.api,
     jscode: compiled.code,
@@ -121,7 +119,7 @@ export const runDays = (deps: Deps, workspace: Workspace, from: string, to: stri
   for (let day = start; day <= end && keys.length < MAX_CATCH_UP_DAYS; day = addDays(day, 1)) keys.push(localDayKey(day));
   return queue(
     async () => {
-      const compiled = compileWorkspace(workspace.workspaceBlocks, { highlight: Boolean(hooks.highlight), knownSecrets: knownSecrets() });
+      const compiled = await codeOf(workspace, { highlight: Boolean(hooks.highlight) });
       reportProblems(compiled, hooks);
       if (hasErrors(compiled.problems)) return [{ day: keys[0], result: firstError(compiled), output: [] }];
       const days: DayOutcome[] = [];
@@ -197,7 +195,9 @@ const describe = (outcome: ScheduleOutcome): string => {
 // saved straight away, so a failure later on (or Nomie closing) does not run that day again.
 export const scheduleNow = async (deps: Deps, now = new Date()): Promise<ScheduleOutcome[]> => {
   // the schedule runs the code of each workspace's blocks; a workspace whose blocks have errors does not run
-  const compiled = appState.workspaces.map((w) => ({ workspace: w, compiled: compileWorkspace(w.workspaceBlocks, { highlight: false }) }));
+  const compiled = await Promise.all(
+    appState.workspaces.map(async (w) => ({ workspace: w, compiled: await codeOf(w, { highlight: false }) }))
+  );
   const broken: ScheduleOutcome[] = compiled
     .filter(({ compiled: c }) => c.schedule === 'daily' && c.frame && hasErrors(c.problems))
     .map(({ workspace: w, compiled: c }) => ({ id: w.id, displayName: w.displayName, result: firstError(c) }));
@@ -243,6 +243,19 @@ export const scheduleNow = async (deps: Deps, now = new Date()): Promise<Schedul
   return outcomes;
 };
 
+// Compiles the workspaces that have no fingerprint of their blocks yet (a v1 state, or one from before phase 16), and
+// stores their code. Runs when the plugin starts, so that the next start can use the stored code.
+export const compileStale = async (deps: Deps) => {
+  const stale = appState.workspaces.filter((w) => !isCompiled(w));
+  if (stale.length === 0) return;
+  for (const workspace of stale) {
+    const compiled = await refreshCompiled(workspace);
+    const target = appState.workspaces.find((w) => w.id === workspace.id);
+    if (target) applyCompiled(target, compiled);
+  }
+  await deps.save();
+};
+
 // Due once per calendar day: when the last schedule ran on an earlier day than today (or never ran). A last run in
 // the future (the clock went back) is not due. v1 waited 24 hours, so the time of day drifted from day to day.
 export const isScheduleDue = (lastCentralSchedule: string, now: Date): boolean => {
@@ -278,8 +291,7 @@ export const setScheduleStart = (deps: Deps, day: string) => {
   const start = parseDayKey(day);
   let count = 0;
   for (const workspace of appState.workspaces) {
-    const info = workspaceInfo(workspace.workspaceBlocks);
-    if (!info.frame || info.schedule !== 'daily') continue;
+    if (workspace.schedule !== 'daily') continue;
     workspace.latestrun = start.toISOString();
     count += 1;
   }
@@ -339,7 +351,7 @@ export const runFromNotes = (deps: Deps, raw: NoteEvent, now = Date.now()): Prom
   const noteKey = event.id ?? `${String(event.end)}|${event.note}`;
   const starts: Promise<NoteRunOutcome>[] = [];
   for (const workspace of appState.workspaces) {
-    const tracker = workspaceInfo(workspace.workspaceBlocks).note;
+    const tracker = workspace.note;
     if (!tracker || !tags.includes(tracker)) continue;
     const seenKey = `${workspace.id}|${noteKey}`;
     const seenAt = seenNotes.get(seenKey);

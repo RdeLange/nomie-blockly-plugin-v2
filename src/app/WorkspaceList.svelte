@@ -11,18 +11,14 @@
   };
   import { newWorkspaceFromBlocks, addWorkspaces, importSummary } from './editing';
   import { parseWorkspaceFile, templateWorkspaces, type Workspace } from '../domain/workspace';
-  import { workspaceInfo } from '../blockly/compile';
 
   let adding = $state(false);
   let message = $state('');
   let fileInput: HTMLInputElement | undefined = $state();
 
   const dayText = (iso: string) => (iso ? new Date(iso).toLocaleDateString() : 'never');
-  // read from the blocks, not from the stored code (see blockly/compile.ts)
-  const isDaily = (w: Workspace) => {
-    const info = workspaceInfo(w.workspaceBlocks);
-    return info.frame && info.schedule === 'daily';
-  };
+  // what the workspace was compiled to (see app/compiler.ts): a daily schedule and the note it runs on
+  const isDaily = (w: Workspace) => w.schedule === 'daily';
 
   const edit = (id: string) => {
     ui.editingId = id;
@@ -55,8 +51,8 @@
       const workspaces = parseWorkspaceFile(await file.text());
       // a shared workspace is code from someone else: say what it does before adding it
       const count = `${workspaces.length} workspace${workspaces.length === 1 ? '' : 's'}`;
-      if (!(await askConfirm(`Add ${count}?`, `Only add workspaces you trust.\n\n${importSummary(workspaces)}`))) return;
-      addWorkspaces(workspaces);
+      if (!(await askConfirm(`Add ${count}?`, `Only add workspaces you trust.\n\n${await importSummary(workspaces)}`))) return;
+      await addWorkspaces(workspaces);
       message = `Added ${workspaces.length} workspace${workspaces.length === 1 ? '' : 's'}.`;
       adding = false;
     } catch (error) {
@@ -64,16 +60,16 @@
     }
   };
 
-  const addTemplate = (template: Workspace) => {
-    addWorkspaces([template]);
+  const addTemplate = async (template: Workspace) => {
+    await addWorkspaces([template]);
     message = `Added "${template.displayName}".`;
   };
 
-  const addNew = () => {
-    const workspace = newWorkspaceFromBlocks();
-    addWorkspaces([workspace]);
+  const addNew = async () => {
+    // the workspace is added with a new id, and the editor opens that one
+    const [added] = await addWorkspaces([newWorkspaceFromBlocks()]);
     adding = false;
-    edit(workspace.id);
+    edit(added.id);
   };
 </script>
 
@@ -127,8 +123,8 @@
         <div class="muted">{workspace.description}</div>
         <div class="row" style="margin-top: 6px">
           <span class="pill" class:on={isDaily(workspace)}>{isDaily(workspace) ? 'Daily' : 'Not scheduled'}</span>
-          {#if workspaceInfo(workspace.workspaceBlocks).note}
-            <span class="pill on">Runs when {workspaceInfo(workspace.workspaceBlocks).note} is logged</span>
+          {#if workspace.note}
+            <span class="pill on">Runs when {workspace.note} is logged</span>
           {/if}
           <span class="muted">Last run: {dayText(workspace.latestrun)}</span>
         </div>

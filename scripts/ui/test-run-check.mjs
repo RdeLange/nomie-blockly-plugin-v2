@@ -27,11 +27,14 @@ const openFromBackup = async (viewport) => {
   await page.goto(url);
   await page.getByRole('button', { name: 'Add', exact: true }).click();
   await page.locator('.row', { hasText: 'Retrieve Data Example' }).getByRole('button', { name: 'Add' }).first().click();
-  // as if the workspace came from a backup: the editor opens in test mode
-  await page.evaluate(async () => {
-    const { appState } = await import('/src/app/state.svelte.ts');
-    for (const w of appState.workspaces) w.untested = true;
+  // adding saves the workspace: wait for the save, then mark the saved workspaces as from a backup, and launch again
+  await page.waitForFunction(() => (window.localStorage.getItem('fake-nomie-store') ?? '').includes('Retrieve Data Example'), null, { timeout: 15000 });
+  await page.evaluate(() => {
+    const store = JSON.parse(window.localStorage.getItem('fake-nomie-store'));
+    for (const w of store.blockly.workspaces) w.untested = true;
+    window.localStorage.setItem('fake-nomie-store', JSON.stringify(store));
   });
+  await page.reload();
   await page.getByRole('button', { name: 'Edit' }).first().click();
   await page.waitForTimeout(1200);
   return page;
@@ -45,7 +48,9 @@ const untested = (page) => page.evaluate(async () => {
 
 try {
   const page = await openFromBackup({ width: 1440, height: 900 });
+  // the editor loads when it opens: wait for its toolbar, not for a fixed time
   const toolbarSwitch = page.locator('.ed-toolbar input[type="checkbox"]');
+  await toolbarSwitch.waitFor({ timeout: 15000 });
   check('a workspace from a backup opens with test run on', await toolbarSwitch.isChecked());
 
   await page.getByRole('tab', { name: /Run/ }).click();

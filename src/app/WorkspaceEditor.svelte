@@ -11,7 +11,11 @@
   import '../blockly/notebook.css';
   import './editor.css';
   import { toolbox } from '../blockly/toolbox';
-  import { loadWorkspace } from '../blockly/setup';
+  import { loadWorkspace, setupBlockly } from '../blockly/setup';
+  import { trackerOptionsNow } from './trackers.svelte';
+  import { applyCompiled, refreshCompiled } from './compiler';
+  // the blocks and their generator are registered when the editor opens (the plugin's start does not load them)
+  setupBlockly(trackerOptionsNow);
   import { appState } from './state.svelte';
   import { ui } from './ui.svelte';
   import { actionDeps, askConfirm } from './dialogs';
@@ -259,10 +263,10 @@
       emoji: draft.emoji || '🧱',
       color: draft.color,
       workspaceBlocks: draft.xml,
-      jscode: draft.jscode,
       workspacePosition: { scrollX: 0, scrollY: 0, scale: scaleNow },
-      schedule: daily ? 'daily' : 'none',
     } satisfies Partial<Workspace>);
+    // the code of the saved blocks is made now, with the schedule and the note (the editor has Blockly loaded)
+    applyCompiled(target, await refreshCompiled({ ...target }));
     // a failed save says so (see nomie/plugin.ts) and leaves the changes marked as unsaved
     const saved = await actionDeps()?.save();
     if (saved !== false) dirty = false;

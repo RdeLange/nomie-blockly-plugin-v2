@@ -3,6 +3,7 @@
 // so workspaces saved with v1 (.wsp files) load and run the same way.
 import { defineBlocksWithJsonArray, Extensions } from 'blockly';
 import type { Block, FieldDropdown } from 'blockly';
+import { pickTracker } from '../nomie/picker';
 import { Order, type JavascriptGenerator } from 'blockly/javascript';
 
 export const NOMIE_COLOUR = '#0AB3F5';
@@ -68,13 +69,9 @@ function trackerDropdownOptions(this: { getSourceBlock(): { workspace: object } 
   return trackerOptionsFor(this.getSourceBlock?.()?.workspace);
 }
 
-// Opens Nomie's picker (set by the plugin when it runs inside Nomie; outside Nomie it picks nothing)
-let trackerPicker: () => Promise<string | null> = async () => null;
-export const setTrackerPicker = (fn: () => Promise<string | null>) => (trackerPicker = fn);
-
 // Picking a tracker: the Tracker field keeps its value until a tracker is picked; cancelling keeps it too
 const pickInto = async (block: Block) => {
-  const tag = await trackerPicker();
+  const tag = await pickTracker();
   if (!tag || !block.workspace) return;
   addSavedTracker(block.workspace, tag);
   const field = block.getField('Trackers') as FieldDropdown | null;

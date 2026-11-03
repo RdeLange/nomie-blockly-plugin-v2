@@ -5,13 +5,11 @@
   import { actionDeps, askConfirm, notify } from './dialogs';
   import { scheduleNow, setScheduleStart } from './actions';
   import { parseTypedDay, scheduleWindow } from '../runtime/scheduler';
-  import { workspaceInfo } from '../blockly/compile';
-  import { importSummary, withFreshCode } from './editing';
+  import { importSummary } from './editing';
+  import { refreshCompiled } from './compiler';
 
-  const isDaily = (blocks: string) => {
-    const info = workspaceInfo(blocks);
-    return info.frame && info.schedule === 'daily';
-  };
+  // the schedule a workspace was compiled to (see app/compiler.ts)
+  const isDaily = (w: { schedule: string }) => w.schedule === 'daily';
   import { localDayKey } from '../runtime/dates';
   import { parseWorkspaceFile, readBackupMemory, workspaceToFile, withNewId } from '../domain/workspace';
   import { SECRET_NAME } from '../runtime/secrets';
@@ -31,8 +29,8 @@
     appState.workspaces.map((w) => ({
       id: w.id,
       name: w.displayName,
-      daily: isDaily(w.workspaceBlocks),
-      window: isDaily(w.workspaceBlocks) ? scheduleWindow(w.latestrun, now) : undefined,
+      daily: isDaily(w),
+      window: isDaily(w) ? scheduleWindow(w.latestrun, now) : undefined,
     }))
   );
   const dailyCount = $derived(overview.filter((w) => w.daily).length);
@@ -116,9 +114,11 @@
     const replace = importMode === 'replace';
     const question = replace ? 'Replace your workspaces with this backup?' : 'Add the backup to your workspaces?';
     // a backup can come from someone else: say what its workspaces do before adding them
-    if (!(await askConfirm('Import', `${question}\n\nOnly import workspaces you trust.\n\n${importSummary(workspaces)}`))) return;
-    // a backup's workspaces start in test mode, until each one has had a real run in the editor
-    const imported = workspaces.map((w) => ({ ...withFreshCode(withNewId(w)), untested: true }));
+    if (!(await askConfirm('Import', `${question}\n\nOnly import workspaces you trust.\n\n${await importSummary(workspaces)}`))) return;
+    // each workspace is compiled from its blocks; a backup's workspaces start in test mode, until each one has had a
+    // real run in the editor
+    const compiled = await Promise.all(workspaces.map((w) => refreshCompiled(withNewId(w))));
+    const imported = compiled.map((w) => ({ ...w, untested: true }));
     appState.workspaces = replace ? imported : [...appState.workspaces, ...imported];
     // replacing drops the values of the workspaces it replaces; the backup's values go to the new workspaces
     if (replace) appState.memory = {};

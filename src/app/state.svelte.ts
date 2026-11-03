@@ -55,6 +55,17 @@ const readSecrets = (raw: unknown): Record<string, string> => {
   return secrets;
 };
 
+// The fields the app keeps with a workspace (phase 16, 14). Stored state is the app's own, so they are read back here;
+// a file is read by normaliseWorkspace, which does not take them.
+const keepStored = (raw: unknown, workspace: Workspace): Workspace => {
+  const r = raw as Record<string, unknown>;
+  const kept: Workspace = { ...workspace };
+  if (typeof r.compiledFrom === 'string') kept.compiledFrom = r.compiledFrom;
+  if (typeof r.runnable === 'boolean') kept.runnable = r.runnable;
+  if (typeof r.note === 'string' && r.note !== '') kept.note = r.note;
+  return kept;
+};
+
 // Reads what was stored. v1 stored the scheduler date as milliseconds, and some workspaces have no fields yet.
 export const readState = (raw: unknown): StoredState => {
   const data = (raw ?? {}) as Record<string, unknown>;
@@ -62,7 +73,7 @@ export const readState = (raw: unknown): StoredState => {
   return {
     workspaces: list.flatMap((w) => {
       try {
-        return [normaliseWorkspace(w)];
+        return [keepStored(w, normaliseWorkspace(w))];
       } catch {
         return [];
       }

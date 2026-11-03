@@ -52,6 +52,9 @@ const workspace = (id: string, blocks: string): Workspace => ({
   schedule: 'none',
 });
 
+// a When-note workspace as the app keeps it: the tracker it runs on is stored with it
+const whenRun = (id: string): Workspace => ({ ...workspace(id, WHEN_RUN), note: '#run' });
+
 let n = 0;
 // each test uses its own workspace ids and note ids, so the runs of one test never count against another
 const uniq = (label: string) => `${label}-${++n}`;
@@ -65,25 +68,25 @@ beforeEach(() => {
 describe('saved notes start When-note workspaces', () => {
   it('a note with the tracker runs the workspace once, with its values', async () => {
     const id = uniq('w');
-    appState.workspaces = [workspace(id, WHEN_RUN)];
+    appState.workspaces = [whenRun(id)];
     const runs = await runFromNotes(deps, savedNote(uniq('note'), '#run #mood(6)'));
     expect(runs.map((r) => [r.id, r.result.ok, r.output])).toEqual([[id, true, ['6']]]);
   });
 
   it('a note without the tracker does not run it', async () => {
-    appState.workspaces = [workspace(uniq('w'), WHEN_RUN)];
+    appState.workspaces = [whenRun(uniq('w'))];
     expect(await runFromNotes(deps, savedNote(uniq('note'), '#mood(6)'))).toEqual([]);
   });
 
   it('a note the plugin wrote itself does not start it again', async () => {
-    appState.workspaces = [workspace(uniq('w'), WHEN_RUN)];
+    appState.workspaces = [whenRun(uniq('w'))];
     const event = savedNote(uniq('note'), '#run #mood(1)');
     rememberWritten(event.note);
     expect(await runFromNotes(deps, event)).toEqual([]);
   });
 
   it('the same saved note runs a workspace once', async () => {
-    appState.workspaces = [workspace(uniq('w'), WHEN_RUN)];
+    appState.workspaces = [whenRun(uniq('w'))];
     const event = savedNote(uniq('note'), '#run #mood(2)');
     expect(await runFromNotes(deps, event)).toHaveLength(1);
     expect(await runFromNotes(deps, event)).toEqual([]);
@@ -91,7 +94,7 @@ describe('saved notes start When-note workspaces', () => {
 
   it(`at most ${NOTE_RUNS_PER_MINUTE} runs a minute: the next one is skipped, and the workspace says it is paused`, async () => {
     const id = uniq('w');
-    appState.workspaces = [workspace(id, WHEN_RUN)];
+    appState.workspaces = [whenRun(id)];
     const now = Date.UTC(2026, 10, 2, 20, 0, 0);
     let ran = 0;
     for (let i = 0; i < NOTE_RUNS_PER_MINUTE + 1; i++) {
@@ -105,7 +108,7 @@ describe('saved notes start When-note workspaces', () => {
 describe('Try with a note', () => {
   it('runs the workspace in test mode, as if the note was saved', async () => {
     const lines: string[] = [];
-    const result = await tryWithNote(deps, workspace(uniq('w'), WHEN_RUN), '#run #mood(2)', { output: (t) => lines.push(t) });
+    const result = await tryWithNote(deps, whenRun(uniq('w')), '#run #mood(2)', { output: (t) => lines.push(t) });
     expect(result.ok).toBe(true);
     expect(lines.filter((t) => !t.startsWith('<< '))).toEqual(['2']);
     expect(created).toEqual([]);

@@ -21,6 +21,12 @@ export type Workspace = {
   schedule: string;
   // set on a workspace from a backup, until its first real run in the editor: the editor then starts in test mode
   untested?: boolean;
+  // the code of the blocks, and what it was compiled from (phase 16). Set by the app only (see app/compiler.ts): a
+  // file never carries them, and an import is compiled again.
+  compiledFrom?: string;
+  runnable?: boolean;
+  // the tracker of the When-note block: the workspace runs when a note with it is saved (phase 14)
+  note?: string;
 };
 
 export const newId = (): string =>
@@ -78,8 +84,10 @@ export const withNewId = (workspace: Workspace): Workspace => ({ ...workspace, i
 export const workspaceToFile = (workspaces: Workspace[], remembered?: Record<string, Memory>): string =>
   JSON.stringify(
     workspaces.map((w) => {
+      // the compiled code and its fingerprint stay in the app: an import compiles the blocks again
+      const { compiledFrom: _compiledFrom, runnable: _runnable, ...shared } = w;
       const memory = remembered?.[w.id];
-      return memory && Object.keys(memory).length ? { ...w, memory } : w;
+      return memory && Object.keys(memory).length ? { ...shared, memory } : shared;
     }),
     null,
     2

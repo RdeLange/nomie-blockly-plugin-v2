@@ -5,15 +5,21 @@
   import { ui } from './ui.svelte';
   import { appState } from './state.svelte';
   import WorkspaceList from './WorkspaceList.svelte';
-  import WorkspaceEditor from './WorkspaceEditor.svelte';
   import SettingsView from './SettingsView.svelte';
+  import { compileStale } from './actions';
+  // The editor is Blockly. It is loaded the first time it opens, so the plugin's start does not load it (phase 16).
+  let editorModule = $state<{ default: any } | undefined>();
+  $effect(() => {
+    if (ui.view === 'editor' && !editorModule) void import('./WorkspaceEditor.svelte').then((m) => (editorModule = m));
+  });
   import { startNomie } from '../nomie/plugin';
   import { actionDeps, notify } from './dialogs';
   import { runNow } from './actions';
 
+  // The plugin marks the app ready once the stored state is loaded (or at once outside Nomie). Showing the lists
+  // before that let a workspace added in the meantime be replaced by the stored state when it loads.
   onMount(() => {
     startNomie();
-    if (!ui.ready) ui.ready = true;
   });
 
   // the widget: a run button for each workspace, and the value a workspace last showed (see the widget view)
@@ -55,7 +61,12 @@
   {:else if ui.view === 'list'}
     <WorkspaceList />
   {:else if ui.view === 'editor' && ui.editingId}
-    <WorkspaceEditor id={ui.editingId} />
+    {#if editorModule}
+      {@const Editor = editorModule.default}
+      <Editor id={ui.editingId} />
+    {:else}
+      <p class="muted">Loading the editor…</p>
+    {/if}
   {:else if ui.view === 'settings'}
     <SettingsView />
   {:else if ui.view === 'info'}
