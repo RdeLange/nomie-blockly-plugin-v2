@@ -13,6 +13,8 @@ const errors = [];
 const openEditor = async (viewport) => {
   const page = await browser.newPage({ viewport, deviceScaleFactor: 2 });
   page.on('pageerror', (e) => { if (e.message !== 'Failed to fetch') errors.push(e.message); });
+  // no network in CI: the real SDK script is not needed here
+  await page.route(/nomie-plugin\.js/, (route) => route.fulfill({ body: '', contentType: 'text/javascript' }));
   await page.goto(url);
   await page.getByRole('button', { name: 'Add', exact: true }).click();
   await page.locator('.row', { hasText: 'Retrieve Data Example' }).getByRole('button', { name: 'Add' }).first().click();

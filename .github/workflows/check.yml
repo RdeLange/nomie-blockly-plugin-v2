@@ -1,0 +1,56 @@
+name: Checks
+
+# Every push and pull request runs the tests, the type check and the build, and the browser checks against the
+# stand-in for Nomie (scripts/ui/fake-nomie.js). Neither job needs anything beyond npm and the Playwright download.
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: checks-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    name: Tests, type check and build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+      - run: npm ci
+      - run: npm test
+      - run: npm run check
+      - run: npm run build
+
+  browser:
+    name: Browser checks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: node scripts/ui/run-check.mjs
+      - run: node scripts/ui/panel-check.mjs
+      - run: node scripts/ui/drawer-check.mjs
+      - name: Upload screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: screenshots
+          path: screenshots/
+          if-no-files-found: ignore

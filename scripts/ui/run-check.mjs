@@ -54,8 +54,10 @@ try {
   });
   await page.waitForTimeout(500);
   await page.getByRole('button', { name: 'Run', exact: true }).first().click();
-  await page.waitForTimeout(1200);
-  const status = await page.locator('.run-status').textContent();
+  // the step limit ends the loop about 1.5 s after it starts, so read the status as soon as it shows
+  const statusEl = page.locator('.run-status');
+  await statusEl.waitFor({ state: 'visible', timeout: 5000 });
+  const status = await statusEl.textContent();
   check(`the canvas shows the run's progress ("${status.trim()}")`, /Running · step [\d,.]+/.test(status.trim()));
   await page.screenshot({ path: 'screenshots/run-status.png' });
   const started = Date.now();
