@@ -27,6 +27,7 @@ export class NomieRailCategory extends Blockly.ToolboxCategory {
     const tile = document.createElement('span');
     tile.className = 'nomie-rail-tile';
     tile.innerHTML = iconSvg(this.getId());
+    // On a phone the labels of the other tiles are hidden, so a long press shows this tile's name (phase 19)
     return tile;
   }
 
@@ -54,10 +55,36 @@ export class NomieRailCategory extends Blockly.ToolboxCategory {
   protected closeIcon_(): void {}
 }
 
+const LONG_PRESS_MS = 450;
+let pressTimer: ReturnType<typeof setTimeout> | undefined;
+let pressedLabel: HTMLElement | undefined;
+
+// On a phone the labels of the other tiles are hidden: a long press on a tile shows its label (phase 19). The press is
+// listened to on the page, as Blockly gives the pointer events to the row of the tile, not to the tile.
+const clearPress = () => {
+  clearTimeout(pressTimer);
+  pressedLabel?.classList.remove('nomie-rail-peek');
+  pressedLabel = undefined;
+};
+const onRailPress = (event: Event) => {
+  const row = (event.target as Element | null)?.closest?.('.blocklyToolboxCategory');
+  const label = row?.querySelector('.nomie-rail-label') as HTMLElement | null | undefined;
+  clearPress();
+  if (!label || event.type !== 'pointerdown') return;
+  pressTimer = setTimeout(() => {
+    pressedLabel = label;
+    label.classList.add('nomie-rail-peek');
+  }, LONG_PRESS_MS);
+};
+
 let registered = false;
 // Every category in the toolbox uses the rail look.
 export const registerRail = () => {
   if (registered) return;
   registered = true;
   Blockly.registry.register(Blockly.registry.Type.TOOLBOX_ITEM, Blockly.ToolboxCategory.registrationName, NomieRailCategory, true);
+  if (typeof document !== 'undefined') {
+    document.addEventListener('pointerdown', onRailPress, true);
+    for (const end of ['pointerup', 'pointercancel']) document.addEventListener(end, clearPress, true);
+  }
 };

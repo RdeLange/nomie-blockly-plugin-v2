@@ -8,6 +8,17 @@
   import WorkspaceList from './WorkspaceList.svelte';
   import SettingsView from './SettingsView.svelte';
   import { compileStale } from './actions';
+  import WorkspaceSidebar from './WorkspaceSidebar.svelte';
+  import { sideBySide } from './layout';
+  import { onDestroy } from 'svelte';
+  // the width of the plugin's frame: wide enough, the list sits beside the editor (phase 19)
+  let width = $state(typeof window !== 'undefined' ? window.innerWidth : 0);
+  const onResize = () => (width = window.innerWidth);
+  if (typeof window !== 'undefined') window.addEventListener('resize', onResize);
+  onDestroy(() => {
+    if (typeof window !== 'undefined') window.removeEventListener('resize', onResize);
+  });
+  const split = $derived(sideBySide(width));
   // The editor is Blockly. It is loaded the first time it opens, so the plugin's start does not load it (phase 16).
   let editorModule = $state<{ default: any } | undefined>();
   $effect(() => {
@@ -64,7 +75,17 @@
   {:else if ui.view === 'editor' && ui.editingId}
     {#if editorModule}
       {@const Editor = editorModule.default}
-      <Editor id={ui.editingId} />
+      <!-- the editor stays where it is when the width changes, so its unsaved changes are kept -->
+      <div class="split" class:split-on={split}>
+        {#if split}
+          <WorkspaceSidebar />
+        {/if}
+        <div class="split-main">
+          {#key ui.editingId}
+            <Editor id={ui.editingId} />
+          {/key}
+        </div>
+      </div>
     {:else}
       <p class="muted">Loading the editor…</p>
     {/if}

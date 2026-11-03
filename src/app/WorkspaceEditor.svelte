@@ -109,6 +109,19 @@
     }
   };
 
+  // the list beside the editor asks before it switches away from changes that are not saved (phase 19)
+  $effect(() => {
+    ui.editorDirty = dirty;
+  });
+  onDestroy(() => {
+    ui.editorDirty = false;
+  });
+  // the Blockly canvas follows the theme of the app, also when it changes while the editor is open
+  $effect(() => {
+    const dark = ui.theme === 'dark';
+    workspace?.setTheme(dark ? notebookDarkTheme : notebookTheme);
+  });
+
   onMount(() => {
     if (!host || !frame) return;
     const media = window.matchMedia(WIDE);
@@ -120,11 +133,6 @@
     media.addEventListener('change', onMedia);
 
     registerRail();
-  // the Blockly canvas follows the theme of the app, also when it changes while the editor is open
-  $effect(() => {
-    const dark = ui.theme === 'dark';
-    workspace?.setTheme(dark ? notebookDarkTheme : notebookTheme);
-  });
     const dark = ui.theme === 'dark';
     const palette = toolbox();
     workspace = Blockly.inject(host, {

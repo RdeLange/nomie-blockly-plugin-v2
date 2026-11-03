@@ -85,7 +85,8 @@
     }
     async confirm(title, message) {
       state.dialogs.push(`${title}: ${message}`);
-      return { value: true };
+      // yes, unless a check says no (window.__fakeConfirm = false)
+      return { value: window.__fakeConfirm ?? true };
     }
     async prompt(title, message) {
       state.dialogs.push(`${title}: ${message}`);

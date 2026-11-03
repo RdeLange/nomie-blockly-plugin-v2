@@ -9,6 +9,8 @@ class UiState {
   // the tab the editor opens on, once (a card's Show opens the Run tab of a failed workspace)
   startTab = $state<'details' | 'run' | 'console' | undefined>(undefined);
   ready = $state(false);
+  // the editor has changes that are not saved yet (the list beside it asks before it switches)
+  editorDirty = $state(false);
 }
 
 export const ui = new UiState();

@@ -145,3 +145,19 @@
 .nomie-blockly .blocklyScrollbarHandle {
   fill: var(--nb-control);
 }
+
+/* On a phone the rail shows the label of the selected tile only, so all the tiles fit the screen; a long press on a
+   tile shows its label (the class is set by rail.ts) (phase 19) */
+@media (max-width: 899px) {
+  .nomie-blockly .nomie-rail-tile {
+    width: 36px;
+    height: 36px;
+  }
+  .nomie-blockly .nomie-rail-label {
+    display: none;
+  }
+  .nomie-blockly .blocklyToolboxSelected .nomie-rail-label,
+  .nomie-blockly .nomie-rail-label.nomie-rail-peek {
+    display: block;
+  }
+}
