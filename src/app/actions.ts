@@ -27,6 +27,8 @@ export type RunHooks = {
   highlight?: (blockId: string) => void;
   stop?: { stopped: boolean };
   onProgress?: (steps: number) => void;
+  // a test run writes no notes. Only the editor's runs use it; the list, the schedule and note triggers never do.
+  test?: boolean;
 };
 
 // Writes the problems the pre-run check found to the run's output, with the block each one is about.
@@ -66,6 +68,7 @@ const runCompiled = (deps: Deps, workspace: Workspace, hooks: RunHooks, schedule
     highlight: hooks.highlight,
     stop: hooks.stop,
     onProgress: hooks.onProgress,
+    test: hooks.test,
   }).then((result) => reportBlock(result, compiled.labels, hooks));
 };
 
@@ -110,6 +113,7 @@ export const runDays = (deps: Deps, workspace: Workspace, from: string, to: stri
           highlight: hooks.highlight,
           stop: hooks.stop,
           onProgress: hooks.onProgress,
+          test: hooks.test,
         });
         reportBlock(result, compiled.labels, hooks);
         days.push({ day: key, result, output: shown.filter((t) => !t.startsWith('<< ')) });

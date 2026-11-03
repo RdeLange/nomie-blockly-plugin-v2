@@ -85,13 +85,19 @@ export const getPeriodTrackerValue = async (
   return 0;
 };
 
+// The note a logged value makes, and the day it goes on ('YYYY-MM-DD'). A test run shows this without writing it.
+export const dailyTrackerNote = (value: unknown, tracker: string, rawDay: string) => {
+  const day = resolveDay(clean(rawDay), new Date());
+  return { day, note: `${clean(tracker)}(${formatValue(value)})` };
+};
+
 // Writes a tracker value into the notes of a day, at 13:00 so that the day does not shift with the time zone.
 export const logDailyTrackerValue = (api: NomieApi, value: unknown, tracker: string, rawDay: string): boolean => {
   try {
-    const day = resolveDay(clean(rawDay), new Date());
+    const { day, note } = dailyTrackerNote(value, tracker, rawDay);
     const [year, month, date] = day.split('-').map(Number);
     const end = new Date(year, month - 1, date, 13, 0, 0);
-    api.createNote(`${clean(tracker)}(${formatValue(value)})`, end);
+    api.createNote(note, end);
     return true;
   } catch {
     return false;

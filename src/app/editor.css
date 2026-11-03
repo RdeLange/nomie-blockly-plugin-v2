@@ -604,3 +604,25 @@
   left: 80px;
   bottom: 80px;
 }
+
+/* the test-run switch: on the toolbar, in the Run tab and on the phone run bar */
+.ed-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.ed-switch input,
+.run-test input {
+  accent-color: var(--nb-accent, #5e7abc);
+}
+.run-test {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font: 600 13px var(--nb-font);
+  /* the run bar is dark */
+  color: #f9fafb;
+}

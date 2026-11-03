@@ -6,7 +6,7 @@
 // Every call that waits has a timeout, so a Nomie call that never answers cannot hang the run.
 import Interpreter from 'js-interpreter';
 import type { NomieApi } from '../nomie/api';
-import { getDailyTrackerValue, getPeriodTrackerValue, logDailyTrackerValue } from './nomie-data';
+import { dailyTrackerNote, getDailyTrackerValue, getPeriodTrackerValue, logDailyTrackerValue } from './nomie-data';
 import { localDayKey, resolveDay } from './dates';
 import { formatValue } from './format';
 
@@ -33,6 +33,8 @@ export type HostContext = {
   output: (text: string) => void;
   highlight: (blockId: string) => void;
   timeouts?: Partial<HostTimeouts>;
+  // a test run writes no notes: each write is shown in the output instead
+  test?: boolean;
 };
 
 // `window.prompt` is what the Text prompt block generates. It is provided here, so workspaces saved with it still run.
@@ -146,7 +148,17 @@ export const installHost = (interpreter: any, scope: any, ctx: HostContext) => {
     3,
     timeouts.nomie
   );
-  asyncFn('logValue', async (value, tracker, day) => logDailyTrackerValue(ctx.api, value, tracker, day), 3, timeouts.nomie);
+  asyncFn(
+    'logValue',
+    async (value, tracker, day) => {
+      if (!ctx.test) return logDailyTrackerValue(ctx.api, value, tracker, day);
+      const { day: on, note } = dailyTrackerNote(value, tracker, day);
+      ctx.output(`Would log ${note} on ${on}`);
+      return true;
+    },
+    3,
+    timeouts.nomie
+  );
   // the trackervalue block (kept for older workspaces): the total of the day the run is at
   asyncFn('getPromise', (tracker) => getDailyTrackerValue(ctx.api, tracker, localDayKey(loopDay() ?? new Date()), 'sum'), 1, timeouts.nomie);
 

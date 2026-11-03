@@ -27,6 +27,8 @@ export type RunOptions = {
   timeouts?: Partial<HostTimeouts>;
   // the number of steps so far, after every slice (the editor shows it while a run goes on)
   onProgress?: (steps: number) => void;
+  // a test run writes no notes (see HostContext.test)
+  test?: boolean;
 };
 
 // blockId: the block that was running when the run failed (only known when the code highlights its blocks)
@@ -54,6 +56,7 @@ export const runWorkspace = (options: RunOptions): Promise<RunResult> =>
         options.highlight?.(blockId);
       },
       timeouts: options.timeouts,
+      test: options.test,
     };
     const fail = (error: string) => {
       output(`Error: ${error}`);

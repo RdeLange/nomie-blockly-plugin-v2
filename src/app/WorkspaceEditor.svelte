@@ -41,6 +41,8 @@
   });
   let dirty = $state(false);
   let running = $state(false);
+  // a test run writes no notes. A workspace from a backup starts in test mode until its first real run.
+  let testRun = $state(Boolean(start?.untested));
   let consoleText = $state('');
   // while a run goes on: the day (for a run over days) and the steps so far, shown on the canvas
   let progress = $state({ day: '', index: 0, total: 0, steps: 0 });
@@ -305,16 +307,30 @@
     showFailedBlock(result);
   };
 
-  const run = () => startRun('Running…', (deps) => runNow(deps, draftWorkspace(), { output, highlight, stop, onProgress }));
+  // the first real run of a workspace from a backup ends its test mode
+  const markTried = () => {
+    const target = appState.workspaces.find((w) => w.id === id);
+    if (!target?.untested) return;
+    delete target.untested;
+    void actionDeps()?.save();
+  };
+
+  const run = () =>
+    startRun(testRun ? 'Test run…' : 'Running…', (deps) => {
+      if (!testRun) markTried();
+      return runNow(deps, draftWorkspace(), { output, highlight, stop, onProgress, test: testRun });
+    });
 
   // A run over days, as the schedule would run them, one day at a time; its days show in the Run tab
   const runOverDays = (from: string, to: string, label: string) =>
-    startRun(label, async (deps) => {
+    startRun(testRun ? `Test run, ${label.toLowerCase()}` : label, async (deps) => {
+      if (!testRun) markTried();
       const days = await runDays(deps, draftWorkspace(), from, to, {
         output,
         highlight,
         stop,
         onProgress,
+        test: testRun,
         onDay: (day, index, total) => (progress = { day, index, total, steps: 0 }),
       });
       ranDays = days;
@@ -372,6 +388,10 @@
       <span class="ed-status">{status}</span>
     </div>
     {#if wide}
+      <label class="ed-switch" title="A test run writes no notes">
+        <input type="checkbox" role="switch" bind:checked={testRun} disabled={running} />
+        Test run
+      </label>
       <button class="nb-btn primary" onclick={run} disabled={running}><Icon name="play" size={16} />Run</button>
       <button class="nb-btn" onclick={runForYesterday} disabled={running}><Icon name="calendar" size={16} />Run for yesterday</button>
       <button class="nb-btn" onclick={stopRun} disabled={!running}><Icon name="stop" size={16} />Stop</button>
@@ -395,13 +415,14 @@
       {#if running}
         <div class="run-status" role="status">
           <span class="run-dot" aria-hidden="true"></span>
-          Running{#if progress.total} · day {progress.index} of {progress.total}{/if} · step {progress.steps.toLocaleString()}
+          {testRun ? 'Test run' : 'Running'}{#if progress.total} · day {progress.index} of {progress.total}{/if} · step {progress.steps.toLocaleString()}
         </div>
       {/if}
       {#if !wide}
         <div class="run-bar">
           <button class="run-go" onclick={run} disabled={running}><Icon name="play" size={16} />Run</button>
           <button class="run-plain" onclick={runForYesterday} disabled={running}><Icon name="calendar" size={16} />Yesterday</button>
+          <label class="run-test"><input type="checkbox" role="switch" bind:checked={testRun} disabled={running} />Test</label>
           <span class="grow"></span>
           <button class="run-icon" onclick={stopRun} disabled={!running} aria-label="Stop"><Icon name="stop" /></button>
           <button class="run-icon" onclick={() => openPanel('console')} aria-label="Console"><Icon name="console" /></button>
@@ -449,6 +470,13 @@
           </div>
         {:else if tab === 'run'}
           <div class="ed-pane" role="tabpanel">
+            <label class="ed-switch">
+              <input type="checkbox" role="switch" bind:checked={testRun} disabled={running} />
+              Test run (no notes are written)
+            </label>
+            {#if testRun && start?.untested}
+              <p class="ed-hint">This workspace came from a file or backup. Its first real run turns test mode off.</p>
+            {/if}
             <div class="ed-actions">
               <button class="nb-btn primary" onclick={run} disabled={running}><Icon name="play" size={16} />Run now</button>
               <button class="nb-btn" onclick={stopRun} disabled={!running}><Icon name="stop" size={16} />Stop</button>
@@ -475,7 +503,11 @@
               <label class="ed-field">To<input type="date" bind:value={daysTo} min={daysFrom} /></label>
               <button class="nb-btn" onclick={runTheseDays} disabled={running || !daysFrom || !daysTo}><Icon name="calendar" size={16} />Run</button>
             </div>
-            <p class="ed-hint">Runs the workspace for each day, as the schedule would, and writes its notes for those days.</p>
+            <p class="ed-hint">
+              {testRun
+                ? 'Runs the workspace for each day, as the schedule would. It writes no notes: each day lists the notes it would write.'
+                : 'Runs the workspace for each day, as the schedule would, and writes its notes for those days.'}
+            </p>
 
             <strong class="ed-heading">{ranDays ? 'This run, per day' : 'Last schedule, per day'}</strong>
             {#if dayRows.length === 0 && !nextWindow}

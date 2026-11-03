@@ -101,3 +101,20 @@ describe('a run reports its progress', () => {
     expect(steps).toEqual([...steps].sort((a, b) => a - b));
   });
 });
+
+describe('a test run over days', () => {
+  it('writes no notes, and lists the note each day would write', async () => {
+    const days = await runDays(deps, workspace, '2026-10-30', '2026-11-01', { test: true });
+    expect(days.map((d) => [d.day, d.result.ok])).toEqual([
+      ['2026-10-30', true],
+      ['2026-10-31', true],
+      ['2026-11-01', true],
+    ]);
+    expect(created).toEqual([]);
+    expect(days.map((d) => d.output.filter((t) => t.startsWith('Would log')))).toEqual([
+      ['Would log #ran(2026-10-30) on 2026-10-30'],
+      ['Would log #ran(2026-10-31) on 2026-10-31'],
+      ['Would log #ran(2026-11-01) on 2026-11-01'],
+    ]);
+  });
+});

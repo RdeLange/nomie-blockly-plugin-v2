@@ -18,6 +18,8 @@ export type Workspace = {
   // when the workspace last ran on schedule, as an ISO date (empty when it never did)
   latestrun: string;
   schedule: string;
+  // set on a workspace from a backup, until its first real run in the editor: the editor then starts in test mode
+  untested?: boolean;
 };
 
 export const newId = (): string =>
@@ -49,6 +51,7 @@ export const normaliseWorkspace = (raw: unknown): Workspace => {
     jscode: data.jscode,
     latestrun: text(data.latestrun ?? data.latesrun),
     schedule: text(data.schedule, 'none'),
+    ...(data.untested === true ? { untested: true } : {}),
   };
 };
 

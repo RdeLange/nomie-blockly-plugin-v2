@@ -82,7 +82,8 @@
     const question = replace ? 'Replace your workspaces with this backup?' : 'Add the backup to your workspaces?';
     // a backup can come from someone else: say what its workspaces do before adding them
     if (!(await askConfirm('Import', `${question}\n\nOnly import workspaces you trust.\n\n${importSummary(workspaces)}`))) return;
-    const imported = workspaces.map((w) => withFreshCode(withNewId(w)));
+    // a backup's workspaces start in test mode, until each one has had a real run in the editor
+    const imported = workspaces.map((w) => ({ ...withFreshCode(withNewId(w)), untested: true }));
     appState.workspaces = replace ? imported : [...appState.workspaces, ...imported];
     actionDeps()?.save();
     notify('Import', `${imported.length} workspace${imported.length === 1 ? '' : 's'} ${replace ? 'replaced' : 'added'}.`);

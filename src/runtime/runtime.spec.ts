@@ -200,3 +200,26 @@ describe('generated code runs as well as it generates', () => {
     expect((await runWorkspace({ api: fakeApi().api, jscode: code, scheduled: false, schedule: { active: false, start: new Date(), end: new Date() } })).ok).toBe(true);
   });
 });
+
+describe('a test run writes no notes', () => {
+  const window = { active: false, start: new Date(), end: new Date() };
+  const code = "var ok = logValue(6, '#mood', '2026-11-02'); alert(ok ? 'yes' : 'no');";
+
+  it('says what it would log, and the script goes on as if it had', async () => {
+    const { api, created } = fakeApi();
+    const lines: string[] = [];
+    const result = await runWorkspace({ api, jscode: code, scheduled: false, schedule: window, test: true, output: (t) => lines.push(t) });
+    expect(result.ok).toBe(true);
+    expect(created).toEqual([]);
+    expect(lines).toContain('Would log #mood(6) on 2026-11-02');
+    expect(lines).toContain('yes');
+  });
+
+  it('a real run still writes the note', async () => {
+    const { api, created } = fakeApi();
+    const lines: string[] = [];
+    await runWorkspace({ api, jscode: code, scheduled: false, schedule: window, output: (t) => lines.push(t) });
+    expect(created).toEqual([{ note: '#mood(6)', end: expect.any(Date) }]);
+    expect(lines.some((t) => t.startsWith('Would log'))).toBe(false);
+  });
+});
