@@ -259,3 +259,12 @@ body {
   grid-column: 2;
   grid-row: 1 / span 3;
 }
+
+/* the health line on a card (phase 17): when the last run was, and what failed in it */
+.health {
+  font-size: 13px;
+  color: var(--nb-muted, #57534e);
+}
+.health.failed {
+  color: var(--ios-danger, #c0392b);
+}

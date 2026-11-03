@@ -7,6 +7,21 @@ import { readWidgetMap, type WidgetValue } from '../runtime/widget';
 // One day of the last scheduled run of a workspace, as the Run tab shows it
 export type DayRecord = { day: string; ok: boolean; error?: string; output: string[] };
 
+// The last run a saved note started for a workspace: when, whether it ran well, and the tracker it ran for (phase 17)
+export type TriggerRecord = { at: string; ok: boolean; error?: string; label: string };
+
+const readTriggers = (raw: unknown): Record<string, TriggerRecord> => {
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return {};
+  const out: Record<string, TriggerRecord> = {};
+  for (const [id, entry] of Object.entries(raw as Record<string, unknown>)) {
+    const t = entry as Partial<TriggerRecord> | null;
+    if (t && typeof t.at === 'string' && typeof t.ok === 'boolean' && typeof t.label === 'string') {
+      out[id] = { at: t.at, ok: t.ok, label: t.label, ...(typeof t.error === 'string' ? { error: t.error } : {}) };
+    }
+  }
+  return out;
+};
+
 export type StoredState = {
   workspaces: Workspace[];
   // ISO date of the last scheduler run ('' when it never ran)
@@ -21,6 +36,8 @@ export type StoredState = {
   secrets: Record<string, string>;
   // per workspace id: the value it last showed on the Nomie widget (new in v2; v1 ignores it)
   widget: Record<string, WidgetValue>;
+  // per workspace id: the last run a saved note started (new in v2; v1 ignores it)
+  lasttrigger: Record<string, TriggerRecord>;
 };
 
 export const STORAGE_KEY = 'blockly';
@@ -63,6 +80,11 @@ const keepStored = (raw: unknown, workspace: Workspace): Workspace => {
   if (typeof r.compiledFrom === 'string') kept.compiledFrom = r.compiledFrom;
   if (typeof r.runnable === 'boolean') kept.runnable = r.runnable;
   if (typeof r.note === 'string' && r.note !== '') kept.note = r.note;
+  if (typeof r.savedAt === 'string') kept.savedAt = r.savedAt;
+  const previous = r.previous as Record<string, unknown> | undefined;
+  if (previous && typeof previous.workspaceBlocks === 'string' && typeof previous.savedAt === 'string') {
+    kept.previous = { workspaceBlocks: previous.workspaceBlocks, savedAt: previous.savedAt };
+  }
   return kept;
 };
 
@@ -84,6 +106,7 @@ export const readState = (raw: unknown): StoredState => {
     memory: readMemoryMap(data.memory),
     secrets: readSecrets(data.secrets),
     widget: readWidgetMap(data.widget),
+    lasttrigger: readTriggers(data.lasttrigger),
   };
 };
 
@@ -97,6 +120,7 @@ class AppState {
   notePauses = $state<Record<string, number>>({});
   secrets = $state<Record<string, string>>({});
   widget = $state<Record<string, WidgetValue>>({});
+  lastTrigger = $state<Record<string, TriggerRecord>>({});
   loaded = $state(false);
 
   load(stored: unknown) {
@@ -108,6 +132,7 @@ class AppState {
     this.memory = state.memory;
     this.secrets = state.secrets;
     this.widget = state.widget;
+    this.lastTrigger = state.lasttrigger;
     this.loaded = true;
   }
 
@@ -120,6 +145,7 @@ class AppState {
       memory: $state.snapshot(this.memory),
       secrets: $state.snapshot(this.secrets),
       widget: $state.snapshot(this.widget),
+      lasttrigger: $state.snapshot(this.lastTrigger),
     };
   }
 }

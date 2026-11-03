@@ -27,6 +27,9 @@ export type Workspace = {
   runnable?: boolean;
   // the tracker of the When-note block: the workspace runs when a note with it is saved (phase 14)
   note?: string;
+  // when the blocks were last saved (ISO time), and the blocks before that save (one level, phase 17)
+  savedAt?: string;
+  previous?: { workspaceBlocks: string; savedAt: string };
 };
 
 export const newId = (): string =>
@@ -84,8 +87,9 @@ export const withNewId = (workspace: Workspace): Workspace => ({ ...workspace, i
 export const workspaceToFile = (workspaces: Workspace[], remembered?: Record<string, Memory>): string =>
   JSON.stringify(
     workspaces.map((w) => {
-      // the compiled code and its fingerprint stay in the app: an import compiles the blocks again
-      const { compiledFrom: _compiledFrom, runnable: _runnable, ...shared } = w;
+      // the compiled code and its fingerprint stay in the app: an import compiles the blocks again. The previous
+      // version is the user's own history, and stays out of a file too (phase 17).
+      const { compiledFrom: _compiledFrom, runnable: _runnable, previous: _previous, ...shared } = w;
       const memory = remembered?.[w.id];
       return memory && Object.keys(memory).length ? { ...shared, memory } : shared;
     }),
@@ -114,3 +118,22 @@ export const templateWorkspaces = (): Workspace[] =>
   (templates as Array<Record<string, unknown>>).map((template) =>
     normaliseWorkspace({ ...template, id: newId(), latestrun: '' })
   );
+
+// Saves new blocks for a workspace. When they differ, the blocks being replaced become the previous version, with the
+// time they were saved: one level of history (phase 17).
+export const savedWithBlocks = (w: Workspace, workspaceBlocks: string, savedAt: string): Workspace => {
+  if (workspaceBlocks === w.workspaceBlocks) return w;
+  return { ...w, workspaceBlocks, savedAt, previous: { workspaceBlocks: w.workspaceBlocks, savedAt: w.savedAt ?? '' } };
+};
+
+// The workspace with its previous blocks in place of the current ones. The editor shows them unsaved.
+export const restoredWorkspace = (w: Workspace): Workspace =>
+  w.previous ? { ...w, workspaceBlocks: w.previous.workspaceBlocks } : w;
+
+// A copy under a new name, with no history: its own blocks, its own time of saving (phase 17)
+export const copyOfWorkspace = (w: Workspace): Workspace => {
+  const copy: Workspace = { ...w, displayName: `${w.displayName} (copy)`, name: w.name ? `${w.name} (copy)` : w.name };
+  delete copy.previous;
+  delete copy.savedAt;
+  return copy;
+};

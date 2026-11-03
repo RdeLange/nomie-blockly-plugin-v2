@@ -53,6 +53,7 @@ jobs:
       - run: node scripts/ui/note-trigger-check.mjs
       - run: node scripts/ui/widget-check.mjs
       - run: node scripts/ui/lean-start-check.mjs
+      - run: node scripts/ui/safety-check.mjs
       - name: Upload screenshots
         if: always()
         uses: actions/upload-artifact@v4

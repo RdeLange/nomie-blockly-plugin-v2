@@ -14,6 +14,8 @@
   import { loadWorkspace, setupBlockly } from '../blockly/setup';
   import { trackerOptionsNow } from './trackers.svelte';
   import { applyCompiled, refreshCompiled } from './compiler';
+  import { restoredWorkspace, savedWithBlocks, workspaceToFile } from '../domain/workspace';
+  import { downloadText } from './download';
   // the blocks and their generator are registered when the editor opens (the plugin's start does not load them)
   setupBlockly(trackerOptionsNow);
   import { appState } from './state.svelte';
@@ -63,7 +65,8 @@
   // layout: wide (desktop) or not (phone); the panel and its tab
   let wide = $state(typeof window !== 'undefined' && window.matchMedia(WIDE).matches);
   let panelOpen = $state(typeof window !== 'undefined' && window.matchMedia(WIDE).matches);
-  let tab = $state<'details' | 'run' | 'console'>('details');
+  let tab = $state<'details' | 'run' | 'console'>(ui.startTab ?? 'details');
+  ui.startTab = undefined;
   let detailsPanel: HTMLElement | undefined = $state();
 
   // what the blocks say, kept up to date as they change
@@ -256,20 +259,50 @@
     const target = appState.workspaces.find((w) => w.id === id);
     if (!target) return;
     const scaleNow = workspace?.getScale() ?? scale;
+    // changed blocks keep the blocks they replace as the previous version (phase 17)
+    const versioned = savedWithBlocks(target, draft.xml, new Date().toISOString());
     Object.assign(target, {
       displayName: draft.displayName || 'Workspace',
       name: draft.name,
       description: draft.description,
       emoji: draft.emoji || '🧱',
       color: draft.color,
-      workspaceBlocks: draft.xml,
+      workspaceBlocks: versioned.workspaceBlocks,
       workspacePosition: { scrollX: 0, scrollY: 0, scale: scaleNow },
     } satisfies Partial<Workspace>);
+    if (versioned !== target) {
+      target.savedAt = versioned.savedAt;
+      target.previous = versioned.previous;
+    }
     // the code of the saved blocks is made now, with the schedule and the note (the editor has Blockly loaded)
     applyCompiled(target, await refreshCompiled({ ...target }));
     // a failed save says so (see nomie/plugin.ts) and leaves the changes marked as unsaved
     const saved = await actionDeps()?.save();
     if (saved !== false) dirty = false;
+  };
+
+  // The version before the last save. Restoring it puts its blocks in the editor, unsaved, until the next save.
+  const previousVersion = $derived(appState.workspaces.find((w) => w.id === id)?.previous);
+  const previousWhen = $derived(
+    previousVersion?.savedAt
+      ? new Date(previousVersion.savedAt).toLocaleString(undefined, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
+      : ''
+  );
+  const restorePrevious = () => {
+    const target = appState.workspaces.find((w) => w.id === id);
+    if (!target?.previous || !workspace) return;
+    const restored = restoredWorkspace(target);
+    // loading adds blocks, so the editor is emptied first: the restored version replaces the current blocks
+    workspace.clear();
+    loadWorkspace(workspace, restored.workspaceBlocks);
+    sync();
+    dirty = true;
+  };
+
+  // this workspace as a file: no remembered values, no secrets, and no earlier version
+  const exportThis = () => {
+    const target = appState.workspaces.find((w) => w.id === id);
+    if (target) downloadText(`blockly-${target.displayName}.wsp`, workspaceToFile([target]));
   };
 
   const back = async () => {
@@ -488,6 +521,15 @@
               {#if noteTracker}<span>Runs when {noteTracker} is logged</span>{/if}
               {#if reads.length}<span>Reads {reads.join(', ')}</span>{/if}
               {#if writes.length}<span>Writes to {writes.join(', ')}</span>{/if}
+            </div>
+            <div class="ed-summary">
+              <strong>Versions</strong>
+              {#if previousVersion}
+                <button class="nb-btn" onclick={restorePrevious}>Restore the version of {previousWhen || 'before the first save'}</button>
+              {:else}
+                <span>No earlier version yet. The blocks from before the next save are kept here.</span>
+              {/if}
+              <button class="nb-btn" onclick={exportThis}>Export this workspace</button>
             </div>
             <div class="ed-summary">
               <strong>Remembered values</strong>

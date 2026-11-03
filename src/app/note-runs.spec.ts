@@ -63,6 +63,7 @@ beforeEach(() => {
   created.length = 0;
   appState.loaded = true;
   appState.notePauses = {};
+  appState.lastTrigger = {};
 });
 
 describe('saved notes start When-note workspaces', () => {
@@ -71,6 +72,14 @@ describe('saved notes start When-note workspaces', () => {
     appState.workspaces = [whenRun(id)];
     const runs = await runFromNotes(deps, savedNote(uniq('note'), '#run #mood(6)'));
     expect(runs.map((r) => [r.id, r.result.ok, r.output])).toEqual([[id, true, ['6']]]);
+  });
+
+  it('the card keeps the last note run: when, whether it ran well, and for which tracker', async () => {
+    const id = uniq('w');
+    appState.workspaces = [whenRun(id)];
+    await runFromNotes(deps, savedNote(uniq('note'), '#run #mood(6)'));
+    expect(appState.lastTrigger[id]).toMatchObject({ ok: true, label: '#run #mood' });
+    expect(Date.parse(appState.lastTrigger[id].at)).not.toBeNaN();
   });
 
   it('a note without the tracker does not run it', async () => {

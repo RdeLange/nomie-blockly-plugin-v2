@@ -10,7 +10,9 @@
     return at !== undefined && Date.now() - at < PAUSE_MS;
   };
   import { newWorkspaceFromBlocks, addWorkspaces, importSummary } from './editing';
-  import { parseWorkspaceFile, templateWorkspaces, type Workspace } from '../domain/workspace';
+  import { copyOfWorkspace, parseWorkspaceFile, templateWorkspaces, workspaceToFile, type Workspace } from '../domain/workspace';
+  import { healthOf } from './health';
+  import { downloadText } from './download';
 
   let adding = $state(false);
   let message = $state('');
@@ -58,6 +60,21 @@
     } catch (error) {
       message = `This file could not be read: ${(error as Error).message}`;
     }
+  };
+
+  // a workspace's file: that one workspace, with no remembered values, no secrets and no earlier version
+  const exportOne = (workspace: Workspace) =>
+    downloadText(`blockly-${workspace.displayName}.wsp`, workspaceToFile([workspace]));
+
+  const duplicate = async (workspace: Workspace) => {
+    const [added] = await addWorkspaces([copyOfWorkspace(workspace)]);
+    message = `Copied as "${added.displayName}".`;
+  };
+
+  // a failed card opens the Run tab of its workspace, where the error is
+  const showFailure = (id: string) => {
+    ui.startTab = 'run';
+    edit(id);
   };
 
   const addTemplate = async (template: Workspace) => {
@@ -133,9 +150,18 @@
         {/if}
       </div>
     </div>
+    {#if healthOf(workspace, appState.scheduleDays[workspace.id], appState.lastTrigger[workspace.id])}
+      {@const health = healthOf(workspace, appState.scheduleDays[workspace.id], appState.lastTrigger[workspace.id])}
+      <div class="health" class:failed={health?.failed} style="margin-top: 8px">{health?.text}</div>
+    {/if}
     <div class="row" style="margin-top: 10px; justify-content: flex-end">
       <button class="button plain" onclick={() => info(workspace)}>Info</button>
       <button class="button plain" onclick={() => edit(workspace.id)}>Edit</button>
+      {#if healthOf(workspace, appState.scheduleDays[workspace.id], appState.lastTrigger[workspace.id])?.failed}
+        <button class="button plain" onclick={() => showFailure(workspace.id)}>Show</button>
+      {/if}
+      <button class="button plain" onclick={() => exportOne(workspace)}>Export</button>
+      <button class="button plain" onclick={() => duplicate(workspace)}>Duplicate</button>
       <button class="button" onclick={() => run(workspace)}>Run</button>
       <button class="button danger" onclick={() => remove(workspace)}>Delete</button>
     </div>

@@ -331,6 +331,14 @@ const runForNote = (deps: Deps, workspace: Workspace, trigger: TriggerNote, labe
   ).then((result) => {
     const line = result.ok ? `ran for ${label}` : `failed for ${label} (${result.error})`;
     appState.centralLog = [`${workspace.displayName}: ${line}`, ...appState.centralLog.split('\n\n')].slice(0, LOG_ENTRIES).join('\n\n');
+    // the card shows the last note run (phase 17)
+    appState.lastTrigger[workspace.id] = {
+      at: new Date().toISOString(),
+      label,
+      ok: result.ok,
+      ...(result.ok ? {} : { error: result.error }),
+    };
+    void deps.save();
     return { id: workspace.id, name: workspace.displayName, result, output: output.filter((t) => !t.startsWith('<< ')) };
   });
 };
