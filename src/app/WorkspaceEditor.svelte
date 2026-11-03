@@ -137,10 +137,8 @@
         return;
       }
       if (event.isUiEvent || !loaded) return;
-      draft.xml = Blockly.Xml.domToPrettyText(Blockly.Xml.workspaceToDom(workspace!));
-      draft.jscode = javascriptGenerator.workspaceToCode(workspace!);
       dirty = true;
-      readBlocks();
+      syncSoon();
     });
     // Blockly draws into a fixed size: measure again whenever the canvas changes size (panel, window, phone turned)
     resizeObserver = new ResizeObserver(() => workspace && Blockly.svgResize(workspace));
@@ -149,10 +147,31 @@
   });
 
   onDestroy(() => {
+    if (syncTimer) clearTimeout(syncTimer);
+    if (highlightFrame) cancelAnimationFrame(highlightFrame);
     resizeObserver?.disconnect();
     restoreTrackers?.();
     workspace?.dispose();
   });
+
+  // After an edit, the blocks are written to the draft (XML and code) and checked again. That is the costly part, so
+  // it waits until the edits pause for 300 ms (a drag fires many events); Save and Run do it straight away.
+  let syncTimer: ReturnType<typeof setTimeout> | undefined;
+  const sync = () => {
+    if (syncTimer) clearTimeout(syncTimer);
+    syncTimer = undefined;
+    if (!workspace) return;
+    draft.xml = Blockly.Xml.domToPrettyText(Blockly.Xml.workspaceToDom(workspace));
+    draft.jscode = javascriptGenerator.workspaceToCode(workspace);
+    readBlocks();
+  };
+  const syncSoon = () => {
+    if (syncTimer) clearTimeout(syncTimer);
+    syncTimer = setTimeout(sync, 300);
+  };
+  const flush = () => {
+    if (syncTimer) sync();
+  };
 
   // The pre-run check, on the blocks (a warning icon) and in the Run tab; the schedule and the trackers, for Details.
   const readBlocks = () => {
@@ -192,11 +211,26 @@
     consoleText = consoleText ? `${consoleText}\n${text}` : text;
   };
 
+  // A run highlights every block it runs, thousands of times a second in a loop; the screen shows the latest one,
+  // once per frame.
+  let pendingHighlight: string | null = null;
+  let highlightFrame = 0;
   const highlight = (blockId: string) => {
-    workspace?.highlightBlock(blockId || null);
+    pendingHighlight = blockId || null;
+    if (highlightFrame) return;
+    highlightFrame = requestAnimationFrame(() => {
+      highlightFrame = 0;
+      workspace?.highlightBlock(pendingHighlight);
+    });
+  };
+  const clearHighlight = () => {
+    if (highlightFrame) cancelAnimationFrame(highlightFrame);
+    highlightFrame = 0;
+    workspace?.highlightBlock(null);
   };
 
   const save = async () => {
+    flush();
     const target = appState.workspaces.find((w) => w.id === id);
     if (!target) return;
     const scaleNow = workspace?.getScale() ?? scale;
@@ -244,13 +278,14 @@
   const startRun = async (label: string, go: (deps: NonNullable<ReturnType<typeof actionDeps>>) => Promise<RunResult>) => {
     const deps = actionDeps();
     if (!deps || running) return;
+    flush();
     showConsole();
     running = true;
     stop.stopped = false;
     consoleText = label;
     const result = await go(deps);
     running = false;
-    workspace?.highlightBlock(null);
+    clearHighlight();
     if (!result.ok && result.error !== 'stopped') output(`Stopped with an error: ${result.error}`);
     showFailedBlock(result);
   };

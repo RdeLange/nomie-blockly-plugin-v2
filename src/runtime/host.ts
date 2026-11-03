@@ -45,6 +45,19 @@ const dateFrom = (value: unknown): Date => {
   return isNaN(parsed.getTime()) ? new Date() : parsed;
 };
 
+// The address a Fetch data block may call: https, or http upgraded to https (Nomie runs on https, where the browser
+// blocks plain http requests anyway). Anything else (file:, data:, a relative path) is refused.
+export const webAddress = (text: string): URL | undefined => {
+  let url: URL;
+  try {
+    url = new URL(text.trim());
+  } catch {
+    return undefined;
+  }
+  if (url.protocol === 'http:') url.protocol = 'https:';
+  return url.protocol === 'https:' ? url : undefined;
+};
+
 export const installHost = (interpreter: any, scope: any, ctx: HostContext) => {
   const timeouts = { ...DEFAULT_TIMEOUTS, ...ctx.timeouts };
   const toNative = (value: unknown) => interpreter.pseudoToNative(value);
@@ -140,10 +153,14 @@ export const installHost = (interpreter: any, scope: any, ctx: HostContext) => {
   asyncFn(
     'httpRequest',
     async (url) => {
+      const address = webAddress(String(url));
+      if (!address) return 'Error: only web addresses (https://) can be fetched';
+      // the run's output names every host a workspace talks to
+      ctx.output(`Request to ${address.host}`);
       const controller = new AbortController();
       const timer = setTimeout(() => controller.abort(), timeouts.http);
       try {
-        const response = await fetch(String(url), { signal: controller.signal });
+        const response = await fetch(address.href, { signal: controller.signal });
         if (!response.ok) return `Error ${response.status}: ${response.statusText}`;
         return await response.text();
       } catch {

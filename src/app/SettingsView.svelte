@@ -5,7 +5,7 @@
   import { scheduleNow, setScheduleStart } from './actions';
   import { parseTypedDay, scheduleWindow } from '../runtime/scheduler';
   import { workspaceInfo } from '../blockly/compile';
-  import { withFreshCode } from './editing';
+  import { importSummary, withFreshCode } from './editing';
 
   const isDaily = (blocks: string) => {
     const info = workspaceInfo(blocks);
@@ -74,7 +74,8 @@
     }
     const replace = importMode === 'replace';
     const question = replace ? 'Replace your workspaces with this backup?' : 'Add the backup to your workspaces?';
-    if (!(await askConfirm('Import', question))) return;
+    // a backup can come from someone else: say what its workspaces do before adding them
+    if (!(await askConfirm('Import', `${question}\n\nOnly import workspaces you trust.\n\n${importSummary(workspaces)}`))) return;
     const imported = workspaces.map((w) => withFreshCode(withNewId(w)));
     appState.workspaces = replace ? imported : [...appState.workspaces, ...imported];
     actionDeps()?.save();

@@ -458,6 +458,9 @@ Fraunces titles), so the plugin feels like one product. Keep their structure; th
 - **C4**: when a workspace is imported (file or backup), show a summary built from its blocks before adding it:
   "Reads notes · writes to #goodday · calls api.open-meteo.com". Ask once before the first run of an imported
   workspace. Limit `httpRequest` to `https:` URLs, and log the host of each request in the console.
+  As built (phase 7): the question at import, with the summary, is the one decision; a second question before the
+  first run would ask the same thing again. `http:` addresses are upgraded to `https:` instead of refused (Nomie
+  runs on https, where the browser blocks plain http anyway); other kinds of address are refused.
 
 ---
 

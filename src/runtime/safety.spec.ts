@@ -1,6 +1,6 @@
 // A run must always end: an endless loop, a Stop, or a Nomie call that never answers cannot hang the page or the
 // run queue. Values from the sandbox reach Nomie as real values, not as interpreter objects.
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { NomieApi } from '../nomie/api';
 import { createRunQueue, runWorkspace } from './run';
 
@@ -142,5 +142,44 @@ describe('values cross the sandbox wall as real values (H4)', () => {
     });
     expect(alerts).toEqual(['{"a":1}']);
     expect(lines.slice(0, 2)).toEqual(['{"b":[1,2]}', '']);
+  });
+});
+
+describe('web requests (C4)', () => {
+  afterEach(() => vi.unstubAllGlobals());
+
+  const request = async (url: string) => {
+    const asked: string[] = [];
+    vi.stubGlobal('fetch', async (address: string) => {
+      asked.push(address);
+      return { ok: true, text: async () => 'reply' };
+    });
+    const lines: string[] = [];
+    await runWorkspace({
+      api: fakeApi().api,
+      jscode: FRAME + `alert(httpRequest(${JSON.stringify(url)}));`,
+      scheduled: false,
+      schedule: window,
+      output: (t) => lines.push(t),
+    });
+    return { asked, lines };
+  };
+
+  it('asks https addresses as they are, and says which host it called', async () => {
+    const { asked, lines } = await request('https://api.example.com/x');
+    expect(asked).toEqual(['https://api.example.com/x']);
+    expect(lines).toContain('Request to api.example.com');
+    expect(lines).toContain('reply');
+  });
+
+  it('upgrades an http address to https (Nomie runs on https, which blocks http requests)', async () => {
+    const { asked } = await request('http://api.example.com/x');
+    expect(asked).toEqual(['https://api.example.com/x']);
+  });
+
+  it('refuses other kinds of address', async () => {
+    const { asked, lines } = await request('file:///etc/passwd');
+    expect(asked).toEqual([]);
+    expect(lines.join('\n')).toMatch(/only web addresses/);
   });
 });

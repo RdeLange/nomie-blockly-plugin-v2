@@ -1,10 +1,12 @@
-// Dialogs go through Nomie, so they look like Nomie's own. Outside Nomie there is no dialog: the action does nothing.
+// Dialogs go through Nomie, so they look like Nomie's own. Outside Nomie a question uses the browser's dialog, and a
+// notice does nothing.
 import { nomie } from '../nomie/plugin';
 import type { Deps } from './actions';
 
 export const askConfirm = async (title: string, message: string): Promise<boolean> => {
   const handle = nomie();
-  if (!handle) return false;
+  // outside Nomie (the dev server) the browser asks
+  if (!handle) return typeof window !== 'undefined' && window.confirm(`${title}\n\n${message}`);
   const reply = await handle.plugin.confirm(title, message);
   return reply?.value === true;
 };

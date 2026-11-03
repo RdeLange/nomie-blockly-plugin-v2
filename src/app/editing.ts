@@ -4,6 +4,7 @@ import { appState } from './state.svelte';
 import { actionDeps } from './dialogs';
 import { generateCode } from '../blockly/setup';
 import { compileWorkspace } from '../blockly/compile';
+import { capabilityText, describeCapabilities } from '../blockly/capabilities';
 
 const FRAME_XML =
   '<xml xmlns="https://developers.google.com/blockly/xml"><block type="s4eblocklyframe" x="20" y="20"><field name="NAME">none</field></block></xml>';
@@ -37,3 +38,7 @@ export const addWorkspaces = (workspaces: Workspace[]) => {
   appState.workspaces = [...appState.workspaces, ...workspaces.map((w) => withFreshCode(withNewId(w)))];
   actionDeps()?.save();
 };
+
+// What the workspaces in a file do, one line each, for the question before they are added (review finding C4)
+export const importSummary = (workspaces: Workspace[]): string =>
+  workspaces.map((w) => `${w.displayName}: ${capabilityText(describeCapabilities(w.workspaceBlocks))}`).join('\n');

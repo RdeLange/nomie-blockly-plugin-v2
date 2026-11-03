@@ -3,7 +3,7 @@
   import { ui } from './ui.svelte';
   import { actionDeps, askConfirm, notify } from './dialogs';
   import { runNow } from './actions';
-  import { newWorkspaceFromBlocks, addWorkspaces } from './editing';
+  import { newWorkspaceFromBlocks, addWorkspaces, importSummary } from './editing';
   import { parseWorkspaceFile, templateWorkspaces, type Workspace } from '../domain/workspace';
   import { workspaceInfo } from '../blockly/compile';
 
@@ -47,6 +47,9 @@
     if (!file) return;
     try {
       const workspaces = parseWorkspaceFile(await file.text());
+      // a shared workspace is code from someone else: say what it does before adding it
+      const count = `${workspaces.length} workspace${workspaces.length === 1 ? '' : 's'}`;
+      if (!(await askConfirm(`Add ${count}?`, `Only add workspaces you trust.\n\n${importSummary(workspaces)}`))) return;
       addWorkspaces(workspaces);
       message = `Added ${workspaces.length} workspace${workspaces.length === 1 ? '' : 's'}.`;
       adding = false;
