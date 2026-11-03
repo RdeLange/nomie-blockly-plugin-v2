@@ -9,7 +9,7 @@ class UiState {
   // the dashboard widget the widget frame shows (a workspace id), when DailyNomie placed one (phase 20)
   widgetIndex = $state<string | undefined>(undefined);
   // the tab the editor opens on, once (a card's Show opens the Run tab of a failed workspace)
-  startTab = $state<'details' | 'run' | 'console' | 'preview' | undefined>(undefined);
+  startTab = $state<'details' | 'detailed' | 'run' | 'console' | 'preview' | undefined>(undefined);
   ready = $state(false);
   // the editor has changes that are not saved yet (the list beside it asks before it switches)
   editorDirty = $state(false);

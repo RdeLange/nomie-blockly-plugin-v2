@@ -7,6 +7,8 @@ export type Workspace = {
   name: string;
   displayName: string;
   description: string;
+  // a longer text about the workspace, shown in its own panel tab (what it does, and how to use it)
+  detailedDescription?: string;
   emoji: string;
   color: string;
   active: boolean;
@@ -62,6 +64,9 @@ export const normaliseWorkspace = (raw: unknown): Workspace => {
     latestrun: text(data.latestrun ?? data.latesrun),
     schedule: text(data.schedule, 'none'),
     ...(data.untested === true ? { untested: true } : {}),
+    ...(typeof data.detailedDescription === 'string' && data.detailedDescription
+      ? { detailedDescription: data.detailedDescription }
+      : {}),
   };
 };
 

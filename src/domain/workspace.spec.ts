@@ -44,3 +44,20 @@ describe('backups and remembered values (phase 12)', () => {
     expect(readBackupMemory(JSON.stringify([{ id: 'a', name: 'Mood', workspaceBlocks: '<xml/>', jscode: '' }]))).toEqual([undefined]);
   });
 });
+
+describe('the detailed description of a workspace', () => {
+  const base = { id: 'a', name: 'Mood', workspaceBlocks: '<xml/>', jscode: '' };
+
+  it('is kept when a workspace is read, and a workspace without it has none', () => {
+    expect(normaliseWorkspace({ ...base, detailedDescription: 'Logs mood every morning.' }).detailedDescription).toBe(
+      'Logs mood every morning.'
+    );
+    expect(normaliseWorkspace(base).detailedDescription).toBeUndefined();
+  });
+
+  it('is in the file a workspace is exported to, so it goes with a backup too', () => {
+    const ws = normaliseWorkspace({ ...base, detailedDescription: 'Logs mood.' });
+    const [back] = parseWorkspaceFile(workspaceToFile([ws]));
+    expect(back.detailedDescription).toBe('Logs mood.');
+  });
+});

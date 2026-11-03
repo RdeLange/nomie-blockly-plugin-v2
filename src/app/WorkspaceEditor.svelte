@@ -46,6 +46,7 @@
     displayName: start?.displayName ?? '',
     name: start?.name ?? '',
     description: start?.description ?? '',
+    detailedDescription: start?.detailedDescription ?? '',
     emoji: start?.emoji ?? '🧱',
     color: start?.color ?? COLOURS[0],
     xml: start?.workspaceBlocks ?? '',
@@ -71,7 +72,7 @@
   // layout: wide (desktop) or not (phone); the panel and its tab
   let wide = $state(typeof window !== 'undefined' && window.matchMedia(WIDE).matches);
   let panelOpen = $state(typeof window !== 'undefined' && window.matchMedia(WIDE).matches);
-  let tab = $state<'details' | 'run' | 'console' | 'preview'>(ui.startTab ?? 'details');
+  let tab = $state<'details' | 'detailed' | 'run' | 'console' | 'preview'>(ui.startTab ?? 'details');
   // the canvas has a dashboard widget: the Preview tab and the phone's preview button are there (phase 20)
   let hasWidgetBlock = $state(false);
   // the widget as the dashboard shows it, from a test run of the blocks (see previewWidget)
@@ -289,6 +290,7 @@
       displayName: draft.displayName || 'Workspace',
       name: draft.name,
       description: draft.description,
+      detailedDescription: draft.detailedDescription || undefined,
       emoji: draft.emoji || '🧱',
       color: draft.color,
       workspaceBlocks: versioned.workspaceBlocks,
@@ -341,6 +343,7 @@
     displayName: draft.displayName,
     name: draft.name,
     description: draft.description,
+    detailedDescription: draft.detailedDescription || undefined,
     emoji: draft.emoji,
     color: draft.color,
     workspaceBlocks: draft.xml,
@@ -429,7 +432,7 @@
     stop.stopped = true;
   };
 
-  const openPanel = (which: 'details' | 'run' | 'console' | 'preview') => {
+  const openPanel = (which: 'details' | 'detailed' | 'run' | 'console' | 'preview') => {
     if (panelOpen && tab === which && !wide) {
       panelOpen = false;
       return;
@@ -453,6 +456,7 @@
   const dayStatus = (row: { ok: boolean; error?: string }) => (row.ok ? 'ok' : row.error === 'stopped' ? 'stopped' : 'failed');
   const TABS: Array<[string, string]> = [
     ['details', 'Details'],
+    ['detailed', 'Detailed'],
     ['run', 'Run'],
     ['console', 'Console'],
   ];
@@ -593,6 +597,10 @@
                 <span>Nothing yet. Remember blocks keep a value for the next run.</span>
               {/if}
             </div>
+          </div>
+        {:else if tab === 'detailed'}
+          <div class="ed-pane" role="tabpanel">
+            <label class="ed-field">{t('Detailed description')}<textarea class="ed-detailed" rows="14" bind:value={draft.detailedDescription} oninput={() => (dirty = true)}></textarea></label>
           </div>
         {:else if tab === 'run'}
           <div class="ed-pane" role="tabpanel">
