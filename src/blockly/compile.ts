@@ -6,6 +6,10 @@ import { javascriptGenerator } from 'blockly/javascript';
 import { setupBlockly } from './setup';
 import { currentTrackerOptions, setTrackerOptions, trackersUsedIn } from './nomie-blocks';
 import { NEVER_WORKED } from './unsupported';
+import { COMPAT_BLOCKS } from './compat-blocks';
+import { migrateWorkspaceXml } from './migrate';
+
+const OLD_BLOCKS = new Set<string>(COMPAT_BLOCKS);
 
 export type Problem = { blockId?: string; level: 'error' | 'warning'; message: string };
 
@@ -21,7 +25,7 @@ export type CompiledWorkspace = {
 
 const FRAME = 's4eblocklyframe';
 // Blocks that may sit outside the frame: they define something, and run nothing by themselves
-const DEFINITIONS = new Set(['procedures_defnoreturn', 'procedures_defreturn', 'bi_function']);
+const DEFINITIONS = new Set(['procedures_defnoreturn', 'procedures_defreturn', 'bi_function', 'bi_comment']);
 // The data blocks that cannot do anything without a tracker, and the input that holds it
 const NEEDS_TRACKER: Record<string, { input: string; name: string }> = {
   s4e_dayvalue: { input: 'Tracker', name: 'Fetch Day Value' },
@@ -55,6 +59,13 @@ export const checkWorkspace = (workspace: Blockly.Workspace): Problem[] => {
     }
     const never = NEVER_WORKED[block.type];
     if (never) problems.push({ blockId: block.id, level: 'error', message: never });
+    else if (OLD_BLOCKS.has(block.type) && block.type !== 'bi_comment') {
+      problems.push({
+        blockId: block.id,
+        level: 'warning',
+        message: 'This is an old block. It still works, but use the Functions blocks for new work.',
+      });
+    }
   }
   return problems;
 };
@@ -72,7 +83,7 @@ export const compileWorkspace = (workspaceBlocks: string, options: { highlight: 
   const previousPrefix = javascriptGenerator.STATEMENT_PREFIX;
   try {
     try {
-      Blockly.Xml.domToWorkspace(Blockly.utils.xml.textToDom(workspaceBlocks), workspace);
+      Blockly.Xml.domToWorkspace(Blockly.utils.xml.textToDom(migrateWorkspaceXml(workspaceBlocks).xml), workspace);
     } catch (error) {
       return {
         code: '',

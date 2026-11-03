@@ -72,36 +72,22 @@ export const toolbox = (nomieName: string = NOMIE_CATEGORY): ToolboxDefinition =
       {
         kind: 'category',
         name: 'Functions',
+        // Blockly's own function blocks: with parameters and a return value (the old function blocks could not
+        // pass arguments). Old workspaces keep their old blocks, see compat-blocks.ts and migrate.ts.
+        custom: 'PROCEDURE',
         colour: '#9A5CA6',
-        contents: [
-          'bi_function',
-          'bi_function_return',
-          'bi_call',
-          'bi_call_editable',
-          'bi_call_editable_return',
-          'bi_direct_call_editable',
-          'bi_direct_call_editable_return',
-          'bi_return',
-          'bi_spread',
-        ].map(block),
       },
       {
         kind: 'category',
         name: 'Objects',
         colour: '#A5835B',
-        contents: ['object_create', 'object_keys', 'object_from_json', 'object_to_json', 'value_from_json_key'].map(block),
-      },
-      {
-        kind: 'category',
-        name: 'Classes',
-        colour: '#5BA5A5',
-        contents: ['bi_new', 'bi_anonymous_class', 'bi_class', 'bi_static', 'bi_get', 'bi_set'].map(block),
+        contents: ['object_create', 'object_get', 'object_set', 'object_keys', 'object_from_json', 'object_to_json', 'value_from_json_key'].map(block),
       },
       {
         kind: 'category',
         name: 'Advanced',
         colour: '#88A464',
-        contents: ['bi_try_catch', 'bi_catch', 'bi_export', 'bi_import', 'bi_import_as', 'bi_comment'].map(block),
+        contents: ['bi_try_catch'].map(block),
       },
       { kind: 'sep' },
       {

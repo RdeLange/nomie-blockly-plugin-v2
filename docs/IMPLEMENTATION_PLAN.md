@@ -239,8 +239,12 @@ The Classes category is removed from the palette, because none of its blocks can
      input when it is the last statement.
    - `bi_call` / `bi_call_editable` with a name that matches a migrated function and an empty `chain` input →
      `procedures_callnoreturn`; `bi_call_editable_return` → `procedures_callreturn`.
-   - `bi_comment` → a workspace comment at the same position.
    - Anything that does not match these patterns exactly stays as it is.
+   - As built (phase 3): a function with arguments is only migrated when nothing calls it. The old call blocks
+     could not pass arguments (neither in v1 nor in v2), so the function got `undefined`; Blockly's call blocks
+     would pass `null`, which is not exactly the same. Such functions keep running through the compat blocks.
+   - As built: `bi_comment` is not migrated. It generates nothing and keeps the block comment attached to it, and a
+     block inside a stack has no position for a workspace comment. It loads as a compat block without a warning.
    The migration is pure (XML in, XML out) and has its own tests with before/after fixtures.
 2. **Compat** (`src/blockly/compat-blocks.ts`): small, typed definitions of every legacy block type that is not in the
    palette, with the same fields and generators as today, registered for loading only. A migrated workspace never
@@ -253,8 +257,8 @@ The Classes category is removed from the palette, because none of its blocks can
 - Every palette block parses in the interpreter (`new Interpreter(code)`) with default inputs plugged in.
 - The v1 equality tests pass unchanged, including the "Retrieve Temperature" template.
 - An XML file containing every legacy block type loads without an error.
-- Migration fixtures: a v1 function with two arguments, called once, runs and gives the same result before and after
-  migration.
+- Migration fixtures: each migrated case runs and gives the same output before and after migration; a function with
+  arguments that is called is left as it is and still runs.
 - `object_create` with three fields round-trips through XML and JSON serialisation.
 
 ---

@@ -3,7 +3,10 @@ import * as Blockly from 'blockly';
 import 'blockly/blocks';
 import { javascriptGenerator } from 'blockly/javascript';
 import '@blockly/field-date';
-import { defineLegacyBlocks } from './legacy-js-blocks';
+import { defineObjectBlocks } from './object-blocks';
+import { defineAdvancedBlocks } from './advanced-blocks';
+import { defineCompatBlocks } from './compat-blocks';
+import { migrateWorkspaceXml } from './migrate';
 import {
   defineNomieBlocks,
   registerNomieGenerators,
@@ -22,7 +25,9 @@ export const setupBlockly = (trackers?: () => TrackerOption[]) => {
   registered = true;
   defineNomieBlocks();
   registerNomieGenerators(javascriptGenerator);
-  defineLegacyBlocks(javascriptGenerator);
+  defineObjectBlocks(javascriptGenerator);
+  defineAdvancedBlocks(javascriptGenerator);
+  defineCompatBlocks(javascriptGenerator);
   // every statement is highlighted while it runs, as in v1
   javascriptGenerator.STATEMENT_PREFIX = 'highlightBlock(%1);\n';
   for (const word of [...NOMIE_RESERVED_WORDS, 'highlightBlock']) javascriptGenerator.addReservedWords(word);
@@ -36,7 +41,7 @@ export const generateCode = (workspaceBlocks: string): string => {
   const previous = currentTrackerOptions();
   setTrackerOptions(() => [...previous(), ...trackersUsedIn(workspaceBlocks)]);
   try {
-    Blockly.Xml.domToWorkspace(Blockly.utils.xml.textToDom(workspaceBlocks), workspace);
+    Blockly.Xml.domToWorkspace(Blockly.utils.xml.textToDom(migrateWorkspaceXml(workspaceBlocks).xml), workspace);
     return javascriptGenerator.workspaceToCode(workspace);
   } finally {
     workspace.dispose();
@@ -51,7 +56,8 @@ export const loadWorkspace = (workspace: Blockly.Workspace, workspaceBlocks: str
   setupBlockly();
   const previous = currentTrackerOptions();
   setTrackerOptions(() => [...previous(), ...trackersUsedIn(workspaceBlocks)]);
-  Blockly.Xml.domToWorkspace(Blockly.utils.xml.textToDom(workspaceBlocks), workspace);
+  // old function blocks become Functions blocks where that runs the same (see migrate.ts)
+  Blockly.Xml.domToWorkspace(Blockly.utils.xml.textToDom(migrateWorkspaceXml(workspaceBlocks).xml), workspace);
   return () => setTrackerOptions(previous);
 };
 
