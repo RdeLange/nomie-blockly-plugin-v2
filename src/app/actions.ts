@@ -2,11 +2,11 @@
 import type { NomieApi } from '../nomie/api';
 import type { Workspace } from '../domain/workspace';
 import { createRunQueue, runWorkspace, RUN_DEADLINE_MS, type RunResult } from '../runtime/run';
-import { MAX_CATCH_UP_DAYS, runSchedule, type ScheduledWorkspace, type ScheduleOutcome } from '../runtime/scheduler';
+import { MAX_CATCH_UP_DAYS, runSchedule, type DayOutcome, type ScheduledWorkspace, type ScheduleOutcome } from '../runtime/scheduler';
 import type { ScheduleWindow } from '../runtime/host';
 import { compileWorkspace, hasErrors, workspaceInfo, type CompiledWorkspace } from '../blockly/compile';
-import { localDayKey, parseDayKey } from '../runtime/dates';
-import { appState } from './state.svelte';
+import { addDays, localDayKey, parseDayKey } from '../runtime/dates';
+import { appState, type DayRecord } from './state.svelte';
 
 export type Deps = {
   api: NomieApi;
@@ -26,6 +26,7 @@ export type RunHooks = {
   output?: (text: string) => void;
   highlight?: (blockId: string) => void;
   stop?: { stopped: boolean };
+  onProgress?: (steps: number) => void;
 };
 
 // Writes the problems the pre-run check found to the run's output, with the block each one is about.
@@ -64,6 +65,7 @@ const runCompiled = (deps: Deps, workspace: Workspace, hooks: RunHooks, schedule
     output: hooks.output,
     highlight: hooks.highlight,
     stop: hooks.stop,
+    onProgress: hooks.onProgress,
   }).then((result) => reportBlock(result, compiled.labels, hooks));
 };
 
@@ -71,17 +73,63 @@ const runCompiled = (deps: Deps, workspace: Workspace, hooks: RunHooks, schedule
 export const runNow = (deps: Deps, workspace: Workspace, hooks: RunHooks = {}): Promise<RunResult> =>
   queue(() => runCompiled(deps, workspace, hooks, false, { active: false, start: new Date(), end: new Date() }), failedRun);
 
-// A run over a range of days (the single iteration of v1). Dialogs stay quiet, as in a scheduled run.
-export const runRange = (deps: Deps, workspace: Workspace, start: Date, end: Date, hooks: RunHooks = {}) =>
-  queue(
-    () =>
-      runCompiled(deps, workspace, hooks, true, {
-        active: true,
-        start: new Date(start.getFullYear(), start.getMonth(), start.getDate(), 13),
-        end: new Date(end.getFullYear(), end.getMonth(), end.getDate(), 13),
-      }),
-    failedRun
+export type DayHooks = RunHooks & {
+  // before each day runs: the day, which one it is (from 1) and how many there are
+  onDay?: (day: string, index: number, total: number) => void;
+};
+
+// Runs a workspace for each day from `from` to `to` ('YYYY-MM-DD'), as the schedule would, one day at a time. It
+// stops at the first day that fails. Nothing is saved: this is for trying a workspace out (the Run tab).
+export const runDays = (deps: Deps, workspace: Workspace, from: string, to: string, hooks: DayHooks = {}): Promise<DayOutcome[]> => {
+  let start = parseDayKey(from);
+  let end = parseDayKey(to);
+  if (end < start) [start, end] = [end, start];
+  const keys: string[] = [];
+  for (let day = start; day <= end && keys.length < MAX_CATCH_UP_DAYS; day = addDays(day, 1)) keys.push(localDayKey(day));
+  return queue(
+    async () => {
+      const compiled = compileWorkspace(workspace.workspaceBlocks, { highlight: Boolean(hooks.highlight) });
+      reportProblems(compiled, hooks);
+      if (hasErrors(compiled.problems)) return [{ day: keys[0], result: firstError(compiled), output: [] }];
+      const days: DayOutcome[] = [];
+      for (const [i, key] of keys.entries()) {
+        hooks.onDay?.(key, i + 1, keys.length);
+        hooks.output?.(`— ${key} —`);
+        const shown: string[] = [];
+        const at13 = new Date(parseDayKey(key).getTime());
+        at13.setHours(13);
+        const result = await runWorkspace({
+          api: deps.api,
+          jscode: compiled.code,
+          scheduled: true,
+          schedule: { active: true, start: at13, end: at13 },
+          output: (text) => {
+            shown.push(text);
+            hooks.output?.(text);
+          },
+          highlight: hooks.highlight,
+          stop: hooks.stop,
+          onProgress: hooks.onProgress,
+        });
+        reportBlock(result, compiled.labels, hooks);
+        days.push({ day: key, result, output: shown.filter((t) => !t.startsWith('<< ')) });
+        if (!result.ok) break;
+      }
+      return days;
+    },
+    (error): DayOutcome[] => [{ day: keys[0], result: { ok: false, error }, output: [] }],
+    RUN_DEADLINE_MS * keys.length
   );
+};
+
+// What the Run tab keeps of a scheduled day: its result and the first lines it showed
+const DAY_OUTPUT_LINES = 30;
+const toRecord = (day: DayOutcome): DayRecord => ({
+  day: day.day,
+  ok: day.result.ok,
+  ...(day.result.ok ? {} : { error: day.result.error }),
+  output: day.output.slice(0, DAY_OUTPUT_LINES),
+});
 
 // One entry in the schedule log: the result, then what the run showed, indented.
 const describe = (outcome: ScheduleOutcome): string => {
@@ -130,6 +178,10 @@ export const scheduleNow = async (deps: Deps, now = new Date()): Promise<Schedul
     RUN_DEADLINE_MS * Math.max(1, runnable.length) * MAX_CATCH_UP_DAYS
   );
   const outcomes = [...ran, ...broken];
+  // the days of each workspace's run, for its Run tab (only workspaces that still exist)
+  const kept = Object.fromEntries(Object.entries(appState.scheduleDays).filter(([id]) => appState.workspaces.some((w) => w.id === id)));
+  for (const outcome of ran) if (outcome.days?.length) kept[outcome.id] = outcome.days.map(toRecord);
+  appState.scheduleDays = kept;
   const lines = outcomes.map(describe);
   appState.lastCentralSchedule = now.toISOString();
   if (lines.length) {

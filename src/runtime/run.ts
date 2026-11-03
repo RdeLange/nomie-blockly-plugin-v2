@@ -25,6 +25,8 @@ export type RunOptions = {
   maxRunMs?: number;
   // how long a host call may wait for Nomie, a prompt or the network (tests use short ones)
   timeouts?: Partial<HostTimeouts>;
+  // the number of steps so far, after every slice (the editor shows it while a run goes on)
+  onProgress?: (steps: number) => void;
 };
 
 // blockId: the block that was running when the run failed (only known when the code highlights its blocks)
@@ -103,6 +105,7 @@ export const runWorkspace = (options: RunOptions): Promise<RunResult> =>
         fail(String(error));
         return;
       }
+      options.onProgress?.(steps);
       // give the page a turn, so Stop and the rest of Nomie keep working, then go on
       setTimeout(slice, 0);
     };

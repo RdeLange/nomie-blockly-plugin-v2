@@ -15,7 +15,9 @@
   import { appState } from './state.svelte';
   import { ui } from './ui.svelte';
   import { actionDeps, askConfirm } from './dialogs';
-  import { runNow, runRange } from './actions';
+  import { runDays, runNow } from './actions';
+  import { localDayKey } from '../runtime/dates';
+  import { scheduleWindow, type DayOutcome } from '../runtime/scheduler';
   import { checkWorkspace, type Problem } from '../blockly/compile';
   import type { RunResult } from '../runtime/run';
   import type { Workspace } from '../domain/workspace';
@@ -40,6 +42,17 @@
   let dirty = $state(false);
   let running = $state(false);
   let consoleText = $state('');
+  // while a run goes on: the day (for a run over days) and the steps so far, shown on the canvas
+  let progress = $state({ day: '', index: 0, total: 0, steps: 0 });
+  // the days of the last "Run for days" in this editor; before one, the days of the last scheduled run
+  let ranDays = $state<DayOutcome[] | null>(null);
+  const yesterdayKey = () => {
+    const day = new Date();
+    day.setDate(day.getDate() - 1);
+    return localDayKey(day);
+  };
+  let daysFrom = $state(yesterdayKey());
+  let daysTo = $state(yesterdayKey());
 
   // layout: wide (desktop) or not (phone); the panel and its tab
   let wide = $state(typeof window !== 'undefined' && window.matchMedia(WIDE).matches);
@@ -275,13 +288,17 @@
     if (wide) panelOpen = true;
   };
 
-  const startRun = async (label: string, go: (deps: NonNullable<ReturnType<typeof actionDeps>>) => Promise<RunResult>) => {
+  type Deps = NonNullable<ReturnType<typeof actionDeps>>;
+  const onProgress = (steps: number) => (progress.steps = steps);
+
+  const startRun = async (label: string, go: (deps: Deps) => Promise<RunResult>) => {
     const deps = actionDeps();
     if (!deps || running) return;
     flush();
     showConsole();
     running = true;
     stop.stopped = false;
+    progress = { day: '', index: 0, total: 0, steps: 0 };
     consoleText = label;
     const result = await go(deps);
     running = false;
@@ -290,13 +307,30 @@
     showFailedBlock(result);
   };
 
-  const run = () => startRun('Running…', (deps) => runNow(deps, draftWorkspace(), { output, highlight, stop }));
+  const run = () => startRun('Running…', (deps) => runNow(deps, draftWorkspace(), { output, highlight, stop, onProgress }));
 
-  // A run for yesterday, as the schedule would run it
-  const runForYesterday = () => {
-    const yesterday = new Date();
-    yesterday.setDate(yesterday.getDate() - 1);
-    return startRun('Running for yesterday…', (deps) => runRange(deps, draftWorkspace(), yesterday, yesterday, { output, highlight, stop }));
+  // A run over days, as the schedule would run them, one day at a time; its days show in the Run tab
+  const runOverDays = (from: string, to: string, label: string) =>
+    startRun(label, async (deps) => {
+      const days = await runDays(deps, draftWorkspace(), from, to, {
+        output,
+        highlight,
+        stop,
+        onProgress,
+        onDay: (day, index, total) => (progress = { day, index, total, steps: 0 }),
+      });
+      ranDays = days;
+      const failed = days.find((d) => !d.result.ok);
+      return failed ? failed.result : { ok: true, steps: 0 };
+    });
+
+  const runForYesterday = () => runOverDays(yesterdayKey(), yesterdayKey(), 'Running for yesterday…');
+  const runTheseDays = () => runOverDays(daysFrom, daysTo, `Running ${daysFrom} to ${daysTo}…`);
+
+  // a day of a run, opened in the Console tab
+  const showDay = (day: { day: string; output: string[]; error?: string }) => {
+    consoleText = [`— ${day.day} —`, ...day.output, ...(day.error ? [`Error: ${day.error}`] : [])].join('\n');
+    tab = 'console';
   };
 
   const stopRun = () => {
@@ -317,6 +351,14 @@
     [daily ? 'Runs daily' : 'Not scheduled', `last run ${lastRun}`, running ? 'running…' : dirty ? 'unsaved changes' : 'saved'].join(' · ')
   );
   const errorCount = $derived(problems.filter((p) => p.level === 'error').length);
+  // the days the Run tab lists: this editor's last run over days, or else the last scheduled run
+  const dayRows = $derived(
+    ranDays
+      ? ranDays.map((d) => ({ day: d.day, ok: d.result.ok, error: d.result.ok ? undefined : d.result.error, output: d.output }))
+      : (appState.scheduleDays[id] ?? [])
+  );
+  const nextWindow = $derived(daily ? scheduleWindow(appState.workspaces.find((w) => w.id === id)?.latestrun, new Date()) : undefined);
+  const dayStatus = (row: { ok: boolean; error?: string }) => (row.ok ? 'ok' : row.error === 'stopped' ? 'stopped' : 'failed');
   const TABS = [
     ['details', 'Details'],
     ['run', 'Run'],
@@ -351,6 +393,12 @@
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6" /><path d="M20 20l-4.5-4.5" /></svg>
           <input bind:this={searchField} bind:value={searchQuery} oninput={onSearch} onblur={onSearchBlur} onkeydown={onSearchKey} placeholder="Search all blocks" aria-label="Search all blocks" />
         </label>
+      {/if}
+      {#if running}
+        <div class="run-status" role="status">
+          <span class="run-dot" aria-hidden="true"></span>
+          Running{#if progress.total} · day {progress.index} of {progress.total}{/if} · step {progress.steps.toLocaleString()}
+        </div>
       {/if}
       {#if !wide}
         <div class="run-bar">
@@ -422,6 +470,43 @@
                 {/each}
               </ul>
             {/if}
+
+            <strong class="ed-heading">Run for days</strong>
+            <div class="ed-days-form">
+              <label class="ed-field">From<input type="date" bind:value={daysFrom} max={daysTo} /></label>
+              <label class="ed-field">To<input type="date" bind:value={daysTo} min={daysFrom} /></label>
+              <button class="nb-btn" onclick={runTheseDays} disabled={running || !daysFrom || !daysTo}><Icon name="calendar" size={16} />Run</button>
+            </div>
+            <p class="ed-hint">Runs the workspace for each day, as the schedule would, and writes its notes for those days.</p>
+
+            <strong class="ed-heading">{ranDays ? 'This run, per day' : 'Last schedule, per day'}</strong>
+            {#if dayRows.length === 0 && !nextWindow}
+              <p class="ed-hint">No days have run yet.</p>
+            {/if}
+            <ul class="ed-days">
+              {#each dayRows as row (row.day)}
+                <li>
+                  <button class="ed-day {dayStatus(row)}" onclick={() => showDay(row)}>
+                    <span class="ed-day-date">{row.day}</span>
+                    <span class="ed-day-text">
+                      <span class="ed-day-status">{dayStatus(row)}</span>
+                      <span class="ed-day-line">{row.error && row.error !== 'stopped' ? row.error : (row.output[0] ?? 'no output')}</span>
+                    </span>
+                  </button>
+                </li>
+              {/each}
+              {#if nextWindow && !ranDays}
+                <li class="ed-day next">
+                  <span class="ed-day-date">{localDayKey(nextWindow.start)}</span>
+                  <span class="ed-day-text">
+                    <span class="ed-day-status">next</span>
+                    <span class="ed-day-line">
+                      {nextWindow.end < nextWindow.start ? 'runs tomorrow' : `the next schedule runs ${localDayKey(nextWindow.start)} to ${localDayKey(nextWindow.end)}`}
+                    </span>
+                  </span>
+                </li>
+              {/if}
+            </ul>
           </div>
         {:else}
           <div class="ed-pane ed-console-pane" role="tabpanel">
