@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { t } from './i18n.svelte';
   import { onMount } from 'svelte';
   import { appState } from './state.svelte';
   import { ui } from './ui.svelte';
@@ -136,13 +137,13 @@
 </script>
 
 <div class="header">
-  <button class="button plain" onclick={() => (ui.view = 'list')}>Back</button>
-  <h1 class="title" style="font-size: 22px">Settings</h1>
+  <button class="button plain" onclick={() => (ui.view = 'list')}>{t('Back')}</button>
+  <h1 class="title" style="font-size: 22px">{t('Settings')}</h1>
   <span></span>
 </div>
 
 <div class="card">
-  <p><strong>Scheduler</strong></p>
+  <p><strong>{t('Scheduler')}</strong></p>
   <p class="muted">Last run: {appState.lastCentralSchedule ? new Date(appState.lastCentralSchedule).toLocaleString() : 'never'}</p>
   <p class="muted">Daily workspaces run for the days since their last run, up to yesterday.</p>
   <p class="muted">Next run starts from</p>
@@ -173,7 +174,7 @@
 </div>
 
 <div class="card">
-  <p><strong>Secrets</strong></p>
+  <p><strong>{t('Secrets')}</strong></p>
   <p class="muted">A workspace uses a secret by name, such as an API key, so the key is not in its blocks. Secrets stay on this device: they are never in a backup or a shared workspace.</p>
   {#each secretNames as name (name)}
     <div class="row" style="margin-top: 6px">
@@ -188,7 +189,7 @@
   <div class="row" style="margin-top: 12px">
     <input class="input" style="flex: 0 0 200px" placeholder="NAME" aria-label="Secret name" bind:value={secretName} />
     <input class="input" style="flex: 1 1 auto; min-width: 160px" type="password" placeholder="value" aria-label="Secret value" autocomplete="off" bind:value={secretValue} />
-    <button class="button" onclick={saveSecret}>Save</button>
+    <button class="button" onclick={saveSecret}>{t('Save')}</button>
   </div>
   {#if secretError}
     <p class="muted" style="color: var(--ios-danger)">{secretError}</p>
@@ -196,11 +197,11 @@
 </div>
 
 <div class="card">
-  <p><strong>Backup</strong></p>
+  <p><strong>{t('Backup')}</strong></p>
   <p class="muted">A backup is a file with all your workspaces. Nomie Blockly v1 backups import here too.</p>
   <label class="row muted"><input type="checkbox" bind:checked={includeMemory} /> Include remembered values</label>
   <div class="row">
-    <button class="button" onclick={exportBackup}>Export</button>
+    <button class="button" onclick={exportBackup}>{t('Export')}</button>
     <button class="button plain" onclick={() => pick('add')}>Import and add</button>
     <button class="button danger" onclick={() => pick('replace')}>Import and replace</button>
     <input bind:this={fileInput} type="file" accept=".json,.wsp,application/json" onchange={importBackup} hidden />

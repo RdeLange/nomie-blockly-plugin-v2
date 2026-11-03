@@ -27,7 +27,8 @@
   class FakeNomiePlugin {
     constructor(options) {
       this.options = options;
-      this.prefs = { theme: 'light' };
+      // the language of the Nomie user, as Nomie sends it with `registered` (window.__fakeLanguage can set it)
+      this.prefs = { theme: 'light', language: window.__fakeLanguage ?? 'en' };
       this.storage = {
         init: async () => undefined,
         getItem: (key) => store[key],

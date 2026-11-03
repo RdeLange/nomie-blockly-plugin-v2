@@ -29,7 +29,8 @@ export const indexBlocks = (toolbox: ToolboxLike): Entry[] => {
           const block = item.blockxml
             ? Blockly.Xml.domToBlock(Blockly.utils.xml.textToDom(String(item.blockxml)), workspace)
             : workspace.newBlock(String(item.type));
-          text = block.toString();
+          // the words on the block, and its tooltip (what it does, in words the search can find)
+          text = `${block.toString()} ${String(block.tooltip ?? '')}`;
         } catch {
           // a block that cannot be built headless is still found by its type and category
         }

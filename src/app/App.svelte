@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { t } from './i18n.svelte';
   import { onMount } from 'svelte';
   import './tokens.css';
   import './styles.css';
@@ -34,7 +35,7 @@
 
 <div class="app" class:dark={ui.theme === 'dark'} class:editing={ui.view === 'editor' && ui.mode !== 'widget'}>
   {#if !ui.ready}
-    <p class="muted">Loading…</p>
+    <p class="muted">{t('Loading…')}</p>
   {:else if ui.mode === 'widget'}
     <div class="card">
       <div class="row">
@@ -47,14 +48,14 @@
           <span class="widget-label">{shown.label}</span>
           <span class="widget-value">{shown.value}</span>
           <span class="widget-time">updated {updatedText(shown.at)}</span>
-          <button class="button" onclick={() => runFromWidget(workspace.id)}>Run</button>
+          <button class="button" onclick={() => runFromWidget(workspace.id)}>{t('Run')}</button>
         </div>
       {/each}
       {#each appState.workspaces.filter((w) => !appState.widget[w.id]).slice(0, 4) as workspace (workspace.id)}
         <div class="row" style="margin-top: 10px">
           <span class="emoji" style="background: {workspace.color}">{workspace.emoji}</span>
           <span class="grow">{workspace.displayName}</span>
-          <button class="button" onclick={() => runFromWidget(workspace.id)}>Run</button>
+          <button class="button" onclick={() => runFromWidget(workspace.id)}>{t('Run')}</button>
         </div>
       {/each}
     </div>
@@ -71,8 +72,8 @@
     <SettingsView />
   {:else if ui.view === 'info'}
     <div class="header">
-      <button class="button plain" onclick={() => (ui.view = 'list')}>Back</button>
-      <h1 class="title">About</h1>
+      <button class="button plain" onclick={() => (ui.view = 'list')}>{t('Back')}</button>
+      <h1 class="title">{t('About')}</h1>
     </div>
     <div class="card">
       <p>Nomie Blockly builds small automations from blocks. A workspace can read your notes, count trackers, fetch a web page, and write values into your notes.</p>

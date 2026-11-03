@@ -115,7 +115,8 @@ export const defineNomieBlocks = () => {
   defineBlocksWithJsonArray([
     {
       type: 's4eblocklyframe',
-      message0: 'Scheduler: %1 %2 Blockly Script %3 %4',
+      tooltip: "Runs the blocks inside it once for each day of a scheduled run, or once for the day you run it by hand. Example: put show message inside it to show a message each day.",
+      message0: 'Run: %1 %2 do %3 %4',
       args0: [
         {
           type: 'field_dropdown',
@@ -133,8 +134,9 @@ export const defineNomieBlocks = () => {
     },
     {
       type: 'display',
-      message0: 'Display Value %1 %2',
-      args0: [{ type: 'input_dummy' }, { type: 'input_value', name: 'Value', check: 'String' }],
+      tooltip: "Shows a message: in a manual run in a dialog, in a scheduled run in the run's output. Example: show message \"Good morning\".",
+      message0: 'show message %1',
+      args0: [{ type: 'input_value', name: 'Value', check: 'String' }],
       inputsInline: true,
       previousStatement: null,
       nextStatement: null,
@@ -142,6 +144,7 @@ export const defineNomieBlocks = () => {
     },
     {
       type: 's4e_daypicker',
+      tooltip: "A day, relative to the day the run is for: today or yesterday. Example: Yesterday.",
       message0: 'Day %1',
       args0: [{ type: 'field_dropdown', name: 'Day', options: DAY_OPTIONS }],
       output: 'Day',
@@ -149,6 +152,7 @@ export const defineNomieBlocks = () => {
     },
     {
       type: 's4e_periodpicker',
+      tooltip: "A period of days that ends on the day the run is for. Example: Last 7 Days.",
       message0: 'Period %1',
       args0: [{ type: 'field_dropdown', name: 'Period', options: PERIOD_OPTIONS }],
       output: 'Period',
@@ -156,6 +160,7 @@ export const defineNomieBlocks = () => {
     },
     {
       type: 's4e_statspicker',
+      tooltip: "How values are combined: the average, the sum, the maximum or the minimum. Example: Average.",
       message0: 'Statistics %1',
       args0: [{ type: 'field_dropdown', name: 'Stats', options: STAT_OPTIONS }],
       output: 'Statistics',
@@ -163,6 +168,7 @@ export const defineNomieBlocks = () => {
     },
     {
       type: 's4e_datepicker',
+      tooltip: "A fixed date, picked from a calendar. Example: date 11/03/2026.",
       message0: 'date: %1',
       args0: [{ type: 'field_date', name: 'Date', date: new Date().toISOString().slice(0, 10) }],
       inputsInline: false,
@@ -171,6 +177,7 @@ export const defineNomieBlocks = () => {
     },
     {
       type: 's4e_trackers',
+      tooltip: "A tracker from your notes, such as mood. Pick from Nomie opens Nomie's own picker. Example: T: mood.",
       message0: 'T: %1',
       args0: [{ type: 'field_dropdown', name: 'Trackers', options: trackerDropdownOptions }],
       output: 'Tracker',
@@ -179,40 +186,42 @@ export const defineNomieBlocks = () => {
     },
     {
       type: 's4e_dayvalue',
-      message0: 'Fetch Day Value %1 Tracker %2 Day %3 Statistic %4',
+      tooltip: "Fetches the value of a tracker on a day, combined with a statistic. Example: average of mood on yesterday.",
+      message0: '%1 of %2 on %3',
       args0: [
-        { type: 'input_dummy' },
+        { type: 'input_value', name: 'Statistics', check: 'Statistics' },
         { type: 'input_value', name: 'Tracker', check: 'Tracker' },
         { type: 'input_value', name: 'Day', check: 'Day' },
-        { type: 'input_value', name: 'Statistics', check: 'Statistics' },
       ],
+      inputsInline: true,
       output: 'Number',
       style: 'nomie_blocks',
     },
     {
       type: 's4e_periodvalue',
-      message0: 'Fetch Period Value %1 Trackable %2 Period %3 Statistic %4',
+      tooltip: "Fetches the value of a tracker over a period, or counts the notes that mention a word. Example: average of mood over Last 7 Days.",
+      message0: '%1 of %2 over %3',
       args0: [
-        { type: 'input_dummy' },
+        { type: 'input_value', name: 'Statistics', check: 'Statistics' },
         // v1 had check: "Tracker" | "String", which evaluates to no check at all. Kept as no check, so
         // a text value (a search term) and a tracker are both accepted.
         { type: 'input_value', name: 'Trackable' },
         { type: 'input_value', name: 'Period', check: 'Period' },
-        { type: 'input_value', name: 'Statistics', check: 'Statistics' },
       ],
+      inputsInline: true,
       output: 'Number',
       style: 'nomie_blocks',
     },
     {
       type: 's4e_logvalue',
-      message0: 'Log Value for Tracker %1 Value %2 to Tracker %3 On the following Date %4',
+      tooltip: "Logs a value to a tracker, as a note at 13:00 on the day. Example: log 6 to mood on today.",
+      message0: 'log %1 to %2 on %3',
       args0: [
-        { type: 'input_dummy' },
         { type: 'input_value', name: 'Value' },
         { type: 'input_value', name: 'Tracker', check: 'Tracker' },
         { type: 'input_value', name: 'Date', check: 'Day' },
       ],
-      inputsInline: false,
+      inputsInline: true,
       // an action: it sits in a script stack, like wait and the console blocks
       previousStatement: null,
       nextStatement: null,
@@ -220,14 +229,16 @@ export const defineNomieBlocks = () => {
     },
     {
       type: 's4e_httprequest',
-      message0: 'Fetch data from following API %1 API %2',
-      args0: [{ type: 'input_dummy' }, { type: 'input_value', name: 'Value', check: 'String' }],
-      inputsInline: false,
+      tooltip: "Fetches the page at a web address (https) and gives its text. Example: fetch the page at https://example.com.",
+      message0: 'fetch the page at %1',
+      args0: [{ type: 'input_value', name: 'Value', check: 'String' }],
+      inputsInline: true,
       output: null,
       style: 'nomie_blocks',
     },
     {
       type: 'wait_seconds',
+      tooltip: "Waits before the next block runs, up to 600 seconds. Example: wait 2 seconds.",
       message0: ' wait %1 seconds',
       args0: [{ type: 'field_number', name: 'SECONDS', min: 0, max: 600, value: 1 }],
       previousStatement: null,
@@ -236,8 +247,9 @@ export const defineNomieBlocks = () => {
     },
     {
       type: 'pushto_console',
-      message0: 'Push to Console %1 %2',
-      args0: [{ type: 'input_dummy' }, { type: 'input_value', name: 'Value' }],
+      tooltip: "Shows a value in the run's output, the Console tab. Example: show in console \"Done\".",
+      message0: 'show in console %1',
+      args0: [{ type: 'input_value', name: 'Value' }],
       inputsInline: true,
       previousStatement: null,
       nextStatement: null,
@@ -245,8 +257,9 @@ export const defineNomieBlocks = () => {
     },
     {
       type: 'pushto_webconsole',
-      message0: 'Push to Web Console %1 %2',
-      args0: [{ type: 'input_dummy' }, { type: 'input_value', name: 'Value' }],
+      tooltip: "Writes a value to the browser's developer console. Example: log to browser console 42.",
+      message0: 'log to browser console %1',
+      args0: [{ type: 'input_value', name: 'Value' }],
       inputsInline: true,
       previousStatement: null,
       nextStatement: null,
@@ -255,6 +268,7 @@ export const defineNomieBlocks = () => {
     // A value on the Nomie widget, under the label (phase 15): the widget shows the last value a run set
     {
       type: 's4e_widget',
+      tooltip: "Shows a value on the Nomie widget under a label, when the run ends well. Example: show on widget 7 as 7-day mood.",
       message0: 'show on widget %1 as %2',
       args0: [
         { type: 'input_value', name: 'Value' },
@@ -269,6 +283,7 @@ export const defineNomieBlocks = () => {
     // is saved). The block is a hat: it has no connection above it.
     {
       type: 's4e_whennote',
+      tooltip: "Runs the blocks inside it when a note with this tracker is saved, for the day of that note. Example: when a note with run is saved.",
       message0: 'When a note with %1 is saved %2 %3',
       args0: [
         { type: 'input_value', name: 'Tracker', check: 'Tracker' },
@@ -280,6 +295,7 @@ export const defineNomieBlocks = () => {
     // What the note that started a run holds. Outside a note run they give null.
     {
       type: 's4e_notevalue',
+      tooltip: "The value of a tracker in the note that started the run, or nothing outside a note run. Example: value of mood in this note.",
       message0: 'value of %1 in this note',
       args0: [{ type: 'input_value', name: 'Tracker', check: 'Tracker' }],
       inputsInline: true,
@@ -288,6 +304,7 @@ export const defineNomieBlocks = () => {
     },
     {
       type: 's4e_notetext',
+      tooltip: "The text of the note that started the run. Example: text of this note.",
       message0: 'text of this note',
       args0: [],
       output: null,
@@ -295,6 +312,7 @@ export const defineNomieBlocks = () => {
     },
     {
       type: 's4e_noteday',
+      tooltip: "The day the note that started the run was saved. Example: day of this note.",
       message0: 'day of this note',
       args0: [],
       output: null,
@@ -302,6 +320,7 @@ export const defineNomieBlocks = () => {
     },
     {
       type: 's4e_lastvalue',
+      tooltip: "Gives the latest value of a tracker in the days looked back, the loop day included (at most 60), or nothing. Example: last value of mood looking back 7 days.",
       message0: 'last value of %1 looking back %2 days',
       args0: [
         { type: 'input_value', name: 'Tracker', check: 'Tracker' },
@@ -313,6 +332,7 @@ export const defineNomieBlocks = () => {
     },
     {
       type: 's4e_dayssince',
+      tooltip: "Gives the whole days since a tracker was last logged, within 60 days. Example: days since exercise was last logged.",
       message0: 'days since %1 was last logged',
       args0: [{ type: 'input_value', name: 'Tracker', check: 'Tracker' }],
       inputsInline: true,
@@ -321,6 +341,7 @@ export const defineNomieBlocks = () => {
     },
     {
       type: 's4e_streak',
+      tooltip: "Gives the days in a row, up to the loop day, with the tracker logged (at most 60 days). Example: streak of mood.",
       message0: 'streak of %1',
       args0: [{ type: 'input_value', name: 'Tracker', check: 'Tracker' }],
       inputsInline: true,
@@ -329,6 +350,7 @@ export const defineNomieBlocks = () => {
     },
     {
       type: 's4e_lognote',
+      tooltip: "Writes a note with this text at 13:00 on the day. Trackers in it are logged like in any note. Example: log a note \"Felt good #mood(7)\" on today.",
       message0: 'log a note %1 on %2',
       args0: [
         { type: 'input_value', name: 'Text', check: 'String' },
@@ -341,6 +363,7 @@ export const defineNomieBlocks = () => {
     },
     {
       type: 's4e_mylocation',
+      tooltip: "Gives your location as lat and lng, or nothing when Nomie cannot find it within 15 seconds. Example: my location.",
       message0: 'my location',
       args0: [],
       output: null,
@@ -348,6 +371,7 @@ export const defineNomieBlocks = () => {
     },
     {
       type: 's4e_openlink',
+      tooltip: "Opens a web page inside Nomie in a manual run. A scheduled or test run only says what it would open. Example: open link https://example.com.",
       message0: 'open link %1',
       args0: [{ type: 'input_value', name: 'Value', check: 'String' }],
       inputsInline: true,
@@ -357,6 +381,7 @@ export const defineNomieBlocks = () => {
     },
     {
       type: 's4e_remember',
+      tooltip: "Keeps a value for the next run of this workspace. Example: remember streak as 3.",
       message0: 'remember %1 as %2',
       args0: [
         { type: 'field_input', name: 'NAME', text: 'name' },
@@ -369,6 +394,7 @@ export const defineNomieBlocks = () => {
     },
     {
       type: 's4e_recall',
+      tooltip: "Gives the value kept under a name, or the default when nothing is kept. Example: recall streak or 0.",
       message0: 'recall %1 or %2',
       args0: [
         { type: 'field_input', name: 'NAME', text: 'name' },
@@ -380,6 +406,7 @@ export const defineNomieBlocks = () => {
     },
     {
       type: 's4e_forget',
+      tooltip: "Removes a value kept under a name. Example: forget streak.",
       message0: 'forget %1',
       args0: [{ type: 'field_input', name: 'NAME', text: 'name' }],
       previousStatement: null,
@@ -388,6 +415,7 @@ export const defineNomieBlocks = () => {
     },
     {
       type: 's4e_secret',
+      tooltip: "Gives a secret from Settings by its name, such as an API key. Example: secret OPENWEATHER_KEY.",
       message0: 'secret %1',
       args0: [{ type: 'field_input', name: 'NAME', text: 'name' }],
       output: null,

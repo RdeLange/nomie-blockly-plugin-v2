@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { t } from './i18n.svelte';
   import { appState } from './state.svelte';
   import { ui } from './ui.svelte';
   import { actionDeps, askConfirm, notify } from './dialogs';
@@ -18,7 +19,7 @@
   let message = $state('');
   let fileInput: HTMLInputElement | undefined = $state();
 
-  const dayText = (iso: string) => (iso ? new Date(iso).toLocaleDateString() : 'never');
+  const dayText = (iso: string) => (iso ? new Date(iso).toLocaleDateString() : t('never'));
   // what the workspace was compiled to (see app/compiler.ts): a daily schedule and the note it runs on
   const isDaily = (w: Workspace) => w.schedule === 'daily';
 
@@ -93,9 +94,9 @@
 <div class="header">
   <h1 class="title">Blockly</h1>
   <div class="row">
-    <button class="button plain" onclick={() => (ui.view = 'settings')}>Settings</button>
-    <button class="button plain" onclick={() => (ui.view = 'info')}>About</button>
-    <button class="button" onclick={() => (adding = !adding)}>{adding ? 'Close' : 'Add'}</button>
+    <button class="button plain" onclick={() => (ui.view = 'settings')}>{t('Settings')}</button>
+    <button class="button plain" onclick={() => (ui.view = 'info')}>{t('About')}</button>
+    <button class="button" onclick={() => (adding = !adding)}>{adding ? t('Close') : t('Add')}</button>
   </div>
 </div>
 
@@ -111,7 +112,7 @@
       <button class="button" onclick={() => fileInput?.click()}>Import a .wsp file</button>
       <input bind:this={fileInput} type="file" accept=".wsp,.json,application/json" onchange={addFromFile} hidden />
     </div>
-    <p class="muted" style="margin-top: 14px">Templates</p>
+    <p class="muted" style="margin-top: 14px">{t('Templates')}</p>
     {#each templateWorkspaces() as template (template.name)}
       <div class="row" style="margin-top: 8px">
         <span class="emoji" style="background: {template.color}">{template.emoji}</span>
@@ -119,7 +120,7 @@
           {template.displayName}
           <br /><span class="muted">{template.description}</span>
         </span>
-        <button class="button plain" onclick={() => addTemplate(template)}>Add</button>
+        <button class="button plain" onclick={() => addTemplate(template)}>{t('Add')}</button>
       </div>
     {/each}
   </div>
@@ -139,11 +140,11 @@
         <strong>{workspace.displayName}</strong>
         <div class="muted">{workspace.description}</div>
         <div class="row" style="margin-top: 6px">
-          <span class="pill" class:on={isDaily(workspace)}>{isDaily(workspace) ? 'Daily' : 'Not scheduled'}</span>
+          <span class="pill" class:on={isDaily(workspace)}>{isDaily(workspace) ? t('Daily') : t('Not scheduled')}</span>
           {#if workspace.note}
             <span class="pill on">Runs when {workspace.note} is logged</span>
           {/if}
-          <span class="muted">Last run: {dayText(workspace.latestrun)}</span>
+          <span class="muted">{t('Last run')}: {dayText(workspace.latestrun)}</span>
         </div>
         {#if pausedByNotes(workspace)}
           <div class="muted" style="margin-top: 6px">Paused: it ran more than 5 times a minute from notes. It starts again shortly.</div>
@@ -155,15 +156,15 @@
       <div class="health" class:failed={health?.failed} style="margin-top: 8px">{health?.text}</div>
     {/if}
     <div class="row" style="margin-top: 10px; justify-content: flex-end">
-      <button class="button plain" onclick={() => info(workspace)}>Info</button>
-      <button class="button plain" onclick={() => edit(workspace.id)}>Edit</button>
+      <button class="button plain" onclick={() => info(workspace)}>{t('Info')}</button>
+      <button class="button plain" onclick={() => edit(workspace.id)}>{t('Edit')}</button>
       {#if healthOf(workspace, appState.scheduleDays[workspace.id], appState.lastTrigger[workspace.id])?.failed}
-        <button class="button plain" onclick={() => showFailure(workspace.id)}>Show</button>
+        <button class="button plain" onclick={() => showFailure(workspace.id)}>{t('Show')}</button>
       {/if}
-      <button class="button plain" onclick={() => exportOne(workspace)}>Export</button>
-      <button class="button plain" onclick={() => duplicate(workspace)}>Duplicate</button>
-      <button class="button" onclick={() => run(workspace)}>Run</button>
-      <button class="button danger" onclick={() => remove(workspace)}>Delete</button>
+      <button class="button plain" onclick={() => exportOne(workspace)}>{t('Export')}</button>
+      <button class="button plain" onclick={() => duplicate(workspace)}>{t('Duplicate')}</button>
+      <button class="button" onclick={() => run(workspace)}>{t('Run')}</button>
+      <button class="button danger" onclick={() => remove(workspace)}>{t('Delete')}</button>
     </div>
   </div>
 {/each}

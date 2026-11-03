@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { t } from './i18n.svelte';
   // The editor (mockup D1 with the right panel in tabs, as D4). Desktop: a toolbar, the rail and canvas, and a panel
   // on the right with Details, Run and Console. Phone (under 900 px): the run buttons float at the bottom of the
   // canvas (mockup 1), and the panel opens as a sheet over the canvas.
@@ -12,11 +13,14 @@
   import './editor.css';
   import { toolbox } from '../blockly/toolbox';
   import { loadWorkspace, setupBlockly } from '../blockly/setup';
+  import { applyBlocklyLanguage } from '../blockly/messages';
+  import { i18n } from './i18n.svelte';
   import { trackerOptionsNow } from './trackers.svelte';
   import { applyCompiled, refreshCompiled } from './compiler';
   import { restoredWorkspace, savedWithBlocks, workspaceToFile } from '../domain/workspace';
   import { downloadText } from './download';
   // the blocks and their generator are registered when the editor opens (the plugin's start does not load them)
+  applyBlocklyLanguage(i18n.lang);
   setupBlockly(trackerOptionsNow);
   import { appState } from './state.svelte';
   import { ui } from './ui.svelte';
@@ -444,14 +448,14 @@
     {#if wide}
       <label class="ed-switch" title="A test run writes no notes">
         <input type="checkbox" role="switch" bind:checked={testRun} disabled={running} />
-        Test run
+        {t('Test run')}
       </label>
-      <button class="nb-btn primary" onclick={run} disabled={running}><Icon name="play" size={16} />Run</button>
-      <button class="nb-btn" onclick={runForYesterday} disabled={running}><Icon name="calendar" size={16} />Run for yesterday</button>
-      <button class="nb-btn" onclick={stopRun} disabled={!running}><Icon name="stop" size={16} />Stop</button>
+      <button class="nb-btn primary" onclick={run} disabled={running}><Icon name="play" size={16} />{t('Run')}</button>
+      <button class="nb-btn" onclick={runForYesterday} disabled={running}><Icon name="calendar" size={16} />{t('Run for yesterday')}</button>
+      <button class="nb-btn" onclick={stopRun} disabled={!running}><Icon name="stop" size={16} />{t('Stop')}</button>
       <span class="ed-sep" aria-hidden="true"></span>
     {/if}
-    <button class="nb-btn primary" onclick={save} disabled={!dirty}><Icon name="save" size={16} />Save</button>
+    <button class="nb-btn primary" onclick={save} disabled={!dirty}><Icon name="save" size={16} />{t('Save')}</button>
     <button class="nb-icon" class:on={panelOpen} onclick={() => (wide ? (panelOpen = !panelOpen) : openPanel('details'))} aria-label={panelOpen ? 'Hide the panel' : 'Show details'} aria-pressed={panelOpen}>
       <Icon name="panel" size={20} />
     </button>
@@ -474,7 +478,7 @@
       {/if}
       {#if !wide}
         <div class="run-bar">
-          <button class="run-go" onclick={run} disabled={running}><Icon name="play" size={16} />Run</button>
+          <button class="run-go" onclick={run} disabled={running}><Icon name="play" size={16} />{t('Run')}</button>
           <button class="run-plain" onclick={runForYesterday} disabled={running}><Icon name="calendar" size={16} />Yesterday</button>
           <label class="run-test"><input type="checkbox" role="switch" bind:checked={testRun} disabled={running} />Test</label>
           <span class="grow"></span>
@@ -489,7 +493,7 @@
         <div class="ed-tabs" role="tablist">
           {#each TABS as [key, name] (key)}
             <button role="tab" aria-selected={tab === key} class:active={tab === key} onclick={() => (tab = key)}>
-              {name}{#if key === 'run' && errorCount}<span class="ed-badge">{errorCount}</span>{/if}
+              {t(name)}{#if key === 'run' && errorCount}<span class="ed-badge">{errorCount}</span>{/if}
             </button>
           {/each}
           {#if !wide}
@@ -501,10 +505,10 @@
           <div class="ed-pane" role="tabpanel" bind:this={detailsPanel}>
             <div class="ed-field-row">
               <span class="ed-emoji" style="background: {draft.color}">{draft.emoji}</span>
-              <label class="ed-field grow">Name<input bind:value={draft.displayName} oninput={() => (dirty = true)} /></label>
+              <label class="ed-field grow">{t('Name')}<input bind:value={draft.displayName} oninput={() => (dirty = true)} /></label>
             </div>
-            <label class="ed-field">Emoji<input class="ed-emoji-input" bind:value={draft.emoji} oninput={() => (dirty = true)} /></label>
-            <label class="ed-field">Description<textarea rows="3" bind:value={draft.description} oninput={() => (dirty = true)}></textarea></label>
+            <label class="ed-field">{t('Emoji')}<input class="ed-emoji-input" bind:value={draft.emoji} oninput={() => (dirty = true)} /></label>
+            <label class="ed-field">{t('Description')}<textarea rows="3" bind:value={draft.description} oninput={() => (dirty = true)}></textarea></label>
             <label class="ed-field">Name used in notes<input bind:value={draft.name} oninput={() => (dirty = true)} /></label>
             <p class="ed-hint">A note with “Run Blockly Workspace: {draft.name || 'name'}” runs this workspace.</p>
             <div class="ed-field">
@@ -516,14 +520,14 @@
               </div>
             </div>
             <div class="ed-summary">
-              <strong>Schedule</strong>
+              <strong>{t('Schedule')}</strong>
               <span>{daily ? 'Daily: runs for each day since its last run, up to yesterday.' : 'Not scheduled. Set the Scheduler block to Daily to run it every day.'}</span>
               {#if noteTracker}<span>Runs when {noteTracker} is logged</span>{/if}
               {#if reads.length}<span>Reads {reads.join(', ')}</span>{/if}
               {#if writes.length}<span>Writes to {writes.join(', ')}</span>{/if}
             </div>
             <div class="ed-summary">
-              <strong>Versions</strong>
+              <strong>{t('Versions')}</strong>
               {#if previousVersion}
                 <button class="nb-btn" onclick={restorePrevious}>Restore the version of {previousWhen || 'before the first save'}</button>
               {:else}
@@ -554,12 +558,12 @@
             {/if}
             <div class="ed-actions">
               <button class="nb-btn primary" onclick={run} disabled={running}><Icon name="play" size={16} />Run now</button>
-              <button class="nb-btn" onclick={stopRun} disabled={!running}><Icon name="stop" size={16} />Stop</button>
+              <button class="nb-btn" onclick={stopRun} disabled={!running}><Icon name="stop" size={16} />{t('Stop')}</button>
             </div>
             <strong class="ed-heading">Try with a note</strong>
             <div class="ed-days-form">
               <label class="ed-field grow">Note<input bind:value={tryText} placeholder="#mood(2) #run" /></label>
-              <button class="nb-btn" onclick={tryNote} disabled={running || !tryText.trim()}><Icon name="play" size={16} />Try</button>
+              <button class="nb-btn" onclick={tryNote} disabled={running || !tryText.trim()}><Icon name="play" size={16} />{t('Try')}</button>
             </div>
             <p class="ed-hint">Runs the workspace as if this note was saved today. It is a test run: no notes are written.</p>
 
@@ -581,9 +585,9 @@
 
             <strong class="ed-heading">Run for days</strong>
             <div class="ed-days-form">
-              <label class="ed-field">From<input type="date" bind:value={daysFrom} max={daysTo} /></label>
-              <label class="ed-field">To<input type="date" bind:value={daysTo} min={daysFrom} /></label>
-              <button class="nb-btn" onclick={runTheseDays} disabled={running || !daysFrom || !daysTo}><Icon name="calendar" size={16} />Run</button>
+              <label class="ed-field">{t('From')}<input type="date" bind:value={daysFrom} max={daysTo} /></label>
+              <label class="ed-field">{t('To')}<input type="date" bind:value={daysTo} min={daysFrom} /></label>
+              <button class="nb-btn" onclick={runTheseDays} disabled={running || !daysFrom || !daysTo}><Icon name="calendar" size={16} />{t('Run')}</button>
             </div>
             <p class="ed-hint">
               {testRun
@@ -623,8 +627,8 @@
         {:else}
           <div class="ed-pane ed-console-pane" role="tabpanel">
             <div class="ed-actions">
-              <strong class="ed-heading grow">Output</strong>
-              <button class="nb-btn" onclick={() => (consoleText = '')} disabled={!consoleText || running}>Clear</button>
+              <strong class="ed-heading grow">{t('Output')}</strong>
+              <button class="nb-btn" onclick={() => (consoleText = '')} disabled={!consoleText || running}>{t('Clear')}</button>
             </div>
             <pre class="ed-console" aria-live="polite">{consoleText || 'No output yet. Run the workspace to see what it shows.'}</pre>
           </div>

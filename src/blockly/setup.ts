@@ -1,5 +1,7 @@
 // Registers the blocks and the code generator once. The editor and the tests both use this, so they generate the same code.
 import * as Blockly from 'blockly';
+// the language first: Blockly's built-in blocks take their texts when they are defined (see messages.ts)
+import './messages';
 import 'blockly/blocks';
 import { javascriptGenerator } from 'blockly/javascript';
 import '@blockly/field-date';
