@@ -2,6 +2,7 @@
 // The arithmetic and the search windows are the same as in Nomie Blockly v1.
 import type { NomieApi, NoteLike } from '../nomie/api';
 import { addDays, parseDayKey, resolveDay } from './dates';
+import { formatValue } from './format';
 
 // v1 read these period names as a number of days (TODAY counted as 1, the default is 7)
 const PERIOD_DAYS: Record<string, string> = {
@@ -12,7 +13,7 @@ const PERIOD_DAYS: Record<string, string> = {
   LAST90DAYS: '90',
 };
 
-// Blocks pass their values through the interpreter, so they can arrive with brackets around them.
+// The code v1 generated puts brackets around picker values, such as ("sum"), so they are removed here.
 const clean = (value: unknown): string => String(value).replace(/[()]/g, '');
 
 // min and max start from the first value, as in v1
@@ -84,7 +85,7 @@ export const logDailyTrackerValue = (api: NomieApi, value: unknown, tracker: str
     const day = resolveDay(clean(rawDay), new Date());
     const [year, month, date] = day.split('-').map(Number);
     const end = new Date(year, month - 1, date, 13, 0, 0);
-    api.createNote(`${clean(tracker)}(${value})`, end);
+    api.createNote(`${clean(tracker)}(${formatValue(value)})`, end);
     return true;
   } catch {
     return false;

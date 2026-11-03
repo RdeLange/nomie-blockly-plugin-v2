@@ -1,7 +1,7 @@
 // What the screens can do: run a workspace, run the schedule, react to a note. They change the app state and save it.
 import type { NomieApi } from '../nomie/api';
 import type { Workspace } from '../domain/workspace';
-import { createRunQueue, runWorkspace, canRun, type RunResult } from '../runtime/run';
+import { createRunQueue, runWorkspace, canRun, RUN_DEADLINE_MS, type RunResult } from '../runtime/run';
 import { isDailyWorkspace, runSchedule, type ScheduleOutcome } from '../runtime/scheduler';
 import { localDayKey, parseDayKey } from '../runtime/dates';
 import { appState } from './state.svelte';
@@ -14,7 +14,11 @@ export type Deps = {
 const DAY_MS = 24 * 60 * 60 * 1000;
 // how many runs the log keeps
 const LOG_ENTRIES = 40;
-const queue = createRunQueue();
+const runQueue = createRunQueue();
+// A run the queue gave up on (see createRunQueue) is reported as a failed run, not as an exception.
+const queue = <T>(task: () => Promise<T>, onLate: (error: string) => T, deadlineMs?: number): Promise<T> =>
+  runQueue(task, deadlineMs).catch((error: unknown) => onLate(error instanceof Error ? error.message : String(error)));
+const failedRun = (error: string): RunResult => ({ ok: false, error });
 
 export type RunHooks = {
   output?: (text: string) => void;
@@ -38,7 +42,7 @@ export const runNow = (deps: Deps, workspace: Workspace, hooks: RunHooks = {}): 
       highlight: hooks.highlight,
       stop: hooks.stop,
     });
-  });
+  }, failedRun);
 
 // A run over a range of days (the single iteration of v1). Dialogs stay quiet, as in a scheduled run.
 export const runRange = (deps: Deps, workspace: Workspace, start: Date, end: Date, hooks: RunHooks = {}) =>
@@ -55,7 +59,8 @@ export const runRange = (deps: Deps, workspace: Workspace, start: Date, end: Dat
       output: hooks.output,
       highlight: hooks.highlight,
       stop: hooks.stop,
-    })
+    }),
+    failedRun
   );
 
 // One entry in the schedule log: the result, then what the run showed, indented.
@@ -70,8 +75,11 @@ const describe = (outcome: ScheduleOutcome): string => {
 
 // Runs the daily workspaces. A workspace's last run moves on only when its run succeeded.
 export const scheduleNow = async (deps: Deps, now = new Date()): Promise<ScheduleOutcome[]> => {
-  const outcomes = await queue(() =>
-    runSchedule(deps.api, appState.workspaces, now)
+  const outcomes = await queue(
+    () => runSchedule(deps.api, appState.workspaces, now),
+    (error): ScheduleOutcome[] => [{ id: '', displayName: 'Schedule', result: { ok: false, error } }],
+    // the schedule runs every workspace in one task, so each one gets a full run's time
+    RUN_DEADLINE_MS * Math.max(1, appState.workspaces.length)
   );
   for (const outcome of outcomes) {
     if (outcome.result !== 'skipped' && outcome.result.ok) {

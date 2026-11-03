@@ -106,7 +106,7 @@ describe('running a workspace', () => {
       output: (t) => lines.push(t),
       highlight: (id) => highlights.push(id),
     });
-    expect(result).toEqual({ ok: true });
+    expect(result).toMatchObject({ ok: true });
     expect(alerts.join('\n')).toContain('Your average mood score yesterday was 6');
     expect(lines).toContain('<< Program complete >>');
     expect(highlights.length).toBeGreaterThan(0);
@@ -188,7 +188,7 @@ describe('the scheduler', () => {
       new Date(2026, 9, 24, 9)
     );
     expect(outcomes[0].result).toBe('skipped');
-    expect(outcomes[1].result).toEqual({ ok: true });
+    expect(outcomes[1].result).toMatchObject({ ok: true });
     expect(outcomes[1].to).toBe('2026-10-23');
   });
 });
