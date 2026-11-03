@@ -44,6 +44,27 @@ Begin with phase 0.
 
 ---
 
+## Start prompt for phases 10–19 (paste once, when phases 0–9 are merged)
+
+```
+Phases 0–9 of docs/IMPLEMENTATION_PLAN.md are done and merged. Read CLAUDE.md and the plan again, especially the
+section "Phases 10–19: features and improvements" and the facts about Nomie's plugin interface at its start.
+Work through phases 10 to 19 the same way as before: one phase at a time, a short plan first, failing tests first
+for bugs, all checks green, screenshots for UI phases, then a summary and stop.
+
+Two things to watch in these phases:
+- New SDK calls (getLocation, openURL, selectTrackables): check the payload shape against the SDK client
+  (nomie-plugin.js) before relying on it. Add each call to USES in src/nomie/plugin.ts and to NomieApi in
+  src/nomie/api.ts, with a timeout, because Nomie sends no reply when a picker is cancelled or locating fails.
+- New fields in the stored state (memory, secrets, widget, compiledFrom, previous): readState must accept stored
+  state without them (v1 and earlier v2), and export and backup must leave out memory, secrets and previous unless
+  the plan says otherwise.
+
+Begin with phase 10.
+```
+
+---
+
 ## Next-phase prompt (paste after reviewing each phase)
 
 ```
@@ -100,7 +121,7 @@ most likely causes in order.
 
 ```
 All phases are done. Review the whole branch against docs/IMPLEMENTATION_PLAN.md as a strict reviewer who did not
-write the code: for every finding id (C1-C4, H1-H6, M1-M8, L1-L4) and every design item, say whether it is done,
-where, and which test covers it. List anything missing or weaker than the plan, and any new risk the changes
+write the code: for every finding id (C1-C4, H1-H6, M1-M8, L1-L4), every design item and every phase from 10 on,
+say whether it is done, where, and which test covers it. List anything missing or weaker than the plan, and any new risk the changes
 introduced. Do not fix anything yet; give me the list.
 ```

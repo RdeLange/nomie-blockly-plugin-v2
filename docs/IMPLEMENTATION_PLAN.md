@@ -1,6 +1,7 @@
 # Nomie Blockly v2: implementation plan
 
-Status: agreed 3 November 2026. Source documents:
+Status: phases 0–9 agreed and done on 3 November 2026; phases 10–19 (features and improvements) agreed the same day.
+Source documents:
 
 - Code review: "Nomie Blockly v2 – code review & robustness plan" (claude.ai doc). The findings are repeated here
   with their ids (C1–C4, H1–H6, M1–M8, L1–L4), so this file is complete on its own.
@@ -24,9 +25,23 @@ reviewed before the next starts.
 | 7 | Editor performance, permissions summary for imported workspaces | M7, M8, C4 |
 | 8 | Per-day run view in the Run tab | design (D4) |
 | 9 | Clean-up: README, remove dead code, final test pass | L2–L4 |
+| 10 | Automatic checks on GitHub (tests, type check, build, browser checks) | – |
+| 11 | Test mode: run without writing notes | feature |
+| 12 | Remembered values between runs, and secrets kept out of shared files | feature |
+| 13 | More Nomie blocks: last value, days since, streak, free-text note, location, open link, tracker picker | feature |
+| 14 | Note triggers: run when a note with a tracker is saved | feature |
+| 15 | Values on the Nomie widget | feature |
+| 16 | A lighter start inside Nomie: load Blockly only for the editor | improvement |
+| 17 | The list, export and safety nets: health per card, export one, previous version, duplicate | improvement |
+| 18 | Clearer block wording, tooltips, Dutch and other languages | UI |
+| 19 | Workspaces beside the editor (D3), a better rail on a phone | UI |
 
 Phases 1–4 change behaviour and come first, because the new screens in 5–8 build on them. If you want a visible
 result early, phase 5 can run before phase 4: it touches different files.
+
+Phases 10–19 come in this order for a reason: CI first, so every later phase is checked; test mode (11) before the
+features that write or react (12–15), so they can be tried safely; note triggers (14) after the new blocks (13),
+which they use. 16–19 are independent of each other and can run in any order.
 
 ---
 
@@ -484,6 +499,249 @@ Uses the per-day outcomes from phase 4.
 - **L4**: Settings derives "now" when it renders.
 - Update `README.md`: the status, the block list, the runtime limits, and the compatibility promise.
 - Remove the root-level PNG screenshots from the repo (they belong in `screenshots/`, which is ignored).
+
+---
+
+## Phases 10–19: features and improvements
+
+Agreed 3 November 2026, after phases 0–9 were done. Phases 0–9 are the baseline: every rule above still holds (v1
+compatibility, ES5 only, host functions with timeouts and converted values, tests first, no functionality lost).
+
+Facts about Nomie's plugin interface these phases rely on (from `nomie6-oss`, `src/domains/plugins/plugin-loader.svelte`;
+check them against the SDK client, `nomie-plugin.js`, before relying on a payload shape):
+
+- `onNote`: Nomie sends every saved note as `log.expanded()`, with its elements (trackers with values, people,
+  context). Plugins that use `onNote` are loaded when Nomie starts, in a hidden frame.
+- `selectTrackables(type, multiple)`: opens Nomie's own tracker picker. Nomie answers only when something was picked;
+  a cancel sends nothing back. So it is for the editor, never for a run, and its call needs a timeout.
+- `getLocation`: answers `{ lat, lng }`; when locating fails, Nomie sends nothing back (the host timeout ends it).
+- `openURL(url, title)`: opens the page in a window inside Nomie.
+- `searchNotes` covers at most 60 days back, `getTrackableUsage` at most 90.
+- Every new SDK call is added to `USES` in `src/nomie/plugin.ts`, and to `NomieApi` in `src/nomie/api.ts` (the only
+  file that knows the SDK shape).
+
+---
+
+## Phase 10 – Automatic checks on GitHub
+
+First, because it guards everything after it.
+
+- `.github/workflows/check.yml`: on every push and pull request, Node 22, `npm ci`, `npm test`, `npm run check`,
+  `npm run build`.
+- A second job runs the browser checks: `npx playwright install --with-deps chromium`, then
+  `node scripts/ui/run-check.mjs`, `panel-check.mjs` and `drawer-check.mjs`. Each must exit with code 0 (they already
+  set `process.exitCode = 1` on a failure); upload `screenshots/` as an artifact.
+- The scripts block the request for the real Nomie SDK script (as `run-check.mjs` does), so CI needs no network
+  beyond npm.
+
+Done when: a pull request shows both jobs green, and a deliberately broken test makes the first job fail.
+
+---
+
+## Phase 11 – Test mode: run without writing notes
+
+"Run for days" makes it easy to run a workspace over a week, and that writes real notes. A test run writes none.
+
+- `RunOptions` and `HostContext` get `test: boolean`. In a test run:
+  - `logValue` writes nothing; the run's output says `Would log #mood(6) on 2026-11-02`, and it returns `true` as a
+    real write would, so the script behaves the same.
+  - the free-text note block of phase 13 does the same; remembered values (phase 12) are not saved; Open link
+    (phase 13) only says what it would open.
+- The editor: a switch "Test run (no notes are written)" in the Run tab, and on the toolbar as a toggle next to Run.
+  It is on by default for a workspace that came from a file or a backup until its first real run, and the Run tab
+  says so. While it is on, the run status on the canvas says "Test run".
+- Run for days in test mode lists the notes each day would write.
+- The list, the widget, note triggers and the schedule never run in test mode.
+
+Tests: a test run of a workspace that logs a value writes no note and shows the "Would log" line; a test run over 3
+days shows 3 such lines; remembered values are unchanged after a test run; a real run still writes.
+
+---
+
+## Phase 12 – Remembered values and secrets
+
+Workspaces cannot carry anything from one run to the next today (streaks, "change since yesterday", "only once a
+week"), and an API key has to sit in the blocks, so it travels in every shared file.
+
+**Remembered values**
+
+- Blocks (Variables category, or a new "Memory" group in Nomie): `remember [name] as (value)` (statement),
+  `recall [name], or (default)` (value), `forget [name]` (statement). The name is a text field, put into the code with
+  `JSON.stringify`.
+- Host functions `remember(name, value)`, `recall(name, fallback)`, `forget(name)`: native (no waiting), values
+  converted with `pseudoToNative` / `nativeToPseudo`, only JSON values (numbers, text, true/false, lists, objects).
+- Stored per workspace in the stored state as `memory: { [workspaceId]: { [name]: value } }` (a new field; v1 ignores
+  it). Limits: 100 names and 10 KB of JSON per workspace; over the limit, `remember` fails with a clear error.
+- Saved once at the end of a run that ended well (not after each call), not at all after a failed or test run.
+- The Details tab lists the remembered values of the workspace, with Forget all.
+- Export and backup leave memory out (it is the user's data, not part of the workspace); a backup can include it
+  only if the user ticks "include remembered values".
+
+**Secrets**
+
+- Settings gets a "Secrets" section: name and value pairs (an API key, a home city), shown masked, editable.
+- Block: `secret [name]` (value) → host `secret(name)`; an unknown name is an error that names the secret, so the
+  Run tab can say "Add the secret OPENWEATHER_KEY in Settings".
+- Stored as `secrets` in the stored state, never in an exported workspace or backup, and never written to a run's
+  output: the host replaces every secret value in output lines with `••••`.
+- The pre-run check warns when a workspace uses a secret that does not exist yet.
+- The "Retrieve Temperature" template uses `secret OPENWEATHER_KEY` in place of `YOUR_OPENWEATHER_KEY`. That changes
+  the template's blocks and code: update its expected code in `generator.spec.ts` (allowed by this plan).
+- The import summary (phase 7) lists the secrets a workspace asks for.
+
+Tests: a value remembered in one run is recalled in the next; a failed run does not save; limits; a secret is
+masked in output; secrets are absent from `workspaceToFile` and from the backup; a missing secret is reported before
+the run.
+
+---
+
+## Phase 13 – More Nomie blocks
+
+All new blocks go in the Nomie category, under its group labels, generate ES5, and call new host functions with
+timeouts.
+
+| Block | Generates | Host function |
+| --- | --- | --- |
+| last value of (tracker), looking back (days) | `lastValue(t, days)` | `searchNotes` back from the loop day (at most 60 days), the value of the latest note with that tracker, or `null` |
+| days since (tracker) was last logged | `daysSince(t)` | the same search, the number of days from that note to the loop day, or `null` |
+| streak of (tracker) | `streak(t)` | consecutive days up to the loop day with the tracker, at most 60 (say so in the tooltip) |
+| log a note (text) on (day) | `logNote(text, day)` | `createNote(text, 13:00 of the day)`; the text may hold trackers, people and context, as a Nomie note does |
+| my location | `myLocation()` | `getLocation`, 15 s timeout, an object `{ lat, lng }` or `null` |
+| open link (url) | `openLink(url)` | `openURL`, manual runs only; a scheduled run writes "Would open …" to its output |
+
+- Write the day arithmetic once, in `src/runtime/dates.ts`, with tests across a daylight-saving change.
+- The Tracker dropdown gets a last option "Pick from Nomie…": it calls `selectTrackables('tracker', false)` (editor
+  only, 2-minute timeout, nothing happens on cancel), sets the picked tag, and adds it to the workspace's saved
+  trackers (`rememberSavedTrackers`), so trackers that were not used in the last 30 days are no longer hard to reach.
+- The "Retrieve Temperature" template can use "my location" when no city is set (optional, decide in the phase).
+- Add `getLocation`, `openURL` and `selectTrackables` to `USES`; Nomie asks the user for location permission.
+
+Tests: each host function against the stand-in Nomie (the window rules of `searchNotes` as in `day-window.spec.ts`);
+streak across a gap; days since with no note in 60 days; location timeout returns null; open link in a scheduled run
+does not call `openURL`; every new block parses in the sandbox (the palette test covers this once they are in the
+toolbox).
+
+---
+
+## Phase 14 – Note triggers: run when a note is saved
+
+Today a note only runs a workspace when it contains "Run Blockly Workspace: name". This phase lets a workspace react
+to a tracker: "when I log #run, also log #exercise(1)", "when #mood is below 3, show a message".
+
+- A new hat block (type `s4e_whennote`), in the Nomie category under "Frame": `When a note with (tracker) is saved`,
+  with a statement input `script`. It does not change the Scheduler block (v1 workspaces are untouched). A workspace
+  has a Scheduler block or a When-note block; the pre-run check reports both, or neither, as an error.
+- Value blocks for the note that started the run: `value of (tracker) in this note`, `text of this note`, `day of this
+  note`. Outside a note run they give `null` (and the pre-run check warns when they sit outside a When-note block).
+- Host: `triggerNote()` gives the note as `{ text, day, values: { '#mood': 6 } }` (from the note's elements).
+  The generated code loops once, over the note's day, like the Scheduler block, so the day pickers work.
+- `runFromNote` in `actions.ts`: for each saved note (from `plugin.onNote`), the workspaces whose When-note tracker is
+  in the note run, through the run queue, with that note. Guards:
+  - never for notes the plugin wrote itself (the 2-minute list from phase 4, extended to every note a run writes);
+  - each note runs a workspace at most once (keep the note's id or `end` + text for 10 minutes);
+  - at most 5 runs per workspace per minute; above that, the workspace is paused and the list says why.
+- `compileWorkspace` reports `trigger: 'note'` and the tracker; the list shows "Runs when #run is logged".
+- The Run tab gets "Try with a note": a text field ("#mood(2)") that runs the workspace in test mode (phase 11) as if
+  that note was saved.
+
+Tests: a note with the tracker runs the workspace once, with its values; a note without it does not; a note the run
+wrote itself does not start it again; the rate limit; the "Try with a note" path; v1 workspaces generate the same code.
+
+---
+
+## Phase 15 – Values on the Nomie widget
+
+The widget shows a Run button for the first four workspaces. With this phase it shows what workspaces compute.
+
+- Block: `show on widget (value) as [label]` → host `setWidget(label, value)` (native, values formatted with
+  `formatValue`).
+- Stored as `widget: { [workspaceId]: { label, value, at } }` in the stored state; a run that ended well saves it.
+- Widget mode (`App.svelte`): a tile per workspace that has a widget value: the label, the value large, "updated 2 Nov
+  09:02" small, and a Run button. Workspaces without one keep the current row. Use the notebook tokens.
+- The widget is its own frame in Nomie: it reads the stored state again when it opens (`onWidget`) and every 5
+  minutes, because the schedule runs in another frame.
+- Templates: one example, "7-day mood on the widget".
+
+Tests: a run sets the widget value; a failed or test run does not; the widget view lists it (a Playwright check with
+`fake-nomie.js` in widget mode).
+
+---
+
+## Phase 16 – A lighter start inside Nomie
+
+The plugin loads in a hidden frame every time Nomie starts (for the schedule and for notes), and that frame loads all
+of Blockly (about 1 MB) only to run code it could have kept.
+
+- When a workspace is saved, imported or migrated, store with it `compiledFrom`: a hash of `workspaceBlocks` plus a
+  `GENERATOR_VERSION` constant (raise it whenever generated code changes). This keeps C3: the stored code is used only
+  when it was compiled by this plugin from exactly these blocks.
+- Runs without the editor (the schedule, note triggers, the widget, the list) use the stored `jscode` (compiled
+  without the highlight calls: store both, or compile the headless one at save time) when `compiledFrom` matches;
+  otherwise they load the compiler with a dynamic `import()` and compile, as now.
+- The editor, the compiler, the capability summary and Blockly itself move into a chunk loaded with `import()` when
+  the editor or an import opens. Vite splits it automatically.
+- Measure before and after: the size of the first JavaScript file, and (with Playwright and `fake-nomie.js`) that a
+  launch with only compiled workspaces requests no Blockly chunk.
+
+Tests: a stale `compiledFrom` (blocks changed, or a new generator version) recompiles; a v1 state without
+`compiledFrom` recompiles once and stores it; an imported workspace is compiled on import.
+
+---
+
+## Phase 17 – The list, export and safety nets
+
+- **Health on each card**: the result of the last scheduled run from `scheduleDays` ("Ran 2 Nov", "Failed on 2 Nov:
+  …" in red), and for note triggers the last trigger. A failed card has a "Show" button that opens the editor on the
+  Run tab.
+- **Export one workspace**: an Export button in the editor toolbar menu and on each card, writing a `.wsp` file with
+  that workspace (fresh code, no memory, no secrets). Uses the same file format as v1.
+- **Previous version**: on each save, keep the previous `workspaceBlocks` and the time it was saved, as `previous`
+  on the workspace (one level). The Details tab offers "Restore the version of 2 Nov 09:02". Export and backup leave
+  `previous` out.
+- **Duplicate**: a Duplicate action on each card (a copy with a new id and " (copy)" in its name).
+
+Tests: export holds one workspace and no memory, secrets or previous version; restore brings back the previous
+blocks and marks the editor unsaved; the card shows a failure from `scheduleDays`.
+
+---
+
+## Phase 18 – Clearer blocks, help and your language
+
+- **Block wording**: change only the visible text (`message0`) of the Nomie blocks, never the field or input names,
+  so saved workspaces and the generated code stay the same (`generator.spec.ts` proves it). Proposal, to review in
+  the phase:
+
+  | Now | New |
+  | --- | --- |
+  | Fetch Day Value / Tracker / Day / Statistic | (statistic) of (tracker) on (day) |
+  | Fetch Period Value / Trackable / Period / Statistic | (statistic) of (tracker or word) over (period) |
+  | Log Value for Tracker / Value / to Tracker / On the following Date | log (value) to (tracker) on (day) |
+  | Display Value | show message |
+  | Push to Console / Push to Web Console | show in console / log to browser console |
+  | Fetch data from following API / API | fetch the page at (address) |
+  | Scheduler: / Blockly Script | Run: (schedule) / do |
+
+- **Tooltips and help** for every Nomie block: one sentence on what it does and one example.
+- **Language**: Nomie sends the user's language with `registered` (`user.language`). Load Blockly's messages for it
+  (`blockly/msg/nl` and so on) before the editor injects, and translate the plugin's own text (about 150 strings)
+  with a small dictionary in `src/app/i18n.ts`; English is the fallback. Start with English and Dutch.
+
+Tests: the v1 equality tests pass unchanged; every Nomie block has a tooltip; with language `nl`, the toolbar and a
+standard block show Dutch text (Playwright with `fake-nomie.js` sending `language: 'nl'`).
+
+---
+
+## Phase 19 – Workspaces beside the editor, and a better rail on a phone
+
+- **Desktop (mockup D3)**: from 1200 px wide, the editor shows a 280 px list of workspaces on its left (emoji,
+  name, schedule or trigger, health from phase 17, a filter field, New). Switching with unsaved changes asks first,
+  as Back does now.
+- **Phone**: the rail shows labels only under the selected tile, so all eleven tiles fit on a 390 × 844 screen
+  without scrolling; long-press a tile to see its name.
+- **Focus mode** (mockup D5) needs Nomie to collapse its own sidebar; propose that to Nomie separately. The plugin
+  can already offer a full-screen toggle for its canvas (hide the panel and the toolbar title).
+
+Checks: screenshots at 1440 × 900, 1100 × 800 and 390 × 844; switching workspaces with and without unsaved changes.
 
 ---
 

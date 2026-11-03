@@ -3,8 +3,9 @@
 This repo is the Nomie Blockly plugin, v2. Users build small automations from blocks. The blocks become JavaScript,
 and that JavaScript runs in a js-interpreter sandbox against the user's Nomie notes.
 
-The current work is described in `docs/IMPLEMENTATION_PLAN.md`. Read it before you change anything, and work through
-it one phase at a time.
+The work is described in `docs/IMPLEMENTATION_PLAN.md`: phases 0–9 (robustness and the redesign) are done; phases
+10–19 (features and improvements) are next. Read it before you change anything, and work through it one phase at a
+time.
 
 ## Commands
 
