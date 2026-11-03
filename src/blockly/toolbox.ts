@@ -60,6 +60,7 @@ export const toolbox = (nomieName: string = NOMIE_CATEGORY): ToolboxDefinition =
           block('s4e_wvalue'),
           block('s4e_wtrend'),
           block('s4e_wchart'),
+          block('s4e_wbars'),
           block('s4e_wfooter'),
           label('Memory and secrets'),
           block('s4e_remember'),

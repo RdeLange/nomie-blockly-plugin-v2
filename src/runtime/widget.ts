@@ -13,7 +13,9 @@ export type WidgetComponent =
   // the last days of a tracker as a small line, with no axes
   | { kind: 'trend'; label: string; points: Array<number | undefined> }
   // a line chart of a tracker, oldest day first; a day without a value is a gap
-  | { kind: 'chart'; label: string; points: Array<number | undefined>; colour: string };
+  | { kind: 'chart'; label: string; points: Array<number | undefined>; colour: string }
+  // a bar chart of a tracker, one bar a day, oldest day first; a day without a value has no bar
+  | { kind: 'bars'; label: string; points: Array<number | undefined>; colour: string };
 
 export type WidgetDesign = {
   name: string;
@@ -37,7 +39,7 @@ const readEntry = (raw: unknown): WidgetEntry | undefined => {
   if (Array.isArray(v.components)) {
     const components = v.components.filter((c): c is WidgetComponent => {
       const k = (c as WidgetComponent | null)?.kind;
-      return k === 'value' || k === 'trend' || k === 'chart';
+      return k === 'value' || k === 'trend' || k === 'chart' || k === 'bars';
     });
     return {
       at: v.at,
@@ -73,9 +75,9 @@ export const componentOf = (raw: unknown, formatValue: (value: unknown) => strin
     Array.isArray(c.points) ? c.points.map((p) => (typeof p === 'number' && Number.isFinite(p) ? p : undefined)) : [];
   if (c.kind === 'value') return { kind: 'value', label, value: formatValue(c.value) };
   if (c.kind === 'trend') return { kind: 'trend', label, points: points() };
-  if (c.kind === 'chart') {
+  if (c.kind === 'chart' || c.kind === 'bars') {
     const colour = CHART_COLOURS.includes(String(c.colour)) ? String(c.colour) : CHART_COLOURS[0];
-    return { kind: 'chart', label, points: points(), colour };
+    return { kind: c.kind, label, points: points(), colour };
   }
   return undefined;
 };

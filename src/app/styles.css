@@ -348,42 +348,101 @@ body {
   font-size: 13px;
 }
 
-/* a dashboard widget as the widget builder made it (phase 20) */
+/* a dashboard widget as the widget builder made it (phase 20), sized like DailyNomie 7's dashboard widgets */
 .wd {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  padding: 12px;
-  border-radius: 12px;
-  background: var(--nb-canvas, #fffdf8);
-  border: 1px solid var(--nb-line, #e7e5e4);
+  background: var(--widget-card, var(--nb-surface, #ffffff));
+  color: var(--nb-ink);
+  border-radius: 16px;
+  overflow: hidden;
+  font-family: var(--nb-font);
+  font-size: 11px;
 }
 .wd-head {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
+  min-height: 32px;
+  padding: 6px 10px 0;
 }
-.wd-row {
+.wd-emoji {
+  font-size: 12px;
+}
+.wd-title {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: 12.2px;
+  font-weight: 600;
+  line-height: 15px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.wd-run {
+  flex: 0 0 auto;
+  padding: 2px 9px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--nb-accent, #5e7abc);
+  color: #ffffff;
+  font: 600 11px var(--nb-font);
+  cursor: pointer;
+}
+.wd-main {
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
+  gap: 4px;
+  min-height: 90px;
+  padding: 0 10px;
+}
+.wd-value {
+  display: flex;
   align-items: baseline;
-  gap: 8px;
+  justify-content: space-between;
+  gap: 6px;
+}
+.wd-label {
+  font-size: 11px;
+  color: var(--nb-muted);
+}
+.wd-num {
+  font-size: 15px;
+  font-weight: 600;
 }
 .wd-chart {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  width: 100%;
+  gap: 2px;
+  min-width: 0;
 }
 .wd-chart svg {
   display: block;
   width: 100%;
+  height: 40px;
 }
 .wd-footer {
-  font-size: 12px;
-  color: var(--nb-muted, #57534e);
-}
-.wd-actions {
+  min-height: 32px;
   display: flex;
-  justify-content: flex-end;
+  align-items: center;
+  padding: 0 10px 6px;
+  font-size: 11px;
+  color: var(--nb-muted);
+}
+.wd-footer:empty {
+  display: none;
+}
+@media (min-width: 1024px) {
+  .wd-title {
+    font-size: 14px;
+    line-height: 18px;
+  }
+  .wd-num {
+    font-size: 18px;
+  }
+}
+.app.widget {
+  padding: 0;
+  min-height: 0;
+  background: transparent;
 }

@@ -389,3 +389,15 @@ export const tryWithNote = (deps: Deps, workspace: Workspace, text: string, hook
       }),
     failedRun
   );
+
+// The widget a workspace builds, as a test run builds it: shown in the editor's preview, and kept nowhere (phase 20)
+export const previewWidget = (deps: Deps, workspace: Workspace, hooks: RunHooks = {}): Promise<RunResult> =>
+  queue(
+    () =>
+      runCompiled(deps, workspace, { ...hooks, test: true }, false, {
+        active: false,
+        start: new Date(),
+        end: new Date(),
+      }),
+    failedRun
+  );

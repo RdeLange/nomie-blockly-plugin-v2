@@ -44,7 +44,8 @@ export type RunOptions = {
 // memory: the remembered values after a run that ended well, when the run changed them (not for a test run)
 // widget: the value the run set on the widget (see widget.ts), when it set one and was not a test run
 export type RunResult =
-  | { ok: true; steps: number; memory?: Memory; widget?: WidgetDesign }
+  // preview: in a test run, the widget the run built (shown in the editor, not kept)
+  | { ok: true; steps: number; memory?: Memory; widget?: WidgetDesign; preview?: WidgetDesign }
   | { ok: false; error: string; blockId?: string };
 
 const MASK = '••••';
@@ -133,7 +134,7 @@ export const runWorkspace = (options: RunOptions): Promise<RunResult> =>
           if (!interpreter.step()) {
             output('<< Program complete >>');
             const changed = !options.test && JSON.stringify(memory) !== memoryBefore;
-            const shown = !options.test && widget.result ? { widget: widget.result } : {};
+            const shown = widget.result ? (options.test ? { preview: widget.result } : { widget: widget.result }) : {};
             resolve({ ok: true, steps, ...(changed ? { memory } : {}), ...shown });
             return;
           }

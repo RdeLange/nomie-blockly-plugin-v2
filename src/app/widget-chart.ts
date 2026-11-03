@@ -24,3 +24,24 @@ export const linePaths = (points: Array<number | undefined>, width: number, heig
   flush();
   return { paths, dots };
 };
+
+// The bars of a bar chart: one bar for each day with a value, as tall as its value above the lowest one (a bar is never
+// taller than the chart). A day without a value has no bar.
+export type Bar = { x: number; y: number; w: number; h: number };
+
+export const barRects = (points: Array<number | undefined>, width: number, height: number, pad = 4): Bar[] => {
+  const values = points.filter((v): v is number => typeof v === 'number');
+  if (values.length === 0) return [];
+  const max = Math.max(...values, 0);
+  const min = Math.min(...values, 0);
+  const span = max - min || 1;
+  const slot = (width - 2 * pad) / points.length;
+  const gap = Math.min(slot * 0.25, 6);
+  const bars: Bar[] = [];
+  points.forEach((v, i) => {
+    if (typeof v !== 'number') return;
+    const h = Math.max(1, ((v - min) / span) * (height - 2 * pad));
+    bars.push({ x: pad + i * slot + gap / 2, y: height - pad - h, w: slot - gap, h });
+  });
+  return bars;
+};

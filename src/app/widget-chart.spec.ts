@@ -1,6 +1,6 @@
 // The geometry of a widget's line (phase 20): a gap in the data breaks the line, and a lone day is a dot.
 import { describe, expect, it } from 'vitest';
-import { linePaths } from './widget-chart';
+import { barRects, linePaths } from './widget-chart';
 
 describe('the line of a chart', () => {
   it('has nothing for no data', () => {
@@ -31,5 +31,27 @@ describe('the line of a chart', () => {
     const ys = paths[0].replace(/^M/, '').split(' L').map((p) => Number(p.split(' ')[1]));
     expect(new Set(ys).size).toBe(1);
     expect(ys[0]).toBe(40);
+  });
+});
+
+describe('the bars of a bar chart', () => {
+  it('has one bar a day, as tall as its value, and none for a day without a value', () => {
+    const bars = barRects([2, undefined, 4], 300, 80, 4);
+    expect(bars).toHaveLength(2);
+    expect(bars[1].h).toBeGreaterThan(bars[0].h);
+    expect(bars[0].x).toBeLessThan(bars[1].x);
+  });
+
+  it('the bars are inside the chart, and a flat series has equal bars', () => {
+    const bars = barRects([5, 5, 5], 300, 80, 4);
+    expect(new Set(bars.map((b) => b.h)).size).toBe(1);
+    for (const b of bars) {
+      expect(b.y).toBeGreaterThanOrEqual(0);
+      expect(b.y + b.h).toBeLessThanOrEqual(80);
+    }
+  });
+
+  it('has no bars for no data', () => {
+    expect(barRects([], 300, 80)).toEqual([]);
   });
 });

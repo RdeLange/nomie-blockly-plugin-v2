@@ -25,7 +25,9 @@
   import { appState } from './state.svelte';
   import { ui } from './ui.svelte';
   import { actionDeps, askConfirm } from './dialogs';
-  import { runDays, runNow, tryWithNote } from './actions';
+  import { previewWidget, runDays, runNow, tryWithNote } from './actions';
+  import type { WidgetDesign } from '../runtime/widget';
+  import WidgetDesignView from './WidgetDesignView.svelte';
   import { localDayKey } from '../runtime/dates';
   import { scheduleWindow, type DayOutcome } from '../runtime/scheduler';
   import { checkWorkspace, type Problem, workspaceInfo } from '../blockly/compile';
@@ -69,7 +71,11 @@
   // layout: wide (desktop) or not (phone); the panel and its tab
   let wide = $state(typeof window !== 'undefined' && window.matchMedia(WIDE).matches);
   let panelOpen = $state(typeof window !== 'undefined' && window.matchMedia(WIDE).matches);
-  let tab = $state<'details' | 'run' | 'console'>(ui.startTab ?? 'details');
+  let tab = $state<'details' | 'run' | 'console' | 'preview'>(ui.startTab ?? 'details');
+  // the canvas has a dashboard widget: the Preview tab and the phone's preview button are there (phase 20)
+  let hasWidgetBlock = $state(false);
+  // the widget as the dashboard shows it, from a test run of the blocks (see previewWidget)
+  let preview = $state<{ design?: WidgetDesign; error?: string } | undefined>(undefined);
   ui.startTab = undefined;
   let detailsPanel: HTMLElement | undefined = $state();
 
@@ -226,6 +232,7 @@
     problems = found.map((p) => ({ ...p, label: p.blockId ? (workspace!.getBlockById(p.blockId)?.toString(40) ?? '') : '' }));
     daily = workspace.getBlocksByType('s4eblocklyframe', false).some((b) => b.isEnabled() && b.getFieldValue('NAME') === 'daily');
     noteTracker = workspaceInfo(draft.xml).note;
+    hasWidgetBlock = workspace.getBlocksByType('s4e_dashboard', false).length > 0;
     const tracker = (block: Blockly.Block, input: string) => block.getInputTargetBlock(input)?.getFieldValue('Trackers');
     const unique = (list: Array<string | undefined>) => [...new Set(list.filter((t): t is string => Boolean(t) && t !== '#none'))];
     writes = unique(workspace.getBlocksByType('s4e_logvalue', false).map((b) => tracker(b, 'Tracker')));
@@ -422,7 +429,7 @@
     stop.stopped = true;
   };
 
-  const openPanel = (which: 'details' | 'run' | 'console') => {
+  const openPanel = (which: 'details' | 'run' | 'console' | 'preview') => {
     if (panelOpen && tab === which && !wide) {
       panelOpen = false;
       return;
@@ -444,11 +451,35 @@
   );
   const nextWindow = $derived(daily ? scheduleWindow(appState.workspaces.find((w) => w.id === id)?.latestrun, new Date()) : undefined);
   const dayStatus = (row: { ok: boolean; error?: string }) => (row.ok ? 'ok' : row.error === 'stopped' ? 'stopped' : 'failed');
-  const TABS = [
+  const TABS: Array<[string, string]> = [
     ['details', 'Details'],
     ['run', 'Run'],
     ['console', 'Console'],
-  ] as const;
+  ];
+  // the Preview tab is there only when a widget block is on the canvas, after Console
+  const tabs = $derived(hasWidgetBlock ? [...TABS, ['preview', 'Preview']] : TABS);
+  // the widget as it will look: a test run of the blocks, so nothing is written and nothing is kept
+  const refreshPreview = async () => {
+    const deps = actionDeps();
+    if (!deps) return;
+    flush();
+    const result = await previewWidget(deps, draftWorkspace(), { output: () => undefined });
+    if (!result.ok) preview = { error: result.error };
+    else if (result.preview) preview = { design: result.preview };
+    else preview = { error: t('This workspace has no widget to show.') };
+  };
+  const selectTab = (key: string) => {
+    tab = key as typeof tab;
+    if (key === 'preview') void refreshPreview();
+  };
+  const openPreview = () => {
+    openPanel('preview');
+    void refreshPreview();
+  };
+  // a workspace that loses its widget block has no preview to show
+  $effect(() => {
+    if (!hasWidgetBlock && tab === 'preview') tab = 'details';
+  });
 </script>
 
 <div class="editor" class:wide>
@@ -496,6 +527,9 @@
           <label class="run-test"><input type="checkbox" role="switch" bind:checked={testRun} disabled={running} />Test</label>
           <span class="grow"></span>
           <button class="run-icon" onclick={stopRun} disabled={!running} aria-label="Stop"><Icon name="stop" /></button>
+          {#if hasWidgetBlock}
+            <button class="run-icon" onclick={openPreview} aria-label={t('Preview')}><Icon name="preview" /></button>
+          {/if}
           <button class="run-icon" onclick={() => openPanel('console')} aria-label="Console"><Icon name="console" /></button>
         </div>
       {/if}
@@ -504,8 +538,8 @@
     {#if panelOpen}
       <aside class="ed-panel" class:sheet={!wide} aria-label="Workspace panel">
         <div class="ed-tabs" role="tablist">
-          {#each TABS as [key, name] (key)}
-            <button role="tab" aria-selected={tab === key} class:active={tab === key} onclick={() => (tab = key)}>
+          {#each tabs as [key, name] (key)}
+            <button role="tab" aria-selected={tab === key} class:active={tab === key} onclick={() => selectTab(key)}>
               {t(name)}{#if key === 'run' && errorCount}<span class="ed-badge">{errorCount}</span>{/if}
             </button>
           {/each}
@@ -636,6 +670,21 @@
                 </li>
               {/if}
             </ul>
+          </div>
+        {:else if tab === 'preview'}
+          <div class="ed-pane" role="tabpanel">
+            <div class="ed-actions">
+              <strong class="ed-heading grow">{t('Preview')}</strong>
+              <button class="nb-btn" onclick={refreshPreview} disabled={running}>{t('Refresh preview')}</button>
+            </div>
+            <p class="ed-hint">{t('As it will look on the dashboard. A preview is a test run: no notes are written.')}</p>
+            {#if preview?.design}
+              <div class="ed-preview">
+                <WidgetDesignView design={preview.design} name={draft.displayName} emoji={draft.emoji} onRun={run} />
+              </div>
+            {:else if preview?.error}
+              <p class="ed-problem-text">{preview.error}</p>
+            {/if}
           </div>
         {:else}
           <div class="ed-pane ed-console-pane" role="tabpanel">

@@ -626,3 +626,13 @@
   /* the run bar is dark */
   color: #f9fafb;
 }
+
+/* the preview of a dashboard widget: the size of a dashboard tile (phase 20) */
+.ed-preview {
+  width: 300px;
+  max-width: 100%;
+}
+.ed-problem-text {
+  color: var(--nb-danger, #c0392b);
+  font-size: 13px;
+}

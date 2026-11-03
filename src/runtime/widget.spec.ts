@@ -93,6 +93,8 @@ describe('a dashboard widget built by a run', () => {
     expect('widget' in failed).toBe(false);
     const test = await runCode("widgetStart('Mood', ''); widgetAdd({ kind: 'value', label: 'a', value: 1 }); widgetEnd();", { test: true });
     expect(test.ok && 'widget' in test).toBe(false);
+    // a test run shows its widget as a preview, which is not kept
+    expect(test.ok && test.preview?.components).toEqual([{ kind: 'value', label: 'a', value: '1' }]);
   });
 });
 

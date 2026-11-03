@@ -6,7 +6,7 @@ import type { Block } from 'blockly';
 import { Order, type JavascriptGenerator } from 'blockly/javascript';
 import { CHART_COLOURS, CHART_MAX_DAYS, TREND_DAYS } from '../runtime/widget';
 
-export const WIDGET_BLOCKS = ['s4e_dashboard', 's4e_wvalue', 's4e_wtrend', 's4e_wchart', 's4e_wfooter'];
+export const WIDGET_BLOCKS = ['s4e_dashboard', 's4e_wvalue', 's4e_wtrend', 's4e_wchart', 's4e_wbars', 's4e_wfooter'];
 const COLOUR_NAMES = ['Blue', 'Green', 'Purple', 'Orange', 'Pink', 'Slate'];
 const COLOUR_OPTIONS = CHART_COLOURS.map((colour, i) => [COLOUR_NAMES[i], colour]);
 
@@ -71,6 +71,21 @@ export const defineWidgetBlocks = () => {
       style: 'nomie_blocks',
     },
     {
+      type: 's4e_wbars',
+      tooltip: `Shows a bar chart of a tracker over the last days (at most ${CHART_MAX_DAYS}), one bar a day; a day without a note has no bar. Example: bars of mood over 7 days in Green as "Mood bars".`,
+      message0: 'bar chart of %1 over %2 days in %3 as %4',
+      args0: [
+        { type: 'input_value', name: 'Tracker', check: 'Tracker' },
+        { type: 'field_number', name: 'DAYS', value: 7, min: 1, max: CHART_MAX_DAYS, precision: 1 },
+        { type: 'field_dropdown', name: 'COLOUR', options: COLOUR_OPTIONS },
+        { type: 'field_input', name: 'LABEL', text: 'bars' },
+      ],
+      inputsInline: true,
+      previousStatement: null,
+      nextStatement: null,
+      style: 'nomie_blocks',
+    },
+    {
       type: 's4e_wfooter',
       tooltip: 'A line of text at the foot of the widget. Example: footer "updated every morning".',
       message0: 'footer %1',
@@ -98,6 +113,13 @@ export const registerWidgetGenerators = (js: JavascriptGenerator) => {
     const days = Math.min(CHART_MAX_DAYS, Math.max(1, Math.round(Number(block.getFieldValue('DAYS')) || 30)));
     return (
       `widgetAdd({kind: "chart", label: ${quote(block.getFieldValue('LABEL'))}, colour: ${quote(block.getFieldValue('COLOUR'))}, ` +
+      `points: chartPoints(${input(block, g, 'Tracker', '""')}, ${days})});\n`
+    );
+  };
+  js.forBlock['s4e_wbars'] = (block: Block, g) => {
+    const days = Math.min(CHART_MAX_DAYS, Math.max(1, Math.round(Number(block.getFieldValue('DAYS')) || 7)));
+    return (
+      `widgetAdd({kind: "bars", label: ${quote(block.getFieldValue('LABEL'))}, colour: ${quote(block.getFieldValue('COLOUR'))}, ` +
       `points: chartPoints(${input(block, g, 'Tracker', '""')}, ${days})});\n`
     );
   };

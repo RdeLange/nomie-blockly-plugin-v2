@@ -48,7 +48,7 @@ try {
   await openWidgetFrame(page);
   await page.locator('.wd').waitFor({ timeout: 15000 });
   check('a widget of its own shows its workspace only', (await page.locator('.wd').count()) === 1);
-  check('the widget shows the value of its workspace', (await page.locator('.wd .widget-label').first().textContent()) === '7-day mood');
+  check('the widget shows the value of its workspace', (await page.locator('.wd .wd-label').first().textContent()) === '7-day mood');
   check('the widget draws its chart', (await page.locator('.wd svg path, .wd svg circle').count()) >= 0 && (await page.locator('.wd svg').count()) === 1);
   await page.screenshot({ path: 'screenshots/dashboard-widget.png' });
 

@@ -111,3 +111,15 @@ describe('the old "show on widget" block', () => {
     expect(migrateShowOnWidget(plain)).toBe(plain);
   });
 });
+
+describe('the bar chart block', () => {
+  it('a bar chart of a tracker, a day without a note has no bar', async () => {
+    const { result } = await runXml(
+      DASHBOARD(
+        `<block type="s4e_wbars"><value name="Tracker">${TRACKER('#mood')}</value><field name="DAYS">3</field><field name="COLOUR">#34495E</field><field name="LABEL">Mood bars</field></block>`
+      ),
+      [moodOn('2026-11-01', 4), moodOn('2026-11-03', 6)]
+    );
+    expect(result.ok && result.widget?.components[0]).toEqual({ kind: 'bars', label: 'Mood bars', colour: '#34495E', points: [4, undefined, 6] });
+  });
+});

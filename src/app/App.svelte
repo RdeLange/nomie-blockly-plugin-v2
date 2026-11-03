@@ -47,13 +47,13 @@
     new Date(at).toLocaleString(undefined, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
 </script>
 
-<div class="app" class:dark={ui.theme === 'dark'} class:editing={ui.view === 'editor' && ui.mode !== 'widget'}>
+<div class="app" class:dark={ui.theme === 'dark'} class:widget={ui.mode === 'widget'} class:editing={ui.view === 'editor' && ui.mode !== 'widget'}>
   {#if !ui.ready}
     <p class="muted">{t('Loading…')}</p>
   {:else if ui.mode === 'widget' && ui.widgetIndex !== undefined}
     <!-- a dashboard widget of its own: the workspace DailyNomie placed (phase 20) -->
     {@const tiles = widgetTiles(appState.workspaces, appState.widget, ui.widgetIndex)}
-    <div class="card">
+    <div>
       {#each tiles as tile (tile.workspace.id)}
         {#if tile.shown}
           <WidgetDesignView design={tile.shown} name={tile.workspace.displayName} emoji={tile.workspace.emoji} onRun={() => runFromWidget(tile.workspace.id)} />

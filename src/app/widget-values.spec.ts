@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import type { NomieApi } from '../nomie/api';
 import type { Workspace } from '../domain/workspace';
 import { appState } from './state.svelte';
-import { runNow } from './actions';
+import { previewWidget, runNow } from './actions';
 
 const api: NomieApi = {
   searchNotes: async () => [],
@@ -64,5 +64,14 @@ describe('a run puts its value on the widget', () => {
   it('a test run does not change the value', async () => {
     await runNow(deps, workspace('t', SHOW), { test: true });
     expect(appState.widget.t).toBeUndefined();
+  });
+});
+
+describe('the preview of a widget', () => {
+  it('shows the widget a workspace builds, and keeps nothing', async () => {
+    const before = appState.widget.p;
+    const result = await previewWidget(deps, workspace('p', SHOW));
+    expect(result.ok && result.preview?.components).toEqual([{ kind: 'value', label: '7-day mood', value: '4' }]);
+    expect(appState.widget.p).toBe(before);
   });
 });
