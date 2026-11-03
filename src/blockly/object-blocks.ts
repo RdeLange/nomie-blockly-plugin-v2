@@ -1,6 +1,6 @@
 // The object blocks: read JSON, turn an object into JSON, list its keys, read and set a property, and build an
 // object from named fields. The block types, field and input names are those of Nomie Blockly v1, and so is the
-// generated code, so v1 workspaces (and the "Retrieve Temperature" template) load and run the same.
+// generated code, so v1 workspaces (and the Retrieve Temperature example) load and run the same.
 // An empty input gets a default, so the code always parses.
 import * as Blockly from 'blockly';
 import type { Block } from 'blockly';

@@ -26,9 +26,9 @@ const openFromBackup = async (viewport) => {
   await page.route(/nomie-plugin\.js/, (route) => route.fulfill({ body: '', contentType: 'text/javascript' }));
   await page.goto(url);
   await page.getByRole('button', { name: 'Add', exact: true }).click();
-  await page.locator('.row', { hasText: 'Retrieve Data Example' }).getByRole('button', { name: 'Add' }).first().click();
+  await page.locator('.row', { hasText: 'Example: Yesterday in one number' }).getByRole('button', { name: 'Add' }).first().click();
   // adding saves the workspace: wait for the save, then mark the saved workspaces as from a backup, and launch again
-  await page.waitForFunction(() => (window.localStorage.getItem('fake-nomie-store') ?? '').includes('Retrieve Data Example'), null, { timeout: 15000 });
+  await page.waitForFunction(() => (window.localStorage.getItem('fake-nomie-store') ?? '').includes('Example: Yesterday in one number'), null, { timeout: 15000 });
   await page.evaluate(() => {
     const store = JSON.parse(window.localStorage.getItem('fake-nomie-store'));
     for (const w of store.blockly.workspaces) w.untested = true;

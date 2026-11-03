@@ -24,8 +24,8 @@ try {
 
   // add the widget template and run it from its card: it sets the value on the widget
   await page.getByRole('button', { name: 'Add', exact: true }).click();
-  await page.locator('.row', { hasText: '7-day mood on the widget' }).getByRole('button', { name: 'Add' }).first().click();
-  await page.locator('.card', { hasText: '7-day mood on the widget' }).getByRole('button', { name: 'Run', exact: true }).click();
+  await page.locator('.row', { hasText: 'Example: Dashboard widget with a value' }).getByRole('button', { name: 'Add' }).first().click();
+  await page.locator('.card', { hasText: 'Example: Dashboard widget with a value' }).getByRole('button', { name: 'Run', exact: true }).click();
   // the run saves its value with the stored state: read it there (the app's own state is read in the page too)
   const storedWidget = () => page.evaluate(() => {
     const store = JSON.parse(window.localStorage.getItem('fake-nomie-store') ?? '{}');
@@ -36,14 +36,14 @@ try {
     return Object.keys(store.blockly?.widget ?? {}).length > 0;
   }, null, { timeout: 30000 });
   const saved = await storedWidget();
-  check('the run keeps its value for the widget', saved.components?.[0]?.label === '7-day mood' && saved.components[0].value.length > 0);
+  check('the run keeps its value for the widget', saved.components?.[0]?.label === '7-day average' && saved.components[0].value.length > 0);
 
   // the widget opens (its own frame): it shows the value as a tile
   await page.evaluate(() => window.__nomie.fireWidget());
   await page.setViewportSize({ width: 390, height: 844 });
   await page.waitForFunction(() => document.querySelector('.widget-tile') !== null, null, { timeout: 10000 });
   const tile = page.locator('.widget-tile');
-  check('the widget shows the label', (await tile.locator('.widget-label').textContent()) === '7-day mood');
+  check('the widget shows the label', (await tile.locator('.widget-label').textContent()) === '7-day average');
   check('the widget shows the value', (await tile.locator('.widget-value').textContent()) === saved.components[0].value);
   check('the widget says when it was set', (await tile.locator('.widget-time').textContent()).startsWith('updated '));
   check('the tile has a Run button', (await tile.getByRole('button', { name: 'Run' }).count()) === 1);

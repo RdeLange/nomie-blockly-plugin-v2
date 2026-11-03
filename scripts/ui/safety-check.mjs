@@ -26,23 +26,23 @@ try {
 
   // a template, copied: two cards, the copy named "(copy)"
   await page.getByRole('button', { name: 'Add', exact: true }).click();
-  await page.locator('.row', { hasText: 'Retrieve Data Example' }).getByRole('button', { name: 'Add' }).first().click();
-  await page.locator('.card', { hasText: 'Retrieve Data Example' }).getByRole('button', { name: 'Duplicate' }).click();
+  await page.locator('.row', { hasText: 'Example: Yesterday in one number' }).getByRole('button', { name: 'Add' }).first().click();
+  await page.locator('.card', { hasText: 'Example: Yesterday in one number' }).getByRole('button', { name: 'Duplicate' }).click();
   await page.waitForFunction(() => document.querySelectorAll('.card').length >= 2 && (document.body.textContent ?? '').includes('(copy)'), null, { timeout: 15000 });
-  check('a duplicate is a second card named "(copy)"', (await page.locator('.card', { hasText: 'Retrieve Data Example (copy)' }).count()) === 1);
+  check('a duplicate is a second card named "(copy)"', (await page.locator('.card', { hasText: 'Example: Yesterday in one number (copy)' }).count()) === 1);
 
   // export one: a file with that workspace only, no earlier version and no remembered values
   // the workspace cards (they show "Last run"), not the template list that is open while adding
   const workspaceCard = (name) => page.locator('.card', { hasText: 'Last run' }).filter({ hasText: name }).first();
   const downloadPromise = page.waitForEvent('download');
-  await workspaceCard('Retrieve Data Example').getByRole('button', { name: 'Export' }).click();
+  await workspaceCard('Example: Yesterday in one number').getByRole('button', { name: 'Export' }).click();
   const download = await downloadPromise;
   const file = JSON.parse(readFileSync(await download.path(), 'utf8'));
   check('an export is one workspace, without its earlier version or remembered values',
     Array.isArray(file) && file.length === 1 && !('previous' in file[0]) && !('memory' in file[0]) && typeof file[0].workspaceBlocks === 'string');
 
   // an edit saved: the earlier blocks become the version to restore
-  await workspaceCard('Retrieve Data Example').getByRole('button', { name: 'Edit' }).click();
+  await workspaceCard('Example: Yesterday in one number').getByRole('button', { name: 'Edit' }).click();
   await page.locator('.ed-toolbar').waitFor({ timeout: 15000 });
   await page.evaluate(async () => {
     const { Blockly, loadWorkspace } = await import('/src/blockly/setup.ts');
@@ -71,13 +71,13 @@ try {
 
   // a failed scheduled run: the card says so, and Show opens the Run tab where the error is
   const stored = await page.evaluate(() => JSON.parse(window.localStorage.getItem('fake-nomie-store')));
-  const workspace = stored.blockly.workspaces.find((w) => w.displayName === 'Retrieve Data Example');
+  const workspace = stored.blockly.workspaces.find((w) => w.displayName === 'Example: Yesterday in one number');
   stored.blockly.scheduledays = {
     [workspace.id]: [{ day: '2026-11-02', ok: false, error: 'the run took too many steps', output: [] }],
   };
   await page.evaluate((s) => window.localStorage.setItem('fake-nomie-store', JSON.stringify(s)), stored);
   await page.reload();
-  const card = workspaceCard('Retrieve Data Example');
+  const card = workspaceCard('Example: Yesterday in one number');
   await card.locator('.health.failed').waitFor({ timeout: 15000 });
   check('the card says when the run failed and why', (await card.locator('.health.failed').textContent()) === 'Failed on 2026-11-02: the run took too many steps');
   await page.screenshot({ path: 'screenshots/safety-card.png' });

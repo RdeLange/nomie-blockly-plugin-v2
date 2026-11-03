@@ -538,5 +538,41 @@
     },
     "jscode": "s4eblocklyframe = \"activated\";\nvar schedule = \"none\";\nif (schedule == \"daily\") {\nvar scheduler = scheduler_activated();\nvar schedulerstart = scheduler_start();\nvar schedulerend = scheduler_end();\n}\nelse {var scheduler = false;\nvar schedulerstart = new Date();\nvar schedulerend = new Date();}\nvar loop = new Date(schedulerstart);\nwhile(loop <= schedulerend){\n  display(('Your answer was: ' + String(window.prompt('What is your mood word?'))));var newDate = loop.setDate(loop.getDate() + 1);\nloop = new Date(newDate);}\n",
     "schedule": "none"
+  },
+  {
+    "name": "example-keyword-statistics",
+    "displayName": "Example: Keyword over a period",
+    "description": "Counts the notes that mention a word over the last 30 days, and sums their values.",
+    "detailedDescription": "Not every value is a tracker. A period value block can also take a word, and then it looks for that word in your notes over the period. In this example you search for the word exercise over the last 30 days, and ask for the sum. Build the period value block with a text block in its Trackable input, a period picker set to Last 30 days, and a statistics picker set to sum. Put the result in a message with a sentence in front. Change the word to anything you write about in your notes, and run again: the same blocks answer a different question.",
+    "color": "#C47ADA",
+    "emoji": "🔎",
+    "active": true,
+    "block": "",
+    "workspaceBlocks": "<xml xmlns=\"https://developers.google.com/blockly/xml\"><block type=\"s4eblocklyframe\" x=\"20\" y=\"20\"><field name=\"NAME\">none</field><statement name=\"script\"><block type=\"display\"><value name=\"Value\"><block type=\"text_join\" inline=\"true\"><mutation items=\"3\"></mutation><value name=\"ADD0\"><block type=\"text\"><field name=\"TEXT\">Found &quot;exercise&quot; in </field></block></value><value name=\"ADD1\"><block type=\"s4e_periodvalue\"><value name=\"Trackable\"><block type=\"text\"><field name=\"TEXT\">exercise</field></block></value><value name=\"Period\"><block type=\"s4e_periodpicker\"><field name=\"Period\">LAST30DAYS</field></block></value><value name=\"Statistics\"><block type=\"s4e_statspicker\"><field name=\"Stats\">sum</field></block></value></block></value><value name=\"ADD2\"><block type=\"text\"><field name=\"TEXT\"> log entries over the last 30 days.</field></block></value></block></value></block></statement></block></xml>",
+    "workspacePosition": {
+      "scrollX": 0,
+      "scrollY": 0,
+      "scale": 0.8
+    },
+    "jscode": "s4eblocklyframe = \"activated\";\nvar schedule = \"none\";\nif (schedule == \"daily\") {\nvar scheduler = scheduler_activated();\nvar schedulerstart = scheduler_start();\nvar schedulerend = scheduler_end();\n}\nelse {var scheduler = false;\nvar schedulerstart = new Date();\nvar schedulerend = new Date();}\nvar loop = new Date(schedulerstart);\nwhile(loop <= schedulerend){\n  display((['Found \"exercise\" in ',fetchPeriodValue('exercise',(\"LAST30DAYS\"),(\"sum\")),' log entries over the last 30 days.'].join('')));var newDate = loop.setDate(loop.getDate() + 1);\nloop = new Date(newDate);}\n",
+    "schedule": "none"
+  },
+  {
+    "name": "example-web-service",
+    "displayName": "Example: Read a web service",
+    "description": "Calls a weather service with your key, and reads the temperature from its answer.",
+    "detailedDescription": "This example joins several parts in one flow. First the key: it is a secret, added in Settings under the name OPENWEATHER_KEY, so it is not written in the blocks. Next the request: a fetch block with a join of the address, the secret and the options. The answer is text in JSON, so it is read in two steps: the value from the key main gives an object, and the value from the key temp in that object is the temperature. The answer is kept in two variables, WeatherData and Temperature, and shown in a message. Without the secret, the run stops and names the secret to add.",
+    "color": "#EC9740",
+    "emoji": "🌡️",
+    "active": true,
+    "block": "",
+    "workspaceBlocks": "<xml xmlns=\"https://developers.google.com/blockly/xml\"><variables><variable id=\"var-WeatherData\">WeatherData</variable><variable id=\"var-Temperature\">Temperature</variable></variables><block type=\"s4eblocklyframe\" x=\"20\" y=\"20\"><field name=\"NAME\">none</field><statement name=\"script\"><block type=\"variables_set\"><field name=\"VAR\" id=\"var-WeatherData\">WeatherData</field><value name=\"VALUE\"><block type=\"s4e_httprequest\"><value name=\"Value\"><block type=\"text_join\" inline=\"true\"><mutation items=\"3\"></mutation><value name=\"ADD0\"><block type=\"text\"><field name=\"TEXT\">https://api.openweathermap.org/data/2.5/weather?q=Amsterdam&amp;APPID=</field></block></value><value name=\"ADD1\"><block type=\"s4e_secret\"><field name=\"NAME\">OPENWEATHER_KEY</field></block></value><value name=\"ADD2\"><block type=\"text\"><field name=\"TEXT\">&amp;lang=en&amp;units=metric</field></block></value></block></value></block></value><next><block type=\"variables_set\"><field name=\"VAR\" id=\"var-Temperature\">Temperature</field><value name=\"VALUE\"><block type=\"value_from_json_key\"><value name=\"Key\"><block type=\"text\"><field name=\"TEXT\">temp</field></block></value><value name=\"JSON object\"><block type=\"value_from_json_key\"><value name=\"Key\"><block type=\"text\"><field name=\"TEXT\">main</field></block></value><value name=\"JSON object\"><block type=\"object_from_json\"><value name=\"JSON\"><block type=\"variables_get\"><field name=\"VAR\" id=\"var-WeatherData\">WeatherData</field></block></value></block></value></block></value></block></value><next><block type=\"display\"><value name=\"Value\"><block type=\"text_join\" inline=\"true\"><mutation items=\"3\"></mutation><value name=\"ADD0\"><block type=\"text\"><field name=\"TEXT\">It is </field></block></value><value name=\"ADD1\"><block type=\"variables_get\"><field name=\"VAR\" id=\"var-Temperature\">Temperature</field></block></value><value name=\"ADD2\"><block type=\"text\"><field name=\"TEXT\"> degrees in Amsterdam.</field></block></value></block></value></block></next></block></next></block></statement></block></xml>",
+    "workspacePosition": {
+      "scrollX": 0,
+      "scrollY": 0,
+      "scale": 0.8
+    },
+    "jscode": "var WeatherData, Temperature;\n\n\ns4eblocklyframe = \"activated\";\nvar schedule = \"none\";\nif (schedule == \"daily\") {\nvar scheduler = scheduler_activated();\nvar schedulerstart = scheduler_start();\nvar schedulerend = scheduler_end();\n}\nelse {var scheduler = false;\nvar schedulerstart = new Date();\nvar schedulerend = new Date();}\nvar loop = new Date(schedulerstart);\nwhile(loop <= schedulerend){\n  WeatherData = (httpRequest((['https://api.openweathermap.org/data/2.5/weather?q=Amsterdam&APPID=',secret(\"OPENWEATHER_KEY\"),'&lang=en&units=metric'].join(''))));\n  Temperature = (((JSON.parse(WeatherData))['main'])['temp']);\n  display((['It is ',Temperature,' degrees in Amsterdam.'].join('')));var newDate = loop.setDate(loop.getDate() + 1);\nloop = new Date(newDate);}\n",
+    "schedule": "none"
   }
 ]

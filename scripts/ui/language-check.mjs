@@ -40,8 +40,8 @@ try {
     check(`${lang.code}: the Settings screen is translated`, (await page.getByRole('button', { name: lang.importAdd, exact: true }).count()) === 1);
     await page.goto(url);
     await page.getByRole('button', { name: lang.add, exact: true }).click();
-    await page.locator('.row', { hasText: 'Retrieve Data Example' }).getByRole('button', { name: lang.add }).first().click();
-    await page.locator('.card', { hasText: 'Retrieve Data Example' }).filter({ has: page.getByRole('button', { name: lang.edit }) }).first().getByRole('button', { name: lang.edit }).click();
+    await page.locator('.row', { hasText: 'Example: Yesterday in one number' }).getByRole('button', { name: lang.add }).first().click();
+    await page.locator('.card', { hasText: 'Example: Yesterday in one number' }).filter({ has: page.getByRole('button', { name: lang.edit }) }).first().getByRole('button', { name: lang.edit }).click();
     await page.locator('.ed-toolbar').waitFor({ timeout: 15000 });
 
     check(`${lang.code}: the editor toolbar is translated`, (await page.getByRole('button', { name: lang.save, exact: true }).count()) === 1);

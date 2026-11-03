@@ -16,7 +16,7 @@ try {
   await page.route(/nomie-plugin\.js/, (route) => route.fulfill({ body: '', contentType: 'text/javascript' }));
   await page.goto(url);
   await page.getByRole('button', { name: 'Add', exact: true }).click();
-  await page.locator('.row', { hasText: 'Retrieve Data Example' }).getByRole('button', { name: 'Add' }).first().click();
+  await page.locator('.row', { hasText: 'Example: Yesterday in one number' }).getByRole('button', { name: 'Add' }).first().click();
   await page.getByRole('button', { name: 'Edit' }).first().click();
   await page.waitForTimeout(1200);
   await page.locator('.blocklyToolboxCategory', { hasText: 'Nomie' }).click();

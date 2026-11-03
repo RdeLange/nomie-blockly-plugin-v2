@@ -32,28 +32,28 @@ try {
 
   // two workspaces: one shows a value on the widget (a template), one does not
   await page.getByRole('button', { name: 'Add', exact: true }).click();
-  await page.locator('.row', { hasText: '7-day mood on the widget' }).getByRole('button', { name: 'Add' }).first().click();
-  await page.locator('.row', { hasText: 'Retrieve Data Example' }).getByRole('button', { name: 'Add' }).first().click();
-  await page.locator('.card', { hasText: '7-day mood on the widget' }).filter({ has: page.getByRole('button', { name: 'Run', exact: true }) }).getByRole('button', { name: 'Run', exact: true }).click();
+  await page.locator('.row', { hasText: 'Example: Dashboard widget with a value' }).getByRole('button', { name: 'Add' }).first().click();
+  await page.locator('.row', { hasText: 'Example: Yesterday in one number' }).getByRole('button', { name: 'Add' }).first().click();
+  await page.locator('.card', { hasText: 'Example: Dashboard widget with a value' }).filter({ has: page.getByRole('button', { name: 'Run', exact: true }) }).getByRole('button', { name: 'Run', exact: true }).click();
   await page.waitForFunction(() => Object.keys(JSON.parse(window.localStorage.getItem('fake-nomie-store') ?? '{}').blockly?.widget ?? {}).length > 0, null, { timeout: 30000 });
 
   const store = await stored(page);
-  const moodId = store.blockly.workspaces.find((w) => w.displayName === '7-day mood on the widget').id;
+  const moodId = store.blockly.workspaces.find((w) => w.displayName === 'Example: Dashboard widget with a value').id;
   const list = store.widgets ?? [];
   check('the widgets list has the workspace that shows a value, with its name and emoji',
-    list.length === 1 && list[0].widgetid === moodId && list[0].name === '7-day mood' && list[0].emoji === '📊' && Object.keys(list[0].config).length === 0);
+    list.length === 1 && list[0].widgetid === moodId && list[0].name === 'Mood' && list[0].emoji === '😊' && Object.keys(list[0].config).length === 0);
 
   // DailyNomie opens the widget frame for that workspace: one tile, the one of the workspace it picked
   await page.goto(`${url}?pid=test&widgetindex=${moodId}`);
   await openWidgetFrame(page);
   await page.locator('.wd').waitFor({ timeout: 15000 });
   check('a widget of its own shows its workspace only', (await page.locator('.wd').count()) === 1);
-  check('the widget shows the value of its workspace', (await page.locator('.wd .wd-label').first().textContent()) === '7-day mood');
-  check('the widget draws its charts (a line and a bar chart)', (await page.locator('.wd svg').count()) === 2);
+  check('the widget shows the value of its workspace', (await page.locator('.wd .wd-label').first().textContent()) === '7-day average');
+  check('the widget draws its trend line', (await page.locator('.wd svg').count()) === 1);
   await page.screenshot({ path: 'screenshots/dashboard-widget.png' });
 
   // a workspace without a value yet: its widget says so, and offers Run
-  const retrieveId = store.blockly.workspaces.find((w) => w.displayName === 'Retrieve Data Example').id;
+  const retrieveId = store.blockly.workspaces.find((w) => w.displayName === 'Example: Yesterday in one number').id;
   await page.goto(`${url}?pid=test&widgetindex=${retrieveId}`);
   await openWidgetFrame(page);
   await page.getByRole('button', { name: 'Run', exact: true }).waitFor({ timeout: 15000 });

@@ -23,7 +23,7 @@ try {
   await page.route(/nomie-plugin\.js/, (route) => route.fulfill({ body: '', contentType: 'text/javascript' }));
   await page.goto(url);
   await page.getByRole('button', { name: 'Add', exact: true }).click();
-  await page.locator('.row', { hasText: 'Retrieve Data Example' }).getByRole('button', { name: 'Add' }).first().click();
+  await page.locator('.row', { hasText: 'Example: Yesterday in one number' }).getByRole('button', { name: 'Add' }).first().click();
   await page.getByRole('button', { name: 'Edit' }).first().click();
   await page.waitForTimeout(1200);
 
@@ -38,7 +38,7 @@ try {
   await page.getByRole('tab', { name: /Run/ }).click();
   const rows = await page.locator('.ed-day').allTextContents();
   check(`Run for days lists 3 days (${rows.length})`, rows.length === 3 && rows.every((r) => r.includes('ok')));
-  check('each day shows its message', rows[0].includes('Your average mood score yesterday was'));
+  check('each day shows its message', rows[0].includes('Your average mood yesterday was'));
   await page.screenshot({ path: 'screenshots/run-days.png' });
 
   // a day opens in the Console tab

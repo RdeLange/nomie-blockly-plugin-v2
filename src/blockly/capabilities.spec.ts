@@ -1,7 +1,8 @@
 // What a workspace does with your notes and the network, read from its blocks: shown before an import (C4).
 import { describe, expect, it } from 'vitest';
 import { describeCapabilities, capabilityText } from './capabilities';
-import templates from '../domain/templates.json';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 
 const xml = (inner: string) => `<xml xmlns="https://developers.google.com/blockly/xml">${inner}</xml>`;
 const tracker = (tag: string) => `<block type="s4e_trackers"><field name="Trackers">${tag}</field></block>`;
@@ -38,7 +39,9 @@ describe('what a workspace does (C4)', () => {
   });
 
   it('reads the Retrieve Temperature template', () => {
-    const template = (templates as Array<{ displayName: string; workspaceBlocks: string }>).find((t) => /Temperature/.test(t.displayName))!;
+    // the Retrieve Temperature template was dropped from the Add screen; its blocks are kept as a fixture
+    const former = JSON.parse(readFileSync(join(__dirname, '../test/fixtures/former-templates.json'), 'utf8')) as Array<{ displayName: string; workspaceBlocks: string }>;
+    const template = former.find((t) => /Temperature/.test(t.displayName))!;
     expect(describeCapabilities(template.workspaceBlocks).hosts).toEqual(['api.openweathermap.org']);
   });
 

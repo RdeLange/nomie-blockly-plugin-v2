@@ -29,7 +29,7 @@ try {
   first.on('request', (r) => firstRequests.push(r.url()));
   await first.goto(url);
   await first.getByRole('button', { name: 'Add', exact: true }).click();
-  await first.locator('.row', { hasText: 'Retrieve Data Example' }).getByRole('button', { name: 'Add' }).first().click();
+  await first.locator('.row', { hasText: 'Example: Yesterday in one number' }).getByRole('button', { name: 'Add' }).first().click();
   await first.waitForTimeout(800);
   // the detector works: the first launch compiles the template, so it does request the compiler
   check('the detector sees the compiler when it is needed', firstRequests.some(isBlockly));
@@ -41,13 +41,13 @@ try {
   const requested = [];
   second.on('request', (r) => requested.push(r.url()));
   await second.goto(url);
-  await second.locator('.card', { hasText: 'Retrieve Data Example' }).waitFor({ timeout: 15000 });
+  await second.locator('.card', { hasText: 'Example: Yesterday in one number' }).waitFor({ timeout: 15000 });
   const stored = await second.evaluate(async () => {
     const { appState } = await import('/src/app/state.svelte.ts');
     return appState.workspaces.map((w) => ({ compiled: Boolean(w.compiledFrom), runnable: w.runnable }));
   });
   check('the stored workspace is compiled, and runnable', stored.length === 1 && stored[0].compiled && stored[0].runnable === true);
-  await second.locator('.card', { hasText: 'Retrieve Data Example' }).getByRole('button', { name: 'Run', exact: true }).click();
+  await second.locator('.card', { hasText: 'Example: Yesterday in one number' }).getByRole('button', { name: 'Run', exact: true }).click();
   await second.waitForTimeout(1500);
   const blockly = requested.filter(isBlockly);
   check(`a launch with compiled workspaces requests no Blockly module (${blockly.length} requested)`, blockly.length === 0);

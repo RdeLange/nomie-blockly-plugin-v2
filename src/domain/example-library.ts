@@ -675,4 +675,66 @@ export const EXAMPLES: Example[] = [
       ]),
     ],
   },
+  {
+    name: 'example-keyword-statistics',
+    displayName: 'Example: Keyword over a period',
+    emoji: '🔎',
+    description: 'Counts the notes that mention a word over the last 30 days, and sums their values.',
+    detailedDescription:
+      'Not every value is a tracker. A period value block can also take a word, and then it looks for that word in your notes over the period. In this example you search for the word exercise over the last 30 days, and ask for the sum. Build the period value block with a text block in its Trackable input, a period picker set to Last 30 days, and a statistics picker set to sum. Put the result in a message with a sentence in front. Change the word to anything you write about in your notes, and run again: the same blocks answer a different question.',
+    blocks: [
+      schedule('none', [
+        message(
+          join(
+            text('Found "exercise" in '),
+            block('s4e_periodvalue', {
+              values: { Trackable: text('exercise'), Period: period('LAST30DAYS'), Statistics: stats('sum') },
+            }),
+            text(' log entries over the last 30 days.')
+          )
+        ),
+      ]),
+    ],
+  },
+  {
+    name: 'example-web-service',
+    displayName: 'Example: Read a web service',
+    emoji: '🌡️',
+    description: 'Calls a weather service with your key, and reads the temperature from its answer.',
+    detailedDescription:
+      'This example joins several parts in one flow. First the key: it is a secret, added in Settings under the name OPENWEATHER_KEY, so it is not written in the blocks. Next the request: a fetch block with a join of the address, the secret and the options. The answer is text in JSON, so it is read in two steps: the value from the key main gives an object, and the value from the key temp in that object is the temperature. The answer is kept in two variables, WeatherData and Temperature, and shown in a message. Without the secret, the run stops and names the secret to add.',
+    variables: ['WeatherData', 'Temperature'],
+    live: 'secret',
+    blocks: [
+      schedule('none', [
+        set(
+          'WeatherData',
+          block('s4e_httprequest', {
+            values: {
+              Value: join(
+                text('https://api.openweathermap.org/data/2.5/weather?q=Amsterdam&APPID='),
+                block('s4e_secret', { fields: { NAME: 'OPENWEATHER_KEY' } }),
+                text('&lang=en&units=metric')
+              ),
+            },
+          })
+        ),
+        set(
+          'Temperature',
+          block('value_from_json_key', {
+            values: {
+              Key: text('temp'),
+              'JSON object': block('value_from_json_key', {
+                values: {
+                  Key: text('main'),
+                  'JSON object': block('object_from_json', { values: { JSON: get('WeatherData') } }),
+                },
+              }),
+            },
+          })
+        ),
+        message(join(text('It is '), get('Temperature'), text(' degrees in Amsterdam.'))),
+      ]),
+    ],
+  },
 ];

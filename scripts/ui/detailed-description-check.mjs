@@ -24,8 +24,8 @@ const openEditor = async (viewport) => {
   page.on('pageerror', (e) => { if (e.message !== 'Failed to fetch') errors.push(e.message); });
   await page.goto(url);
   await page.getByRole('button', { name: 'Add', exact: true }).click();
-  await page.locator('.row', { hasText: 'Retrieve Data Example' }).getByRole('button', { name: 'Add' }).first().click();
-  await page.locator('.card', { hasText: 'Retrieve Data Example' }).getByRole('button', { name: 'Edit' }).first().click();
+  await page.locator('.row', { hasText: 'Example: Yesterday in one number' }).getByRole('button', { name: 'Add' }).first().click();
+  await page.locator('.card', { hasText: 'Example: Yesterday in one number' }).getByRole('button', { name: 'Edit' }).first().click();
   await page.locator('.ed-toolbar').waitFor({ timeout: 15000 });
   await page.waitForTimeout(800);
   return { context, page };

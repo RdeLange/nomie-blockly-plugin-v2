@@ -42,7 +42,7 @@ try {
   const page = await openApp({ width: 1440, height: 900 });
 
   // a template that needs a secret: the pre-run check asks for it
-  await addAndEdit(page, 'Retrieve Temperature');
+  await addAndEdit(page, 'Example: Read a web service');
   await page.getByRole('tab', { name: /Run/ }).click();
   const problems = await page.locator('.ed-problems').textContent().catch(() => '');
   check('the pre-run check asks for the secret the template uses', problems.includes('OPENWEATHER_KEY'));
@@ -61,14 +61,14 @@ try {
   await page.getByRole('button', { name: 'Back', exact: true }).click();
 
   // with the secret in Settings, the warning is gone
-  await page.locator('.card', { hasText: 'Retrieve Temperature' }).getByRole('button', { name: 'Edit' }).first().click();
+  await page.locator('.card', { hasText: 'Example: Read a web service' }).getByRole('button', { name: 'Edit' }).first().click();
   await page.waitForTimeout(1200);
   await page.getByRole('tab', { name: /Run/ }).click();
   check('with the secret in Settings, the pre-run check has no problem', (await page.locator('.ed-ok').count()) === 1);
   await page.getByRole('button', { name: 'Back to workspaces' }).click();
 
   // a run remembers a value; Details lists it; Forget all clears it
-  await addAndEdit(page, 'Retrieve Data Example');
+  await addAndEdit(page, 'Example: Yesterday in one number');
   await page.evaluate(async (xml) => {
     const { Blockly } = await import('/src/blockly/setup.ts');
     Blockly.Xml.domToWorkspace(Blockly.utils.xml.textToDom(xml), Blockly.getMainWorkspace());

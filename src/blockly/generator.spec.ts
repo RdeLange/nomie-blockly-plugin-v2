@@ -4,9 +4,11 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { generateCode } from './setup';
-import templates from '../domain/templates.json';
+import kept from '../domain/templates.json';
 
 const fixture = (name: string) => JSON.parse(readFileSync(join(__dirname, '../test/fixtures', name), 'utf8'));
+// the templates that were dropped from the Add screen (the examples replace them); their code is still checked here
+const templates = fixture('former-templates.json') as Array<{ displayName: string; workspaceBlocks: string; jscode: string }>;
 
 describe('generated code matches the code saved by v1', () => {
   const example = fixture('retrieve-data-example.wsp')[0];
@@ -49,7 +51,7 @@ describe('generated code matches the code saved by v1', () => {
   // The saved jscode of this template was typed by hand and does not match its blocks (v1 never regenerated it).
   // The blocks are the source, so the test checks the generated variable and the sum, not the old text.
   it('template: Kick Start generates from its blocks', () => {
-    const template = templates.find((t) => t.displayName === 'Kick Start')!;
+    const template = kept.find((t) => t.displayName === 'Kick Start')!;
     expect(generateCode(template.workspaceBlocks)).toContain('Meaning_of_Life = 40 + 2;');
   });
 });

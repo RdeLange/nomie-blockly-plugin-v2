@@ -26,7 +26,7 @@ const openTwo = async (viewport, name) => {
   await page.goto(url);
   // the template list opens with the header's Add, and stays open while templates are added
   await page.getByRole('button', { name: 'Add', exact: true }).click();
-  for (const template of ['Retrieve Data Example', 'Kick Start']) {
+  for (const template of ['Example: Yesterday in one number', 'Kick Start']) {
     await page.locator('.row', { hasText: template }).getByRole('button', { name: 'Add' }).first().click();
     await page.waitForTimeout(400);
   }
@@ -37,7 +37,7 @@ const openTwo = async (viewport, name) => {
 
 try {
   // 1440 x 900: the list beside the editor
-  let { context, page } = await openTwo({ width: 1440, height: 900 }, 'Retrieve Data Example');
+  let { context, page } = await openTwo({ width: 1440, height: 900 }, 'Example: Yesterday in one number');
   const side = page.locator('.ws-side');
   check('from 1200 px wide the list sits beside the editor', (await side.count()) === 1);
   const width = (await side.boundingBox())?.width ?? 0;
@@ -57,24 +57,24 @@ try {
   const asked = () => page.evaluate(() => window.__nomie.dialogs.some((d) => d.startsWith('Leave without saving?')));
   const before = await asked();
   await page.evaluate(() => (window.__fakeConfirm = false));
-  await page.locator('.ws-item', { hasText: 'Retrieve Data Example' }).click();
+  await page.locator('.ws-item', { hasText: 'Example: Yesterday in one number' }).click();
   await page.waitForTimeout(600);
   check('with unsaved changes, switching asks first', (await asked()) && !before);
   check('No keeps the open workspace and its changes', (await page.locator('.ed-title h1').textContent())?.includes('Kick Start changed'));
   await page.evaluate(() => (window.__fakeConfirm = true));
-  await page.locator('.ws-item', { hasText: 'Retrieve Data Example' }).click();
+  await page.locator('.ws-item', { hasText: 'Example: Yesterday in one number' }).click();
   await page.waitForTimeout(600);
-  check('Yes switches to the other workspace', (await page.locator('.ed-title h1').textContent())?.trim() === 'Retrieve Data Example');
+  check('Yes switches to the other workspace', (await page.locator('.ed-title h1').textContent())?.trim() === 'Example: Yesterday in one number');
   await context.close();
 
   // 1100 x 800: no list beside the editor
-  ({ context, page } = await openTwo({ width: 1100, height: 800 }, 'Retrieve Data Example'));
+  ({ context, page } = await openTwo({ width: 1100, height: 800 }, 'Example: Yesterday in one number'));
   check('below 1200 px wide there is no list beside the editor', (await page.locator('.ws-side').count()) === 0);
   await page.screenshot({ path: 'screenshots/split-1100.png' });
   await context.close();
 
   // 390 x 844: the rail shows one label, and all the tiles fit
-  ({ context, page } = await openTwo({ width: 390, height: 844 }, 'Retrieve Data Example'));
+  ({ context, page } = await openTwo({ width: 390, height: 844 }, 'Example: Yesterday in one number'));
   const visibleLabels = () => page.evaluate(() =>
     Array.from(document.querySelectorAll('.nomie-rail-label')).filter((el) => getComputedStyle(el).display !== 'none').length
   );

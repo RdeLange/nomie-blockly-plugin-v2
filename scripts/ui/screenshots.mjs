@@ -1,5 +1,5 @@
 // Screenshots of the editor at desktop and phone size, for checking the look after a UI change.
-// Starts its own Vite dev server, opens the "Retrieve Data Example" template in the editor, and saves
+// Starts its own Vite dev server, opens the "Example: Yesterday in one number" template in the editor, and saves
 // screenshots/editor-desktop.png (1440x900), editor-laptop.png (1100x800) and editor-phone.png (390x844).
 // Usage: node scripts/ui/screenshots.mjs [name]   (name is an optional suffix, e.g. "phase5")
 import { mkdirSync } from 'node:fs';
@@ -34,8 +34,8 @@ try {
     });
     await page.goto(url, { waitUntil: 'load' });
     await page.getByRole('button', { name: 'Add', exact: true }).click();
-    // the Add button in the template row of "Retrieve Data Example"
-    const row = page.locator('.row', { hasText: 'Retrieve Data Example' }).filter({ has: page.getByRole('button', { name: 'Add' }) });
+    // the Add button in the template row of "Example: Yesterday in one number"
+    const row = page.locator('.row', { hasText: 'Example: Yesterday in one number' }).filter({ has: page.getByRole('button', { name: 'Add' }) });
     await row.getByRole('button', { name: 'Add' }).first().click();
     await page.getByRole('button', { name: 'Edit' }).first().click();
     await page.waitForTimeout(1500);

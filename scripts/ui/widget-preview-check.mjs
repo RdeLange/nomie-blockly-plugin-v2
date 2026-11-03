@@ -34,7 +34,7 @@ try {
   await context.route(/nomie-plugin\.js/, (route) => route.fulfill({ body: '', contentType: 'text/javascript' }));
 
   // a workspace with a widget: the Preview tab, and the preview at dashboard size
-  let page = await openEditor(context, '7-day mood on the widget', { width: 1440, height: 900 });
+  let page = await openEditor(context, 'Example: Dashboard widget with a value', { width: 1440, height: 900 });
   check('a workspace with a widget block has a Preview tab', (await page.getByRole('tab', { name: 'Preview' }).count()) === 1);
   await page.getByRole('tab', { name: 'Preview' }).click();
   await page.locator('.ed-preview .wd').waitFor({ timeout: 15000 });
@@ -51,7 +51,7 @@ try {
   await page.close();
 
   // a workspace without a widget: no Preview tab
-  page = await openEditor(context, 'Retrieve Data Example', { width: 1440, height: 900 });
+  page = await openEditor(context, 'Example: Yesterday in one number', { width: 1440, height: 900 });
   check('a workspace without a widget block has no Preview tab', (await page.getByRole('tab', { name: 'Preview' }).count()) === 0);
   await page.close();
 
@@ -59,7 +59,7 @@ try {
   const phoneContext = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2 });
   await phoneContext.addInitScript({ content: readFileSync('scripts/ui/fake-nomie.js', 'utf8') });
   await phoneContext.route(/nomie-plugin\.js/, (route) => route.fulfill({ body: '', contentType: 'text/javascript' }));
-  page = await openEditor(phoneContext, '7-day mood on the widget', { width: 390, height: 844 });
+  page = await openEditor(phoneContext, 'Example: Dashboard widget with a value', { width: 390, height: 844 });
   const previewButton = page.getByRole('button', { name: 'Preview', exact: true });
   check('on a phone, a widget workspace has the Preview button', (await previewButton.count()) === 1);
   await previewButton.click();
@@ -67,7 +67,7 @@ try {
   check('the phone preview draws the widget', (await page.locator('.ed-preview .wd').count()) === 1);
   await page.screenshot({ path: 'screenshots/preview-phone.png' });
   await page.close();
-  page = await openEditor(phoneContext, 'Retrieve Data Example', { width: 390, height: 844 });
+  page = await openEditor(phoneContext, 'Example: Yesterday in one number', { width: 390, height: 844 });
   check('on a phone, a workspace without a widget has no Preview button', (await page.getByRole('button', { name: 'Preview', exact: true }).count()) === 0);
   await page.close();
 } finally {
