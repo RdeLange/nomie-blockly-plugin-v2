@@ -52,6 +52,7 @@ jobs:
       - run: node scripts/ui/history-check.mjs
       - run: node scripts/ui/note-trigger-check.mjs
       - run: node scripts/ui/widget-check.mjs
+      - run: node scripts/ui/dashboard-widget-check.mjs
       - run: node scripts/ui/lean-start-check.mjs
       - run: node scripts/ui/safety-check.mjs
       - run: node scripts/ui/language-check.mjs

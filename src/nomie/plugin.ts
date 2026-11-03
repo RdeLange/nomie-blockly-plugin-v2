@@ -4,6 +4,7 @@ import { appState } from '../app/state.svelte';
 import { ui } from '../app/ui.svelte';
 import { trackerChoices } from '../app/trackers.svelte';
 import { applyUserPrefs, onPrefsChanged } from '../app/prefs';
+import { dashboardWidgets, widgetIndexOf } from '../app/dashboard-widgets';
 import { STORAGE_KEY, readState } from '../app/state.svelte';
 import { compileStale, scheduleIfDue, runFromNote, runFromNotes } from '../app/actions';
 import { rememberWritten, wasWrittenHere } from '../app/written-notes';
@@ -80,12 +81,23 @@ export const startNomie = (): NomieHandle | undefined => {
     },
   };
 
+  // The workspaces that can be dashboard widgets, for DailyNomie's widget editor (phase 20)
+  // A list that does not save is written again at the next save, so its failure is not an error of its own.
+  const publishWidgets = async () => {
+    try {
+      await plugin.storage.setItem('widgets', dashboardWidgets(appState.workspaces));
+    } catch {
+      // see above
+    }
+  };
+
   // Saving waits for Nomie and says when it failed. Before the stored state is loaded nothing is saved: that would
   // write an empty list of workspaces over the stored one.
   const save = async (): Promise<boolean> => {
     if (!appState.loaded) return false;
     try {
       await plugin.storage.setItem(STORAGE_KEY, appState.toStored());
+      await publishWidgets();
       return true;
     } catch (error) {
       plugin.alert('Not saved', `Nomie Blockly could not save your workspaces: ${String(error)}`);
@@ -103,6 +115,7 @@ export const startNomie = (): NomieHandle | undefined => {
     ui.ready = true;
     // a workspace from before the stored code was kept is compiled once, and stored (see compiler.ts)
     void compileStale(deps);
+    void publishWidgets();
     void refreshTrackers(api);
     // Nomie may launch the plugin before its storage is ready; the schedule then starts here
     if (launched) void scheduleIfDue(deps);
@@ -122,6 +135,8 @@ export const startNomie = (): NomieHandle | undefined => {
   plugin.onWidget(() => {
     applyUserPrefs(plugin.prefs);
     ui.mode = 'widget';
+    // the dashboard widget DailyNomie placed (a workspace), or none for the one widget of phase 15
+    ui.widgetIndex = widgetIndexOf(window.location.search);
     void reloadWidget();
     if (widgetTimer) clearInterval(widgetTimer);
     widgetTimer = setInterval(() => void reloadWidget(), 5 * 60 * 1000);

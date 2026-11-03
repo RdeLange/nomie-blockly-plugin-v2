@@ -6,6 +6,8 @@ class UiState {
   theme = $state<'light' | 'dark'>('light');
   view = $state<View>('list');
   editingId = $state<string | null>(null);
+  // the dashboard widget the widget frame shows (a workspace id), when DailyNomie placed one (phase 20)
+  widgetIndex = $state<string | undefined>(undefined);
   // the tab the editor opens on, once (a card's Show opens the Run tab of a failed workspace)
   startTab = $state<'details' | 'run' | 'console' | undefined>(undefined);
   ready = $state(false);

@@ -43,7 +43,8 @@
       setTimeout(fn, 0);
     }
     onUIOpened(fn) {
-      setTimeout(fn, 10);
+      // the page opens as the modal, unless it is a dashboard widget (DailyNomie opens those with onWidget only)
+      if (!window.location.search.includes('widgetindex=')) setTimeout(fn, 10);
     }
     onWidget(fn) {
       state.widgetListeners.push(fn);

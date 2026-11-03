@@ -27,6 +27,7 @@
   import { startNomie } from '../nomie/plugin';
   import { actionDeps, notify } from './dialogs';
   import { runNow } from './actions';
+  import { widgetTiles } from './dashboard-widgets';
 
   // The plugin marks the app ready once the stored state is loaded (or at once outside Nomie). Showing the lists
   // before that let a workspace added in the meantime be replaced by the stored state when it loads.
@@ -47,6 +48,32 @@
 <div class="app" class:dark={ui.theme === 'dark'} class:editing={ui.view === 'editor' && ui.mode !== 'widget'}>
   {#if !ui.ready}
     <p class="muted">{t('Loading…')}</p>
+  {:else if ui.mode === 'widget' && ui.widgetIndex !== undefined}
+    <!-- a dashboard widget of its own: the workspace DailyNomie placed (phase 20) -->
+    {@const tiles = widgetTiles(appState.workspaces, appState.widget, ui.widgetIndex)}
+    <div class="card">
+      {#each tiles as tile (tile.workspace.id)}
+        <div class="row">
+          <span class="emoji" style="background: {tile.workspace.color}">{tile.workspace.emoji}</span>
+          <span class="grow"><strong>{tile.workspace.displayName}</strong></span>
+        </div>
+        {#if tile.shown}
+          <div class="widget-tile">
+            <span class="widget-label">{tile.shown.label}</span>
+            <span class="widget-value">{tile.shown.value}</span>
+            <span class="widget-time">{t('updated')} {updatedText(tile.shown.at)}</span>
+            <button class="button" onclick={() => runFromWidget(tile.workspace.id)}>{t('Run')}</button>
+          </div>
+        {:else}
+          <div class="row" style="margin-top: 10px">
+            <span class="grow muted">{t('No value yet. Run the workspace.')}</span>
+            <button class="button" onclick={() => runFromWidget(tile.workspace.id)}>{t('Run')}</button>
+          </div>
+        {/if}
+      {:else}
+        <p class="muted">{t("This widget's workspace was removed. Remove the widget from the dashboard.")}</p>
+      {/each}
+    </div>
   {:else if ui.mode === 'widget'}
     <div class="card">
       <div class="row">
@@ -58,7 +85,7 @@
         <div class="widget-tile">
           <span class="widget-label">{shown.label}</span>
           <span class="widget-value">{shown.value}</span>
-          <span class="widget-time">updated {updatedText(shown.at)}</span>
+          <span class="widget-time">{t('updated')} {updatedText(shown.at)}</span>
           <button class="button" onclick={() => runFromWidget(workspace.id)}>{t('Run')}</button>
         </div>
       {/each}

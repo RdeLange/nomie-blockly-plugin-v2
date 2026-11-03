@@ -75,6 +75,9 @@ const NL: Record<string, string> = {
   'Daily: runs for each day since its last run, up to yesterday.': 'Dagelijks: draait voor elke dag sinds de laatste run, tot en met gisteren.',
   'Not scheduled. Set the Scheduler block to Daily to run it every day.': 'Niet gepland. Zet het Planner-blok op Dagelijks om het elke dag te laten draaien.',
   'No workspaces yet. Add one above, or start from a template.': 'Nog geen werkruimten. Voeg er hierboven een toe, of begin met een sjabloon.',
+  updated: 'bijgewerkt',
+  'No value yet. Run the workspace.': 'Nog geen waarde. Voer de werkruimte uit.',
+  "This widget's workspace was removed. Remove the widget from the dashboard.": 'De werkruimte van deze widget is verwijderd. Verwijder de widget van het dashboard.',
 };
 
 // German: DailyNomie 7's words where it has them (Speichern, Exportieren, Duplizieren, Löschen, Bearbeiten, Zurück)
@@ -146,6 +149,9 @@ const DE: Record<string, string> = {
   'Daily: runs for each day since its last run, up to yesterday.': 'Täglich: läuft für jeden Tag seit dem letzten Lauf, bis einschließlich gestern.',
   'Not scheduled. Set the Scheduler block to Daily to run it every day.': 'Nicht geplant. Stelle den Zeitplan-Block auf Täglich, damit er jeden Tag läuft.',
   'No workspaces yet. Add one above, or start from a template.': 'Noch keine Arbeitsbereiche. Füge oben einen hinzu oder beginne mit einer Vorlage.',
+  updated: 'aktualisiert',
+  'No value yet. Run the workspace.': 'Noch kein Wert. Führe den Arbeitsbereich aus.',
+  "This widget's workspace was removed. Remove the widget from the dashboard.": 'Der Arbeitsbereich dieses Widgets wurde entfernt. Entferne das Widget vom Dashboard.',
 };
 
 // Italian: DailyNomie 7's words where it has them (Salva, Esporta, Duplica, Elimina, Modifica, Indietro)
@@ -217,6 +223,9 @@ const IT: Record<string, string> = {
   'Daily: runs for each day since its last run, up to yesterday.': 'Giornaliero: viene eseguito per ogni giorno dall’ultima esecuzione, fino a ieri.',
   'Not scheduled. Set the Scheduler block to Daily to run it every day.': 'Non pianificato. Imposta il blocco Pianificatore su Giornaliero per eseguirlo ogni giorno.',
   'No workspaces yet. Add one above, or start from a template.': 'Nessuno spazio di lavoro ancora. Aggiungine uno sopra, o parti da un modello.',
+  updated: 'aggiornato',
+  'No value yet. Run the workspace.': 'Nessun valore ancora. Esegui lo spazio di lavoro.',
+  "This widget's workspace was removed. Remove the widget from the dashboard.": 'Lo spazio di lavoro di questo widget è stato rimosso. Rimuovi il widget dalla dashboard.',
 };
 
 // The translations by language. English has none: the text is its own translation.
