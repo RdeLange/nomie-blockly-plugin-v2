@@ -1,8 +1,12 @@
 // The plugin's own text, in the language of the Nomie user (phase 18). English is the text itself, so a missing
 // translation shows English. Nomie sends the language with `registered` (plugin.prefs.language).
-export type Language = 'en' | 'nl';
+//
+// The languages are the ones DailyNomie 7 ships (English, Italian, German, Dutch), and the words follow its
+// translations where they have one (save, export, duplicate, and so on).
+export type Language = 'en' | 'nl' | 'de' | 'it';
+export const LANGUAGES: Language[] = ['en', 'nl', 'de', 'it'];
 
-// Dutch. The keys are the English text as it appears in the screens.
+// The keys are the English text as it appears in the screens.
 const NL: Record<string, string> = {
   Add: 'Toevoegen',
   Close: 'Sluiten',
@@ -64,15 +68,142 @@ const NL: Record<string, string> = {
   Name: 'Naam',
 };
 
+// German: DailyNomie 7's words where it has them (Speichern, Exportieren, Duplizieren, Löschen, Bearbeiten, Zurück)
+const DE: Record<string, string> = {
+  Add: 'Hinzufügen',
+  Close: 'Schließen',
+  Settings: 'Einstellungen',
+  About: 'Über',
+  Edit: 'Bearbeiten',
+  Run: 'Ausführen',
+  Delete: 'Löschen',
+  Info: 'Info',
+  Export: 'Exportieren',
+  Duplicate: 'Duplizieren',
+  Show: 'Anzeigen',
+  Daily: 'Täglich',
+  'Not scheduled': 'Nicht geplant',
+  'Last run': 'Letzter Lauf',
+  never: 'nie',
+  Back: 'Zurück',
+  'Back to workspaces': 'Zurück zur Liste',
+  Save: 'Speichern',
+  Stop: 'Stopp',
+  Details: 'Details',
+  Console: 'Konsole',
+  Output: 'Ausgabe',
+  Clear: 'Alle löschen',
+  'Test run': 'Testlauf',
+  'Run for yesterday': 'Für gestern ausführen',
+  'Run now': 'Jetzt ausführen',
+  'Before a run': 'Vor dem Lauf',
+  'No problems found.': 'Keine Probleme gefunden.',
+  'Run for days': 'Für Tage ausführen',
+  From: 'Von',
+  To: 'Bis',
+  'Remembered values': 'Gespeicherte Werte',
+  Versions: 'Versionen',
+  'Export this workspace': 'Diesen Arbeitsbereich exportieren',
+  'Forget all': 'Alles vergessen',
+  Scheduler: 'Zeitplan',
+  Backup: 'Backup',
+  Secrets: 'Geheimnisse',
+  'Include remembered values': 'Gespeicherte Werte einschließen',
+  'Run the schedule now': 'Zeitplan jetzt ausführen',
+  'Import and add': 'Importieren und hinzufügen',
+  'Import and replace': 'Importieren und ersetzen',
+  'New workspace': 'Neuer Arbeitsbereich',
+  'Import a .wsp file': 'Eine .wsp-Datei importieren',
+  Templates: 'Templates',
+  'Try with a note': 'Mit einer Notiz testen',
+  Try: 'Testen',
+  'Name used in notes': 'Name in Notizen',
+  Description: 'Beschreibung',
+  Emoji: 'Emoji',
+  Colour: 'Farbe',
+  Schedule: 'Zeitplan',
+  'Test run (no notes are written)': 'Testlauf (es werden keine Notizen geschrieben)',
+  'Loading…': 'Wird geladen…',
+  'Loading the editor…': 'Der Editor wird geladen…',
+  'Search all blocks': 'Alle Blöcke durchsuchen',
+  Search: 'Suche',
+  Name: 'Name',
+};
+
+// Italian: DailyNomie 7's words where it has them (Salva, Esporta, Duplica, Elimina, Modifica, Indietro)
+const IT: Record<string, string> = {
+  Add: 'Aggiungi',
+  Close: 'Chiudi',
+  Settings: 'Impostazioni',
+  About: 'Info',
+  Edit: 'Modifica',
+  Run: 'Esegui',
+  Delete: 'Elimina',
+  Info: 'Info',
+  Export: 'Esporta',
+  Duplicate: 'Duplica',
+  Show: 'Mostra',
+  Daily: 'Giornaliero',
+  'Not scheduled': 'Non pianificato',
+  'Last run': 'Ultima esecuzione',
+  never: 'mai',
+  Back: 'Indietro',
+  'Back to workspaces': 'Torna alla lista',
+  Save: 'Salva',
+  Stop: 'Stop',
+  Details: 'Dettagli',
+  Console: 'Console',
+  Output: 'Output',
+  Clear: 'Cancella tutto',
+  'Test run': 'Esecuzione di prova',
+  'Run for yesterday': 'Esegui per ieri',
+  'Run now': 'Esegui ora',
+  'Before a run': 'Prima dell’esecuzione',
+  'No problems found.': 'Nessun problema trovato.',
+  'Run for days': 'Esegui per giorni',
+  From: 'Da',
+  To: 'A',
+  'Remembered values': 'Valori memorizzati',
+  Versions: 'Versioni',
+  'Export this workspace': 'Esporta questo spazio di lavoro',
+  'Forget all': 'Dimentica tutto',
+  Scheduler: 'Pianificatore',
+  Backup: 'Backup',
+  Secrets: 'Segreti',
+  'Include remembered values': 'Includi i valori memorizzati',
+  'Run the schedule now': 'Esegui ora la pianificazione',
+  'Import and add': 'Importa e aggiungi',
+  'Import and replace': 'Importa e sostituisci',
+  'New workspace': 'Nuovo spazio di lavoro',
+  'Import a .wsp file': 'Importa un file .wsp',
+  Templates: 'Templates',
+  'Try with a note': 'Prova con una nota',
+  Try: 'Prova',
+  'Name used in notes': 'Nome nelle note',
+  Description: 'Descrizione',
+  Emoji: 'Emoji',
+  Colour: 'Colore',
+  Schedule: 'Pianificazione',
+  'Test run (no notes are written)': 'Esecuzione di prova (non viene scritta nessuna nota)',
+  'Loading…': 'Caricamento…',
+  'Loading the editor…': 'Caricamento dell’editor…',
+  'Search all blocks': 'Cerca in tutti i blocchi',
+  Search: 'Cerca',
+  Name: 'Nome',
+};
+
+// The translations by language. English has none: the text is its own translation.
+export const DICTIONARIES: Partial<Record<Language, Record<string, string>>> = { nl: NL, de: DE, it: IT };
+
 class I18nState {
   lang = $state<Language>('en');
 }
 export const i18n = new I18nState();
 
-// Nomie's language (for example "nl-NL" or "en"); anything but Dutch is English
+// Nomie's language ("nl-NL", "de", "it_IT"): the first two letters, when the plugin has them; anything else is English
 export const setLanguage = (raw: unknown) => {
-  const text = typeof raw === 'string' ? raw.toLowerCase() : '';
-  i18n.lang = text.startsWith('nl') ? 'nl' : 'en';
+  const code = typeof raw === 'string' ? raw.trim().toLowerCase().slice(0, 2) : '';
+  i18n.lang = (LANGUAGES as string[]).includes(code) ? (code as Language) : 'en';
 };
 
-export const t = (text: string): string => (i18n.lang === 'nl' ? (NL[text] ?? text) : text);
+export const t = (text: string): string => DICTIONARIES[i18n.lang]?.[text] ?? text;

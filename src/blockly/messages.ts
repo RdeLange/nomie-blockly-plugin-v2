@@ -3,11 +3,16 @@
 // it loads, and setup.ts imports it before those blocks. The language is set at registration, before any of this runs.
 import * as Blockly from 'blockly';
 import * as dutch from 'blockly/msg/nl';
-import { i18n } from '../app/i18n.svelte';
+import * as german from 'blockly/msg/de';
+import * as italian from 'blockly/msg/it';
+import { i18n, type Language } from '../app/i18n.svelte';
 
-export const applyBlocklyLanguage = (lang: 'en' | 'nl') => {
-  if (lang !== 'nl') return;
-  for (const [key, value] of Object.entries(dutch)) {
+const TABLES: Partial<Record<Language, Record<string, unknown>>> = { nl: dutch, de: german, it: italian };
+
+export const applyBlocklyLanguage = (lang: Language) => {
+  const table = TABLES[lang];
+  if (!table) return;
+  for (const [key, value] of Object.entries(table)) {
     if (typeof value === 'string') Blockly.Msg[key] = value;
   }
 };
