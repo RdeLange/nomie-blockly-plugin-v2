@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { t } from './i18n.svelte';
+  import { t, tf } from './i18n.svelte';
   import { appState } from './state.svelte';
   import { ui } from './ui.svelte';
   import { actionDeps, askConfirm, notify } from './dialogs';
@@ -128,7 +128,7 @@
 
 {#if appState.workspaces.length === 0}
   <div class="card">
-    <p>No workspaces yet. Add one above, or start from a template.</p>
+    <p>{t('No workspaces yet. Add one above, or start from a template.')}</p>
   </div>
 {/if}
 
@@ -142,7 +142,7 @@
         <div class="row" style="margin-top: 6px">
           <span class="pill" class:on={isDaily(workspace)}>{isDaily(workspace) ? t('Daily') : t('Not scheduled')}</span>
           {#if workspace.note}
-            <span class="pill on">Runs when {workspace.note} is logged</span>
+            <span class="pill on">{tf('Runs when {tracker} is logged', { tracker: workspace.note })}</span>
           {/if}
           <span class="muted">{t('Last run')}: {dayText(workspace.latestrun)}</span>
         </div>

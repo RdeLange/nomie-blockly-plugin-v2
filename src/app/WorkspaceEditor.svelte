@@ -14,7 +14,7 @@
   import { toolbox } from '../blockly/toolbox';
   import { loadWorkspace, setupBlockly } from '../blockly/setup';
   import { applyBlocklyLanguage } from '../blockly/messages';
-  import { i18n } from './i18n.svelte';
+  import { i18n, tf } from './i18n.svelte';
   import { trackerOptionsNow } from './trackers.svelte';
   import { applyCompiled, refreshCompiled } from './compiler';
   import { restoredWorkspace, savedWithBlocks, workspaceToFile } from '../domain/workspace';
@@ -433,7 +433,7 @@
 
   const lastRun = $derived(start?.latestrun ? new Date(start.latestrun).toLocaleDateString() : 'never');
   const status = $derived(
-    [daily ? 'Runs daily' : 'Not scheduled', `last run ${lastRun}`, running ? 'running…' : dirty ? 'unsaved changes' : 'saved'].join(' · ')
+    [daily ? t('Runs daily') : t('Not scheduled'), `${t('last run')} ${lastRun}`, running ? t('running…') : dirty ? t('unsaved changes') : t('saved')].join(' · ')
   );
   const errorCount = $derived(problems.filter((p) => p.level === 'error').length);
   // the days the Run tab lists: this editor's last run over days, or else the last scheduled run
@@ -534,8 +534,8 @@
             </div>
             <div class="ed-summary">
               <strong>{t('Schedule')}</strong>
-              <span>{daily ? 'Daily: runs for each day since its last run, up to yesterday.' : 'Not scheduled. Set the Scheduler block to Daily to run it every day.'}</span>
-              {#if noteTracker}<span>Runs when {noteTracker} is logged</span>{/if}
+              <span>{daily ? t('Daily: runs for each day since its last run, up to yesterday.') : t('Not scheduled. Set the Scheduler block to Daily to run it every day.')}</span>
+              {#if noteTracker}<span>{tf('Runs when {tracker} is logged', { tracker: noteTracker })}</span>{/if}
               {#if reads.length}<span>Reads {reads.join(', ')}</span>{/if}
               {#if writes.length}<span>Writes to {writes.join(', ')}</span>{/if}
             </div>

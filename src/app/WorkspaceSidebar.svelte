@@ -7,7 +7,7 @@
   import { addWorkspaces, newWorkspaceFromBlocks } from './editing';
   import { healthOf } from './health';
   import { filterWorkspaces } from './workspace-filter';
-  import { t } from './i18n.svelte';
+  import { t, tf } from './i18n.svelte';
 
   let query = $state('');
   const shown = $derived(filterWorkspaces(appState.workspaces, query));
@@ -43,7 +43,7 @@
           <span class="emoji" style="background: {workspace.color}">{workspace.emoji}</span>
           <span class="ws-item-text">
             <strong>{workspace.displayName}</strong>
-            <span class="muted">{workspace.schedule === 'daily' ? t('Daily') : workspace.note ? `Runs when ${workspace.note} is logged` : t('Not scheduled')}</span>
+            <span class="muted">{workspace.schedule === 'daily' ? t('Daily') : workspace.note ? tf('Runs when {tracker} is logged', { tracker: workspace.note }) : t('Not scheduled')}</span>
             {#if health}
               <span class="health" class:failed={health.failed}>{health.text}</span>
             {/if}

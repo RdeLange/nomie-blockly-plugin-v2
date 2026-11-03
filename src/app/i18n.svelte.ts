@@ -66,6 +66,15 @@ const NL: Record<string, string> = {
   'Search all blocks': 'Alle blokken doorzoeken',
   Search: 'Zoeken',
   Name: 'Naam',
+  'Runs when {tracker} is logged': 'Draait wanneer {tracker} wordt gelogd',
+  'Runs daily': 'Draait dagelijks',
+  'last run': 'laatste run',
+  'running…': 'bezig…',
+  'unsaved changes': 'niet-opgeslagen wijzigingen',
+  saved: 'opgeslagen',
+  'Daily: runs for each day since its last run, up to yesterday.': 'Dagelijks: draait voor elke dag sinds de laatste run, tot en met gisteren.',
+  'Not scheduled. Set the Scheduler block to Daily to run it every day.': 'Niet gepland. Zet het Planner-blok op Dagelijks om het elke dag te laten draaien.',
+  'No workspaces yet. Add one above, or start from a template.': 'Nog geen werkruimten. Voeg er hierboven een toe, of begin met een sjabloon.',
 };
 
 // German: DailyNomie 7's words where it has them (Speichern, Exportieren, Duplizieren, Löschen, Bearbeiten, Zurück)
@@ -128,6 +137,15 @@ const DE: Record<string, string> = {
   'Search all blocks': 'Alle Blöcke durchsuchen',
   Search: 'Suche',
   Name: 'Name',
+  'Runs when {tracker} is logged': 'Läuft, wenn {tracker} erfasst wird',
+  'Runs daily': 'Läuft täglich',
+  'last run': 'letzter Lauf',
+  'running…': 'läuft…',
+  'unsaved changes': 'ungespeicherte Änderungen',
+  saved: 'gespeichert',
+  'Daily: runs for each day since its last run, up to yesterday.': 'Täglich: läuft für jeden Tag seit dem letzten Lauf, bis einschließlich gestern.',
+  'Not scheduled. Set the Scheduler block to Daily to run it every day.': 'Nicht geplant. Stelle den Zeitplan-Block auf Täglich, damit er jeden Tag läuft.',
+  'No workspaces yet. Add one above, or start from a template.': 'Noch keine Arbeitsbereiche. Füge oben einen hinzu oder beginne mit einer Vorlage.',
 };
 
 // Italian: DailyNomie 7's words where it has them (Salva, Esporta, Duplica, Elimina, Modifica, Indietro)
@@ -190,6 +208,15 @@ const IT: Record<string, string> = {
   'Search all blocks': 'Cerca in tutti i blocchi',
   Search: 'Cerca',
   Name: 'Nome',
+  'Runs when {tracker} is logged': 'Viene eseguito quando si registra {tracker}',
+  'Runs daily': 'Esegue ogni giorno',
+  'last run': 'ultima esecuzione',
+  'running…': 'in esecuzione…',
+  'unsaved changes': 'modifiche non salvate',
+  saved: 'salvato',
+  'Daily: runs for each day since its last run, up to yesterday.': 'Giornaliero: viene eseguito per ogni giorno dall’ultima esecuzione, fino a ieri.',
+  'Not scheduled. Set the Scheduler block to Daily to run it every day.': 'Non pianificato. Imposta il blocco Pianificatore su Giornaliero per eseguirlo ogni giorno.',
+  'No workspaces yet. Add one above, or start from a template.': 'Nessuno spazio di lavoro ancora. Aggiungine uno sopra, o parti da un modello.',
 };
 
 // The translations by language. English has none: the text is its own translation.
@@ -207,3 +234,7 @@ export const setLanguage = (raw: unknown) => {
 };
 
 export const t = (text: string): string => DICTIONARIES[i18n.lang]?.[text] ?? text;
+
+// A text with a value in it: tf('Runs when {tracker} is logged', { tracker: '#mood' }) (the placeholders are in braces)
+export const tf = (text: string, values: Record<string, string>): string =>
+  t(text).replace(/\{(\w+)\}/g, (match, name: string) => values[name] ?? match);
