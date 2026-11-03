@@ -1,6 +1,7 @@
 // The data blocks: read a tracker's value for a day or a period, and write a value to a day.
 // The arithmetic and the search windows are the same as in Nomie Blockly v1.
 import { notesOnDay, type NomieApi, type NoteLike } from '../nomie/api';
+import { CHART_MAX_DAYS } from './widget';
 import { dayKeyBack, daysBetweenKeys, localDayKey, resolveDay } from './dates';
 import { formatValue } from './format';
 
@@ -156,4 +157,24 @@ export const logNoteOn = (api: NomieApi, rawText: unknown, rawDay: string, runDa
   } catch {
     return false;
   }
+};
+
+// ---- the chart and the trend of a widget (phase 20): one value a day, oldest first, with a gap for a day without a note.
+// The notes of a day are summed, as a day value is. The count is capped at CHART_MAX_DAYS (the search goes 60 days back).
+export const getDailySeries = async (api: NomieApi, rawTracker: string, days: number, loopDay: Date): Promise<Array<number | undefined>> => {
+  const tracker = clean(rawTracker);
+  const count = Math.min(Math.max(Math.round(days) || 1, 1), CHART_MAX_DAYS);
+  const notes = await api.searchNotes(tracker, loopDay, count - 1);
+  const sums = new Map<string, number>();
+  for (const note of notes) {
+    for (const element of note.elements) {
+      if (`${element.prefix ?? ''}${element.id}` !== tracker || typeof element.value !== 'number') continue;
+      const day = localDayKey(new Date(note.end));
+      sums.set(day, (sums.get(day) ?? 0) + element.value);
+    }
+  }
+  const last = localDayKey(loopDay);
+  const points: Array<number | undefined> = [];
+  for (let k = count - 1; k >= 0; k--) points.push(sums.get(dayKeyBack(last, k)));
+  return points;
 };

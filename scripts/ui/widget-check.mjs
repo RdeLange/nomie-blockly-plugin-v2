@@ -36,7 +36,7 @@ try {
     return Object.keys(store.blockly?.widget ?? {}).length > 0;
   }, null, { timeout: 30000 });
   const saved = await storedWidget();
-  check('the run keeps its value for the widget', saved.label === '7-day mood' && saved.value.length > 0);
+  check('the run keeps its value for the widget', saved.components?.[0]?.label === '7-day mood' && saved.components[0].value.length > 0);
 
   // the widget opens (its own frame): it shows the value as a tile
   await page.evaluate(() => window.__nomie.fireWidget());
@@ -44,7 +44,7 @@ try {
   await page.waitForFunction(() => document.querySelector('.widget-tile') !== null, null, { timeout: 10000 });
   const tile = page.locator('.widget-tile');
   check('the widget shows the label', (await tile.locator('.widget-label').textContent()) === '7-day mood');
-  check('the widget shows the value', (await tile.locator('.widget-value').textContent()) === saved.value);
+  check('the widget shows the value', (await tile.locator('.widget-value').textContent()) === saved.components[0].value);
   check('the widget says when it was set', (await tile.locator('.widget-time').textContent()).startsWith('updated '));
   check('the tile has a Run button', (await tile.getByRole('button', { name: 'Run' }).count()) === 1);
   await page.screenshot({ path: 'screenshots/widget-view.png' });

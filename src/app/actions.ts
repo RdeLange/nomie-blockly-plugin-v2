@@ -7,7 +7,7 @@ import type { ScheduleWindow } from '../runtime/host';
 import type { Memory } from '../runtime/memory';
 import { noteTags, triggerFromNote, triggerFromText, type NoteWithElements, type TriggerNote } from '../runtime/note-trigger';
 import { wasWrittenHere } from './written-notes';
-import type { WidgetLabelValue } from '../runtime/widget';
+import type { WidgetDesign } from '../runtime/widget';
 import { applyCompiled, codeOf, hasErrors, isCompiled, refreshCompiled, type RunnableCode } from './compiler';
 import { addDays, localDayKey, parseDayKey } from '../runtime/dates';
 import { appState, type DayRecord } from './state.svelte';
@@ -69,7 +69,7 @@ const keepMemory = (deps: Deps, id: string, memory: Memory) => {
 };
 
 // The value a workspace shows on the widget, with the time it was set (phase 15)
-const keepWidget = (deps: Deps, id: string, shown: WidgetLabelValue) => {
+const keepWidget = (deps: Deps, id: string, shown: WidgetDesign) => {
   appState.widget[id] = { ...shown, at: new Date().toISOString() };
   void deps.save();
 };
@@ -126,7 +126,7 @@ export const runDays = (deps: Deps, workspace: Workspace, from: string, to: stri
       // each day starts from what the day before remembered
       const before = appState.memory[workspace.id] ?? {};
       let memory: Memory = { ...before };
-      let widgetShown: WidgetLabelValue | undefined;
+      let widgetShown: WidgetDesign | undefined;
       for (const [i, key] of keys.entries()) {
         hooks.onDay?.(key, i + 1, keys.length);
         hooks.output?.(`— ${key} —`);
@@ -212,7 +212,7 @@ export const scheduleNow = async (deps: Deps, now = new Date()): Promise<Schedul
       memory: appState.memory[w.id],
     }));
   // after each day that ran well: the day it starts from next, and what the day remembered
-  const progress = (id: string, nextDay: string, memory: Memory, shown?: WidgetLabelValue) => {
+  const progress = (id: string, nextDay: string, memory: Memory, shown?: WidgetDesign) => {
     const workspace = appState.workspaces.find((w) => w.id === id);
     if (!workspace) return;
     workspace.latestrun = parseDayKey(nextDay).toISOString();

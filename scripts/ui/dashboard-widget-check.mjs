@@ -41,14 +41,15 @@ try {
   const moodId = store.blockly.workspaces.find((w) => w.displayName === '7-day mood on the widget').id;
   const list = store.widgets ?? [];
   check('the widgets list has the workspace that shows a value, with its name and emoji',
-    list.length === 1 && list[0].widgetid === moodId && list[0].name === '7-day mood on the widget' && list[0].emoji === '📊' && Object.keys(list[0].config).length === 0);
+    list.length === 1 && list[0].widgetid === moodId && list[0].name === '7-day mood' && list[0].emoji === '📊' && Object.keys(list[0].config).length === 0);
 
   // DailyNomie opens the widget frame for that workspace: one tile, the one of the workspace it picked
   await page.goto(`${url}?pid=test&widgetindex=${moodId}`);
   await openWidgetFrame(page);
-  await page.locator('.widget-tile').waitFor({ timeout: 15000 });
-  check('a widget of its own shows its workspace only', (await page.locator('.widget-tile').count()) === 1);
-  check('the widget shows the value of its workspace', (await page.locator('.widget-tile .widget-label').textContent()) === '7-day mood');
+  await page.locator('.wd').waitFor({ timeout: 15000 });
+  check('a widget of its own shows its workspace only', (await page.locator('.wd').count()) === 1);
+  check('the widget shows the value of its workspace', (await page.locator('.wd .widget-label').first().textContent()) === '7-day mood');
+  check('the widget draws its chart', (await page.locator('.wd svg path, .wd svg circle').count()) >= 0 && (await page.locator('.wd svg').count()) === 1);
   await page.screenshot({ path: 'screenshots/dashboard-widget.png' });
 
   // a workspace without a value yet: its widget says so, and offers Run
@@ -56,7 +57,7 @@ try {
   await page.goto(`${url}?pid=test&widgetindex=${retrieveId}`);
   await openWidgetFrame(page);
   await page.getByRole('button', { name: 'Run', exact: true }).waitFor({ timeout: 15000 });
-  check('a workspace without a value says so, with Run', (await page.locator('.widget-tile').count()) === 0 && (await page.getByRole('button', { name: 'Run', exact: true }).count()) === 1);
+  check('a workspace without a value says so, with Run', (await page.locator('.wd').count()) === 0 && (await page.getByRole('button', { name: 'Run', exact: true }).count()) === 1);
 
   // a widget of a workspace that was removed says so
   await page.goto(`${url}?pid=test&widgetindex=gone`);

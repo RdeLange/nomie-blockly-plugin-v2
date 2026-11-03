@@ -4,7 +4,7 @@ import type { NomieApi } from '../nomie/api';
 import { createInterpreter, type HostTimeouts, type ScheduleWindow } from './host';
 import type { Memory } from './memory';
 import type { TriggerNote } from './note-trigger';
-import type { WidgetLabelValue } from './widget';
+import type { WidgetDesign } from './widget';
 
 // The interpreter runs in slices of this many milliseconds, and the page gets a turn between slices. Without this,
 // an endless loop froze Nomie, and Stop was never read.
@@ -44,7 +44,7 @@ export type RunOptions = {
 // memory: the remembered values after a run that ended well, when the run changed them (not for a test run)
 // widget: the value the run set on the widget (see widget.ts), when it set one and was not a test run
 export type RunResult =
-  | { ok: true; steps: number; memory?: Memory; widget?: WidgetLabelValue }
+  | { ok: true; steps: number; memory?: Memory; widget?: WidgetDesign }
   | { ok: false; error: string; blockId?: string };
 
 const MASK = '••••';
@@ -77,7 +77,7 @@ export const runWorkspace = (options: RunOptions): Promise<RunResult> =>
     // a copy: the caller keeps its own, and gets the changed one back only when the run ends well
     const memory: Memory = { ...(options.memory ?? {}) };
     const memoryBefore = JSON.stringify(memory);
-    const widget: { value?: WidgetLabelValue } = {};
+    const widget: { draft?: WidgetDesign; result?: WidgetDesign } = {};
     const context = {
       api: options.api,
       scheduled: options.scheduled,
@@ -133,7 +133,7 @@ export const runWorkspace = (options: RunOptions): Promise<RunResult> =>
           if (!interpreter.step()) {
             output('<< Program complete >>');
             const changed = !options.test && JSON.stringify(memory) !== memoryBefore;
-            const shown = !options.test && widget.value ? { widget: widget.value } : {};
+            const shown = !options.test && widget.result ? { widget: widget.result } : {};
             resolve({ ok: true, steps, ...(changed ? { memory } : {}), ...shown });
             return;
           }

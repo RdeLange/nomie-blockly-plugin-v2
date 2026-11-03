@@ -10,6 +10,7 @@ import {
   dailyTrackerNote,
   getDaysSinceTracker,
   getDailyTrackerValue,
+  getDailySeries,
   getLastTrackerValue,
   getPeriodTrackerValue,
   getTrackerStreak,
@@ -20,7 +21,7 @@ import { localDayKey, resolveDay } from './dates';
 import { formatValue } from './format';
 import { memoryProblem, type Memory } from './memory';
 import type { TriggerNote } from './note-trigger';
-import type { WidgetLabelValue } from './widget';
+import { CHART_MAX_DAYS, componentOf, type WidgetDesign } from './widget';
 import { parseDayKey } from './dates';
 
 export type ScheduleWindow = { active: boolean; start: Date; end: Date };
@@ -58,8 +59,8 @@ export type HostContext = {
   redact?: (text: string) => string;
   // the note that started this run (a When-note workspace), if any
   note?: TriggerNote;
-  // the value the run shows on the widget; setWidget sets it, and the run reads it back (see run.ts)
-  widget?: { value?: WidgetLabelValue };
+  // the dashboard widget the run builds (widgetStart, widgetAdd, widgetFooter, widgetEnd); the run reads the result
+  widget?: { draft?: WidgetDesign; result?: WidgetDesign };
 };
 
 // `window.prompt` is what the Text prompt block generates. It is provided here, so workspaces saved with it still run.
@@ -148,9 +149,23 @@ export const installHost = (interpreter: any, scope: any, ctx: HostContext) => {
   });
   asyncFn('prompt', (text) => ctx.api.prompt('Message', formatValue(text)), 1, timeouts.prompt);
 
-  // A value on the Nomie widget (phase 15). The last call of a run is the one the widget shows.
-  native('setWidget', (label, value) => {
-    if (ctx.widget) ctx.widget.value = { label: String(label ?? ''), value: formatValue(value) };
+  // The dashboard widget (phase 20): a header, its components in order, and a footer. It is kept when widgetEnd runs,
+  // so a run that ends before it keeps no widget.
+  native('widgetStart', (name, emoji) => {
+    if (ctx.widget) ctx.widget.draft = { name: String(name ?? ''), emoji: String(emoji ?? ''), components: [], footer: '' };
+  });
+  native('widgetAdd', (component) => {
+    const component_ = componentOf(component, formatValue);
+    if (ctx.widget?.draft && component_) ctx.widget.draft.components.push(component_);
+  });
+  native('widgetFooter', (text) => {
+    if (ctx.widget?.draft) ctx.widget.draft.footer = String(text ?? '');
+  });
+  native('widgetEnd', () => {
+    if (ctx.widget?.draft) {
+      ctx.widget.result = ctx.widget.draft;
+      ctx.widget.draft = undefined;
+    }
   });
 
   // The note blocks (phase 14): the note that started the run. Outside a note run they give null.
@@ -264,6 +279,9 @@ export const installHost = (interpreter: any, scope: any, ctx: HostContext) => {
     ctx.api.openURL(address.href, address.href);
     return true;
   });
+
+  // the points of a chart or a trend: one value a day, oldest first (see nomie-data.ts getDailySeries)
+  asyncFn('chartPoints', (tag, days) => getDailySeries(ctx.api, String(tag), Number(days), historyDay()), 2, timeouts.nomie);
 
   // the trackervalue block (kept for older workspaces): the total of the day the run is at
   asyncFn('getPromise', (tracker) => getDailyTrackerValue(ctx.api, tracker, localDayKey(loopDay() ?? new Date()), 'sum'), 1, timeouts.nomie);

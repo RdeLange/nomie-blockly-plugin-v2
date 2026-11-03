@@ -2,7 +2,7 @@
 import type { Workspace } from '../domain/workspace';
 import { normaliseWorkspace } from '../domain/workspace';
 import { readMemoryMap, type Memory } from '../runtime/memory';
-import { readWidgetMap, type WidgetValue } from '../runtime/widget';
+import { readWidgetMap, type WidgetEntry } from '../runtime/widget';
 
 // One day of the last scheduled run of a workspace, as the Run tab shows it
 export type DayRecord = { day: string; ok: boolean; error?: string; output: string[] };
@@ -35,7 +35,7 @@ export type StoredState = {
   // the secrets from Settings, by name (new in v2; v1 ignores it)
   secrets: Record<string, string>;
   // per workspace id: the value it last showed on the Nomie widget (new in v2; v1 ignores it)
-  widget: Record<string, WidgetValue>;
+  widget: Record<string, WidgetEntry>;
   // per workspace id: the last run a saved note started (new in v2; v1 ignores it)
   lasttrigger: Record<string, TriggerRecord>;
 };
@@ -119,7 +119,7 @@ class AppState {
   // when a workspace was paused for running too often from notes (not saved: the pause is short)
   notePauses = $state<Record<string, number>>({});
   secrets = $state<Record<string, string>>({});
-  widget = $state<Record<string, WidgetValue>>({});
+  widget = $state<Record<string, WidgetEntry>>({});
   lastTrigger = $state<Record<string, TriggerRecord>>({});
   loaded = $state(false);
 

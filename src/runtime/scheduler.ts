@@ -5,7 +5,7 @@ import type { NomieApi } from '../nomie/api';
 import { addDays, localDayKey, parseDayKey } from './dates';
 import { canRun, runWorkspace, type RunResult } from './run';
 import type { Memory } from './memory';
-import type { WidgetLabelValue } from './widget';
+import type { WidgetDesign } from './widget';
 
 export type ScheduledWorkspace = {
   id: string;
@@ -73,7 +73,7 @@ export const runSchedule = async (
   workspaces: ScheduledWorkspace[],
   now: Date,
   onOutput?: (text: string) => void,
-  onProgress?: (id: string, nextDay: string, memory: Memory, shown?: WidgetLabelValue) => void,
+  onProgress?: (id: string, nextDay: string, memory: Memory, shown?: WidgetDesign) => void,
   secrets: Record<string, string> = {}
 ): Promise<ScheduleOutcome[]> => {
   const outcomes: ScheduleOutcome[] = [];
@@ -91,7 +91,7 @@ export const runSchedule = async (
     let result: RunResult = { ok: true, steps: 0 };
     let memory: Memory = { ...(workspace.memory ?? {}) };
     // the widget value of the last day that ran well
-    let widgetShown: WidgetLabelValue | undefined;
+    let widgetShown: WidgetDesign | undefined;
     for (let day = start; day <= end; day = addDays(day, 1)) {
       // the window the Scheduler block loops over: this one day, at 13:00
       const at13 = new Date(day.getFullYear(), day.getMonth(), day.getDate(), 13);

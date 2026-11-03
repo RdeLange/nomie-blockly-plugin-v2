@@ -9,6 +9,7 @@ import { defineObjectBlocks } from './object-blocks';
 import { defineAdvancedBlocks } from './advanced-blocks';
 import { defineCompatBlocks } from './compat-blocks';
 import { migrateWorkspaceXml } from './migrate';
+import { defineWidgetBlocks, migrateShowOnWidget, registerWidgetGenerators, WIDGET_RESERVED_WORDS } from './widget-builder';
 // registers the notebook themes and the plugin's style names
 import './theme';
 import {
@@ -27,13 +28,15 @@ export const setupBlockly = (trackers?: () => TrackerOption[]) => {
   if (registered) return;
   registered = true;
   defineNomieBlocks();
+  defineWidgetBlocks();
   registerNomieGenerators(javascriptGenerator);
+  registerWidgetGenerators(javascriptGenerator);
   defineObjectBlocks(javascriptGenerator);
   defineAdvancedBlocks(javascriptGenerator);
   defineCompatBlocks(javascriptGenerator);
   // every statement is highlighted while it runs, as in v1
   javascriptGenerator.STATEMENT_PREFIX = 'highlightBlock(%1);\n';
-  for (const word of [...NOMIE_RESERVED_WORDS, 'highlightBlock']) javascriptGenerator.addReservedWords(word);
+  for (const word of [...NOMIE_RESERVED_WORDS, ...WIDGET_RESERVED_WORDS, 'highlightBlock']) javascriptGenerator.addReservedWords(word);
 };
 
 // The JavaScript for a workspace, from its Blockly XML. Headless: no page is needed.
@@ -54,7 +57,7 @@ export const generateCode = (workspaceBlocks: string): string => {
 export const readBlocksInto = (workspace: Blockly.Workspace, workspaceBlocks: string) => {
   setupBlockly();
   rememberSavedTrackers(workspace, workspaceBlocks);
-  Blockly.Xml.domToWorkspace(Blockly.utils.xml.textToDom(migrateWorkspaceXml(workspaceBlocks).xml), workspace);
+  Blockly.Xml.domToWorkspace(Blockly.utils.xml.textToDom(migrateWorkspaceXml(migrateShowOnWidget(workspaceBlocks)).xml), workspace);
 };
 
 // The editor's name for it

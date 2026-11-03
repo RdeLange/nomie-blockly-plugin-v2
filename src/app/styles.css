@@ -347,3 +347,43 @@ body {
   padding: 8px;
   font-size: 13px;
 }
+
+/* a dashboard widget as the widget builder made it (phase 20) */
+.wd {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  border-radius: 12px;
+  background: var(--nb-canvas, #fffdf8);
+  border: 1px solid var(--nb-line, #e7e5e4);
+}
+.wd-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.wd-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+}
+.wd-chart {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+}
+.wd-chart svg {
+  display: block;
+  width: 100%;
+}
+.wd-footer {
+  font-size: 12px;
+  color: var(--nb-muted, #57534e);
+}
+.wd-actions {
+  display: flex;
+  justify-content: flex-end;
+}

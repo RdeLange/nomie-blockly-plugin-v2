@@ -4,7 +4,8 @@ import { describe, expect, it } from 'vitest';
 import { dashboardWidgets, widgetIndexOf, widgetTiles } from './dashboard-widgets';
 import type { Workspace } from '../domain/workspace';
 
-const WIDGET = '<block type="s4e_widget"><field name="LABEL">7-day mood</field></block>';
+const WIDGET = '<block type="s4e_dashboard"><field name="NAME"></field><field name="EMOJI"></field><statement name="CONTENT"></statement></block>';
+const NAMED = '<block type="s4e_dashboard"><field name="NAME">Mood</field><field name="EMOJI">😊</field><statement name="CONTENT"></statement></block>';
 const PLAIN = '<block type="pushto_console"></block>';
 const ws = (id: string, name: string, blocks: string, emoji = '📊'): Workspace => ({
   id,
@@ -22,12 +23,12 @@ const ws = (id: string, name: string, blocks: string, emoji = '📊'): Workspace
   schedule: 'none',
 });
 
-const list = [ws('mood', 'Mood', WIDGET), ws('plain', 'Plain', PLAIN, '🧱'), ws('water', 'Water', WIDGET, '💧')];
+const list = [ws('mood', 'Mood', NAMED), ws('plain', 'Plain', PLAIN, '🧱'), ws('water', 'Water', WIDGET, '💧')];
 
 describe('the widgets a plugin lists on the dashboard', () => {
   it('lists each workspace that shows a value on the widget, with its name and emoji', () => {
     expect(dashboardWidgets(list)).toEqual([
-      { widgetid: 'mood', name: 'Mood', emoji: '📊', config: {} },
+      { widgetid: 'mood', name: 'Mood', emoji: '😊', config: {} },
       { widgetid: 'water', name: 'Water', emoji: '💧', config: {} },
     ]);
   });
@@ -46,15 +47,16 @@ describe('the widget index in the address of the widget frame', () => {
 });
 
 describe('the tiles a widget draws', () => {
+  const entry = (label: string, value: string, at: string) => ({ name: '', emoji: '', footer: '', at, components: [{ kind: 'value' as const, label, value }] });
   const values = {
-    mood: { label: '7-day mood', value: '5.5', at: '2026-11-03T09:34:00.000Z' },
-    water: { label: 'Glasses', value: '6', at: '2026-11-03T09:40:00.000Z' },
+    mood: entry('7-day mood', '5.5', '2026-11-03T09:34:00.000Z'),
+    water: entry('Glasses', '6', '2026-11-03T09:40:00.000Z'),
   };
 
   it('with a widget index, draws only that workspace', () => {
     const tiles = widgetTiles(list, values, 'water');
     expect(tiles.map((t) => t.workspace.id)).toEqual(['water']);
-    expect(tiles[0].shown?.value).toBe('6');
+    expect(tiles[0].shown?.components[0]).toEqual({ kind: 'value', label: 'Glasses', value: '6' });
   });
 
   it('with a widget index of a workspace that was removed, draws nothing', () => {

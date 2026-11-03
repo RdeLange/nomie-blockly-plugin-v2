@@ -1,7 +1,7 @@
 // The fingerprint of a workspace's blocks, with the version of the generator: the code stored with a workspace is
 // used only while its fingerprint matches (phase 16). Raise GENERATOR_VERSION whenever the generated code changes.
 // The fingerprint is not a security check: a file's code is never kept, because an import is compiled again.
-export const GENERATOR_VERSION = '2';
+export const GENERATOR_VERSION = '3';
 
 export const fingerprint = (workspaceBlocks: string): string => {
   const text = `${GENERATOR_VERSION}\n${workspaceBlocks}`;

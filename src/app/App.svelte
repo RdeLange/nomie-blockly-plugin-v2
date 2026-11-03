@@ -28,6 +28,8 @@
   import { actionDeps, notify } from './dialogs';
   import { runNow } from './actions';
   import { widgetTiles } from './dashboard-widgets';
+  import { headlineOf } from '../runtime/widget';
+  import WidgetDesignView from './WidgetDesignView.svelte';
 
   // The plugin marks the app ready once the stored state is loaded (or at once outside Nomie). Showing the lists
   // before that let a workspace added in the meantime be replaced by the stored state when it loads.
@@ -53,20 +55,12 @@
     {@const tiles = widgetTiles(appState.workspaces, appState.widget, ui.widgetIndex)}
     <div class="card">
       {#each tiles as tile (tile.workspace.id)}
-        <div class="row">
-          <span class="emoji" style="background: {tile.workspace.color}">{tile.workspace.emoji}</span>
-          <span class="grow"><strong>{tile.workspace.displayName}</strong></span>
-        </div>
         {#if tile.shown}
-          <div class="widget-tile">
-            <span class="widget-label">{tile.shown.label}</span>
-            <span class="widget-value">{tile.shown.value}</span>
-            <span class="widget-time">{t('updated')} {updatedText(tile.shown.at)}</span>
-            <button class="button" onclick={() => runFromWidget(tile.workspace.id)}>{t('Run')}</button>
-          </div>
+          <WidgetDesignView design={tile.shown} name={tile.workspace.displayName} emoji={tile.workspace.emoji} onRun={() => runFromWidget(tile.workspace.id)} />
         {:else}
-          <div class="row" style="margin-top: 10px">
-            <span class="grow muted">{t('No value yet. Run the workspace.')}</span>
+          <div class="row">
+            <span class="emoji" style="background: {tile.workspace.color}">{tile.workspace.emoji}</span>
+            <span class="grow"><strong>{tile.workspace.displayName}</strong><br /><span class="muted">{t('No value yet. Run the workspace.')}</span></span>
             <button class="button" onclick={() => runFromWidget(tile.workspace.id)}>{t('Run')}</button>
           </div>
         {/if}
@@ -83,8 +77,8 @@
       {#each appState.workspaces.filter((w) => appState.widget[w.id]) as workspace (workspace.id)}
         {@const shown = appState.widget[workspace.id]}
         <div class="widget-tile">
-          <span class="widget-label">{shown.label}</span>
-          <span class="widget-value">{shown.value}</span>
+          <span class="widget-label">{headlineOf(shown)?.label}</span>
+          <span class="widget-value">{headlineOf(shown)?.value}</span>
           <span class="widget-time">{t('updated')} {updatedText(shown.at)}</span>
           <button class="button" onclick={() => runFromWidget(workspace.id)}>{t('Run')}</button>
         </div>

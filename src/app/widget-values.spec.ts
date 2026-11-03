@@ -18,7 +18,7 @@ const api: NomieApi = {
 };
 const deps = { api, save: () => true };
 
-const SHOW = '<block type="s4e_widget"><field name="LABEL">7-day mood</field><value name="Value"><block type="math_number"><field name="NUM">4</field></block></value></block>';
+const SHOW = '<block type="s4e_dashboard"><field name="NAME">7-day mood</field><field name="EMOJI">📊</field><statement name="CONTENT"><block type="s4e_wvalue"><field name="LABEL">7-day mood</field><value name="Value"><block type="math_number"><field name="NUM">4</field></block></value></block></statement></block>';
 // sets the value, then fails: remember cannot keep NaN
 const NAN_REMEMBER = '<block type="s4e_remember"><field name="NAME">n</field><value name="VALUE"><block type="math_arithmetic"><field name="OP">DIVIDE</field><value name="A"><block type="math_number"><field name="NUM">0</field></block></value><value name="B"><block type="math_number"><field name="NUM">0</field></block></value></block></value></block>';
 const FAILS = SHOW.replace('7-day mood', 'broken').replace(/<\/block>$/, `<next>${NAN_REMEMBER}</next></block>`);
@@ -48,10 +48,9 @@ describe('a run puts its value on the widget', () => {
   it('a run that ended well keeps the value, its label and the time', async () => {
     const before = Date.now();
     await runNow(deps, workspace('w', SHOW));
-    const value = appState.widget.w;
-    expect(value.label).toBe('7-day mood');
-    expect(value.value).toBe('4');
-    expect(Date.parse(value.at)).toBeGreaterThanOrEqual(before);
+    const entry = appState.widget.w;
+    expect(entry.components).toEqual([{ kind: 'value', label: '7-day mood', value: '4' }]);
+    expect(Date.parse(entry.at)).toBeGreaterThanOrEqual(before);
   });
 
   it('a failed run leaves the value as it was', async () => {
