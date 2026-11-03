@@ -7,6 +7,8 @@ import { defineObjectBlocks } from './object-blocks';
 import { defineAdvancedBlocks } from './advanced-blocks';
 import { defineCompatBlocks } from './compat-blocks';
 import { migrateWorkspaceXml } from './migrate';
+// registers the notebook themes and the plugin's style names
+import './theme';
 import {
   defineNomieBlocks,
   registerNomieGenerators,

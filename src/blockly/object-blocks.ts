@@ -126,7 +126,7 @@ export const defineObjectBlocks = (js: JavascriptGenerator) => {
       args0: [{ type: 'input_value', name: 'JSON', check: 'String' }],
       inputsInline: true,
       output: 'Object',
-      colour: OBJECT_COLOUR,
+      style: 'object_blocks',
       tooltip: 'Create an object from JSON formatted text.',
     },
     {
@@ -135,7 +135,7 @@ export const defineObjectBlocks = (js: JavascriptGenerator) => {
       args0: [{ type: 'input_value', name: 'object', check: 'Object' }],
       inputsInline: true,
       output: null,
-      colour: OBJECT_COLOUR,
+      style: 'object_blocks',
       tooltip: 'Create JSON formatted text from an object.',
     },
     {
@@ -144,7 +144,7 @@ export const defineObjectBlocks = (js: JavascriptGenerator) => {
       args0: [{ type: 'input_value', name: 'object_input', check: 'Object', align: 'RIGHT' }],
       inputsInline: true,
       output: 'Array',
-      colour: OBJECT_COLOUR,
+      style: 'object_blocks',
       tooltip: 'Get all keys of the object.',
     },
     {
@@ -152,7 +152,7 @@ export const defineObjectBlocks = (js: JavascriptGenerator) => {
       message0: 'create object',
       output: 'Object',
       mutator: 'controls_create_mutator',
-      colour: OBJECT_COLOUR,
+      style: 'object_blocks',
       tooltip: 'Create a new object, with property values if you add fields (click the gear).',
     },
     {
@@ -164,7 +164,7 @@ export const defineObjectBlocks = (js: JavascriptGenerator) => {
       ],
       inputsInline: true,
       output: null,
-      colour: OBJECT_COLOUR,
+      style: 'object_blocks',
       tooltip: 'The value of a key in an object.',
     },
     {
@@ -176,7 +176,7 @@ export const defineObjectBlocks = (js: JavascriptGenerator) => {
       ],
       inputsInline: true,
       output: null,
-      colour: OBJECT_COLOUR,
+      style: 'object_blocks',
       tooltip: 'The value of a property of an object, such as "temp" of a weather reply.',
     },
     {
@@ -190,7 +190,7 @@ export const defineObjectBlocks = (js: JavascriptGenerator) => {
       inputsInline: true,
       previousStatement: null,
       nextStatement: null,
-      colour: OBJECT_COLOUR,
+      style: 'object_blocks',
       tooltip: 'Set a property of an object.',
     },
     // the blocks inside the object_create mutator dialog
@@ -203,13 +203,13 @@ export const defineObjectBlocks = (js: JavascriptGenerator) => {
       ],
       previousStatement: null,
       nextStatement: null,
-      colour: OBJECT_COLOUR,
+      style: 'object_blocks',
     },
     {
       type: 'object_create_mutator_top',
       message0: 'create object',
       nextStatement: null,
-      colour: OBJECT_COLOUR,
+      style: 'object_blocks',
       tooltip: 'Add a field for each property.',
     },
   ]);

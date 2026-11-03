@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
+  import './tokens.css';
   import './styles.css';
   import { ui } from './ui.svelte';
   import { appState } from './state.svelte';

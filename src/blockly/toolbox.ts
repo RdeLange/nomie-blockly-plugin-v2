@@ -1,10 +1,16 @@
-// The palette, in the same categories as v1. The Nomie category is named after the plugin's own category.
+// The palette, shown as an icon rail (rail.ts). Search first, then Nomie (the blocks people use most), then the
+// general blocks. Each category has a toolboxitemid, which picks its rail icon, and its colour from theme.ts.
+// The Nomie category is named after the plugin's own category.
 import type * as Blockly from 'blockly';
+import { CATEGORY_COLOURS } from './theme';
+import { SEARCH_CATEGORY } from './search';
 
 type ToolboxDefinition = Blockly.utils.toolbox.ToolboxDefinition;
 
 const block = (type: string) => ({ kind: 'block', type });
 const xmlBlock = (blockxml: string) => ({ kind: 'block', blockxml });
+// group headings in the drawer, in capitals (written so, because Blockly measures the text as written)
+const label = (text: string) => ({ kind: 'label', text: text.toUpperCase() });
 
 export const NOMIE_CATEGORY = 'Nomie';
 
@@ -14,14 +20,49 @@ export const toolbox = (nomieName: string = NOMIE_CATEGORY): ToolboxDefinition =
     contents: [
       {
         kind: 'category',
+        name: 'Search',
+        toolboxitemid: 'search',
+        colour: '#1C1917',
+        custom: SEARCH_CATEGORY,
+      },
+      {
+        kind: 'category',
+        name: nomieName,
+        toolboxitemid: 'nomie',
+        colour: CATEGORY_COLOURS.nomie,
+        contents: [
+          label('Read your notes'),
+          block('s4e_dayvalue'),
+          block('s4e_periodvalue'),
+          block('s4e_httprequest'),
+          label('Write and show'),
+          block('s4e_logvalue'),
+          block('display'),
+          block('pushto_console'),
+          block('pushto_webconsole'),
+          block('wait_seconds'),
+          label('Pickers'),
+          block('s4e_trackers'),
+          block('s4e_daypicker'),
+          block('s4e_periodpicker'),
+          block('s4e_statspicker'),
+          block('s4e_datepicker'),
+          label('Frame'),
+          block('s4eblocklyframe'),
+        ],
+      },
+      {
+        kind: 'category',
         name: 'Logic',
-        colour: '#5B80A5',
+        toolboxitemid: 'logic',
+        colour: CATEGORY_COLOURS.logic,
         contents: ['controls_if', 'logic_compare', 'logic_operation', 'logic_negate', 'logic_boolean', 'logic_null', 'logic_ternary'].map(block),
       },
       {
         kind: 'category',
         name: 'Loops',
-        colour: '#5CA65C',
+        toolboxitemid: 'loops',
+        colour: CATEGORY_COLOURS.loops,
         contents: [
           block('controls_repeat_ext'),
           block('controls_whileUntil'),
@@ -35,81 +76,57 @@ export const toolbox = (nomieName: string = NOMIE_CATEGORY): ToolboxDefinition =
       {
         kind: 'category',
         name: 'Math',
-        colour: '#5B67A5',
+        toolboxitemid: 'math',
+        colour: CATEGORY_COLOURS.math,
         contents: ['math_number', 'math_single', 'math_trig', 'math_constant', 'math_number_property', 'math_round', 'math_on_list', 'math_modulo', 'math_constrain', 'math_random_int', 'math_random_float', 'math_atan2'].map(block),
       },
       {
         kind: 'category',
         name: 'Text',
-        colour: '#5CA68D',
+        toolboxitemid: 'text',
+        colour: CATEGORY_COLOURS.text,
         contents: [
           block('text'),
           xmlBlock('<block type="text_join" inline="true" />'),
-          'text_append',
-          'text_length',
-          'text_isEmpty',
-          'text_indexOf',
-          'text_charAt',
-          'text_getSubstring',
-          'text_changeCase',
-          'text_trim',
-          'text_prompt_ext',
-        ].map((t) => (typeof t === 'string' ? block(t) : t)),
+          ...['text_append', 'text_length', 'text_isEmpty', 'text_indexOf', 'text_charAt', 'text_getSubstring', 'text_changeCase', 'text_trim', 'text_prompt_ext'].map(block),
+        ],
       },
       {
         kind: 'category',
         name: 'Lists',
-        colour: '#745BA5',
+        toolboxitemid: 'lists',
+        colour: CATEGORY_COLOURS.lists,
         contents: ['lists_create_empty', 'lists_create_with', 'lists_repeat', 'lists_length', 'lists_isEmpty', 'lists_indexOf', 'lists_getIndex', 'lists_setIndex'].map(block),
       },
       {
         kind: 'category',
         name: 'Variables',
+        toolboxitemid: 'variables',
         custom: 'VARIABLE',
-        colour: '#A55B80',
+        colour: CATEGORY_COLOURS.variables,
       },
-      { kind: 'sep' },
       {
         kind: 'category',
         name: 'Functions',
+        toolboxitemid: 'functions',
         // Blockly's own function blocks: with parameters and a return value (the old function blocks could not
         // pass arguments). Old workspaces keep their old blocks, see compat-blocks.ts and migrate.ts.
         custom: 'PROCEDURE',
-        colour: '#9A5CA6',
+        colour: CATEGORY_COLOURS.functions,
       },
       {
         kind: 'category',
         name: 'Objects',
-        colour: '#A5835B',
+        toolboxitemid: 'objects',
+        colour: CATEGORY_COLOURS.objects,
         contents: ['object_create', 'object_get', 'object_set', 'object_keys', 'object_from_json', 'object_to_json', 'value_from_json_key'].map(block),
       },
       {
         kind: 'category',
         name: 'Advanced',
-        colour: '#88A464',
+        toolboxitemid: 'advanced',
+        colour: CATEGORY_COLOURS.advanced,
         contents: ['bi_try_catch'].map(block),
-      },
-      { kind: 'sep' },
-      {
-        kind: 'category',
-        name: nomieName,
-        colour: '#0AB3F5',
-        contents: [
-          's4eblocklyframe',
-          's4e_dayvalue',
-          's4e_periodvalue',
-          's4e_logvalue',
-          'pushto_console',
-          'pushto_webconsole',
-          'wait_seconds',
-          's4e_statspicker',
-          'display',
-          's4e_daypicker',
-          's4e_periodpicker',
-          's4e_datepicker',
-          's4e_trackers',
-          's4e_httprequest',
-        ].map(block),
       },
     ],
   }) as unknown as ToolboxDefinition;

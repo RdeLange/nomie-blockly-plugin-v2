@@ -2,7 +2,10 @@
   import { onMount, onDestroy } from 'svelte';
   import * as Blockly from 'blockly';
   import { javascriptGenerator } from 'blockly/javascript';
-  import darkTheme from '@blockly/theme-dark';
+  import { notebookTheme, notebookDarkTheme, GRID } from '../blockly/theme';
+  import { registerRail } from '../blockly/rail';
+  import { attachSearch } from '../blockly/search';
+  import '../blockly/notebook.css';
   import { toolbox } from '../blockly/toolbox';
   import { loadWorkspace } from '../blockly/setup';
   import { appState } from './state.svelte';
@@ -36,6 +39,24 @@
   let consoleText = $state('');
   let highlighted = $state<string | null>(null);
   let host: HTMLDivElement | undefined = $state();
+  // the block search (the Search tile on the rail)
+  let searching = $state(false);
+  let searchQuery = $state('');
+  let searchField: HTMLInputElement | undefined = $state();
+  let showResults: (() => void) | undefined;
+  const onSearch = () => showResults?.();
+  // leaving the field (a click on the canvas, a block dragged out) closes the search, unless Search is chosen again
+  const onSearchBlur = () =>
+    setTimeout(() => {
+      if (document.activeElement !== searchField && workspace?.getToolbox()?.getSelectedItem()?.getId() !== 'search') searching = false;
+    }, 150);
+  const onSearchKey = (event: KeyboardEvent) => {
+    if (event.key === 'Escape') {
+      searching = false;
+      workspace?.getToolbox()?.clearSelection();
+      workspace?.getToolbox()?.getFlyout()?.hide();
+    }
+  };
   let workspace: Blockly.WorkspaceSvg | undefined;
   let restoreTrackers: (() => void) | undefined;
   const stop = { stopped: false };
@@ -44,13 +65,36 @@
 
   onMount(() => {
     if (!host) return;
+    registerRail();
+    const dark = ui.theme === 'dark';
+    const palette = toolbox();
     workspace = Blockly.inject(host, {
-      toolbox: toolbox(),
-      theme: ui.theme === 'dark' ? darkTheme : undefined,
+      toolbox: palette,
+      theme: dark ? notebookDarkTheme : notebookTheme,
+      renderer: 'thrasos',
+      // Blockly's icons and sounds ship with the plugin, so they work without static.blockly.com
+      media: './blockly-media/',
       trashcan: true,
       zoom: { controls: true, wheel: true, startScale: scale, maxScale: 1.5, minScale: 0.4, scaleSpeed: 1.02 },
       move: { scrollbars: true, drag: true, wheel: true },
-      grid: { spacing: 20, length: 3, colour: '#ccc', snap: true },
+      // lines, like the paper of a notebook
+      grid: { spacing: 24, length: 24, colour: dark ? GRID.dark : GRID.light, snap: true },
+    });
+    showResults = attachSearch(workspace, palette as never, () => searchQuery);
+    // The search field shows when the Search tile is chosen, and stays while someone types in it. Choosing another
+    // category closes it. (The event names a category by its name; the id 'search' is on the selected item.)
+    workspace.addChangeListener((event) => {
+      if (event.type !== Blockly.Events.TOOLBOX_ITEM_SELECT) return;
+      const selected = workspace?.getToolbox()?.getSelectedItem()?.getId();
+      if (selected === 'search') {
+        searching = true;
+        queueMicrotask(() => searchField?.focus());
+      } else if (selected) {
+        searching = false;
+      } else if (searching && document.activeElement === searchField) {
+        // focus moved to the field, and Blockly closed the drawer: show the results again
+        showResults?.();
+      }
     });
     // the saved trackers stay in the dropdowns while the editor is open (see loadWorkspace)
     if (draft.xml) restoreTrackers = loadWorkspace(workspace, draft.xml);
@@ -228,7 +272,15 @@
 
 {/if}
 
-<div bind:this={host} class="blockly-host" style="height: {detailsOpen ? '60vh' : '80vh'}"></div>
+<div class="blockly-frame" style="height: {detailsOpen ? '60vh' : '80vh'}">
+  <div bind:this={host} class="blockly-host nomie-blockly"></div>
+  {#if searching}
+    <label class="block-search">
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6" /><path d="M20 20l-4.5-4.5" /></svg>
+      <input bind:this={searchField} bind:value={searchQuery} oninput={onSearch} onblur={onSearchBlur} onkeydown={onSearchKey} placeholder="Search all blocks" aria-label="Search all blocks" />
+    </label>
+  {/if}
+</div>
 
 {#if showConsole}
   <div class="console" style="margin-top: 12px">{consoleText || 'No output yet.'}</div>

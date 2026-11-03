@@ -1,0 +1,34 @@
+/* The design tokens of the editor (see docs/IMPLEMENTATION_PLAN.md, phase 5): a cream "notebook" canvas, ink text and
+   outlined blocks. Dark mode follows Nomie's theme. src/blockly/theme.ts holds the same colours for Blockly. */
+@import '@fontsource/inter/latin-400.css';
+@import '@fontsource/inter/latin-500.css';
+@import '@fontsource/inter/latin-600.css';
+@import '@fontsource/inter/latin-700.css';
+@import '@fontsource/fraunces/latin-600.css';
+@import '@fontsource/jetbrains-mono/latin-400.css';
+
+:root {
+  --nb-canvas: #fffdf8;
+  --nb-grid: #f0ece4;
+  --nb-ink: #1c1917;
+  --nb-muted: #57534e;
+  --nb-line: #e7e5e4;
+  --nb-control: #d6d3d1;
+  --nb-surface: #ffffff;
+  --nb-run: #22c55e;
+  --nb-run-ink: #052e16;
+  --nb-font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  --nb-font-title: 'Fraunces', Georgia, serif;
+  --nb-font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+:root.dark,
+.app.dark {
+  --nb-canvas: #1c1917;
+  --nb-grid: #2a2623;
+  --nb-ink: #f5f5f4;
+  --nb-muted: #a8a29e;
+  --nb-line: #3a3532;
+  --nb-control: #57534e;
+  --nb-surface: #232020;
+}

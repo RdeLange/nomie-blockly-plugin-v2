@@ -10,9 +10,6 @@ import * as Blockly from 'blockly';
 import type { Block } from 'blockly';
 import { Order, type JavascriptGenerator } from 'blockly/javascript';
 
-const FUNCTION_COLOUR = 290;
-const CLASS_COLOUR = '#A49F64';
-const MODULE_COLOUR = '#88A464';
 
 // Every compat block type. The editor marks these blocks as old (see compile.ts).
 export const COMPAT_BLOCKS = [
@@ -52,7 +49,7 @@ export const defineCompatBlocks = (js: JavascriptGenerator) => {
         { type: 'input_statement', name: 'chain' },
       ],
       ...statement,
-      colour: FUNCTION_COLOUR,
+      style: 'old_blocks',
     },
     {
       type: 'bi_function_return',
@@ -64,7 +61,7 @@ export const defineCompatBlocks = (js: JavascriptGenerator) => {
         { type: 'input_statement', name: 'chain' },
       ],
       output: null,
-      colour: FUNCTION_COLOUR,
+      style: 'old_blocks',
     },
     {
       type: 'bi_call',
@@ -75,7 +72,7 @@ export const defineCompatBlocks = (js: JavascriptGenerator) => {
       ],
       inputsInline: true,
       ...statement,
-      colour: FUNCTION_COLOUR,
+      style: 'old_blocks',
     },
     {
       type: 'bi_call_editable',
@@ -86,7 +83,7 @@ export const defineCompatBlocks = (js: JavascriptGenerator) => {
       ],
       inputsInline: true,
       ...statement,
-      colour: FUNCTION_COLOUR,
+      style: 'old_blocks',
     },
     {
       type: 'bi_call_editable_return',
@@ -97,7 +94,7 @@ export const defineCompatBlocks = (js: JavascriptGenerator) => {
       ],
       inputsInline: true,
       output: 'Array',
-      colour: FUNCTION_COLOUR,
+      style: 'old_blocks',
     },
     {
       type: 'bi_direct_call_editable',
@@ -108,7 +105,7 @@ export const defineCompatBlocks = (js: JavascriptGenerator) => {
       ],
       inputsInline: true,
       ...statement,
-      colour: FUNCTION_COLOUR,
+      style: 'old_blocks',
     },
     {
       type: 'bi_direct_call_editable_return',
@@ -119,28 +116,28 @@ export const defineCompatBlocks = (js: JavascriptGenerator) => {
       ],
       inputsInline: true,
       output: 'Array',
-      colour: FUNCTION_COLOUR,
+      style: 'old_blocks',
     },
     {
       type: 'bi_return',
       message0: 'return %1',
       args0: [{ type: 'input_value', name: 'ret' }],
       ...statement,
-      colour: FUNCTION_COLOUR,
+      style: 'old_blocks',
     },
     {
       type: 'bi_spread',
       message0: '... %1',
       args0: [{ type: 'input_value', name: 'arg_array' }],
       output: null,
-      colour: FUNCTION_COLOUR,
+      style: 'old_blocks',
     },
     {
       type: 'bi_new',
       message0: 'new %1',
       args0: [{ type: 'input_value', name: 'chain' }],
       output: null,
-      colour: CLASS_COLOUR,
+      style: 'old_blocks',
     },
     {
       type: 'bi_anonymous_class',
@@ -152,7 +149,7 @@ export const defineCompatBlocks = (js: JavascriptGenerator) => {
         { type: 'input_statement', name: 'chain' },
       ],
       output: null,
-      colour: CLASS_COLOUR,
+      style: 'old_blocks',
     },
     {
       type: 'bi_class',
@@ -164,14 +161,14 @@ export const defineCompatBlocks = (js: JavascriptGenerator) => {
         { type: 'input_statement', name: 'chain' },
       ],
       ...statement,
-      colour: CLASS_COLOUR,
+      style: 'old_blocks',
     },
     ...(['static', 'get', 'set'] as const).map((word) => ({
       type: `bi_${word}`,
       message0: `${word} %1`,
       args0: [{ type: 'input_statement', name: word }],
       ...statement,
-      colour: CLASS_COLOUR,
+      style: 'old_blocks',
     })),
     {
       type: 'bi_catch',
@@ -181,21 +178,21 @@ export const defineCompatBlocks = (js: JavascriptGenerator) => {
         { type: 'input_statement', name: 'catch' },
       ],
       ...statement,
-      colour: MODULE_COLOUR,
+      style: 'old_blocks',
     },
     {
       type: 'bi_export',
       message0: 'export %1',
       args0: [{ type: 'input_statement', name: 'export' }],
       ...statement,
-      colour: MODULE_COLOUR,
+      style: 'old_blocks',
     },
     {
       type: 'bi_import',
       message0: 'import %1 from %2',
       args0: [{ type: 'input_dummy' }, { type: 'input_value', name: 'from' }],
       ...statement,
-      colour: MODULE_COLOUR,
+      style: 'old_blocks',
     },
     {
       type: 'bi_import_as',
@@ -206,14 +203,14 @@ export const defineCompatBlocks = (js: JavascriptGenerator) => {
       ],
       inputsInline: true,
       output: null,
-      colour: MODULE_COLOUR,
+      style: 'old_blocks',
     },
     {
       type: 'bi_comment',
       message0: 'comment',
       inputsInline: true,
       ...statement,
-      colour: MODULE_COLOUR,
+      style: 'old_blocks',
     },
   ]);
 

@@ -1,0 +1,147 @@
+/* The notebook look of the editor (mockups 1 and 3): an icon rail as the block picker, light outlined blocks with
+   ink text, white field chips, and a drawer with group labels. Colours come from src/app/tokens.css and
+   src/blockly/theme.ts. Scoped to the editor's Blockly host, so nothing else on the page changes. */
+
+/* ---- the rail ---- */
+.nomie-blockly .blocklyToolbox {
+  width: 76px;
+  padding: 8px 0;
+  background: var(--nb-surface);
+  border-right: 1px solid var(--nb-line);
+  font-family: var(--nb-font);
+}
+
+.nomie-blockly .blocklyToolboxCategoryContainer {
+  margin: 0;
+}
+
+.nomie-blockly .blocklyToolboxCategory {
+  height: auto;
+  line-height: normal;
+  margin: 0 0 4px 0;
+  padding: 4px 0;
+  white-space: normal;
+  cursor: pointer;
+  border-radius: 0;
+  background: transparent !important;
+}
+
+.nomie-blockly .blocklyToolboxCategory > div,
+.nomie-blockly .blocklyToolboxCategory .blocklyTreeRowContentContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.nomie-blockly .nomie-rail-tile {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--category);
+  background: color-mix(in srgb, var(--category) 12%, var(--nb-surface));
+  transition: background-color 120ms ease, color 120ms ease;
+}
+
+.nomie-blockly .blocklyToolboxCategory:not(.blocklyToolboxSelected):hover .nomie-rail-tile {
+  background: color-mix(in srgb, var(--category) 20%, var(--nb-surface));
+}
+
+.nomie-blockly .blocklyToolboxSelected .nomie-rail-tile {
+  color: #ffffff;
+  background: var(--category);
+}
+
+.nomie-blockly .nomie-rail-label {
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--nb-muted);
+  text-align: center;
+  max-width: 72px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.nomie-blockly .blocklyToolboxSelected .nomie-rail-label {
+  color: var(--nb-ink);
+}
+
+.nomie-blockly .blocklyToolboxCategory:focus-visible .nomie-rail-tile {
+  outline: 2px solid var(--nb-ink);
+  outline-offset: 2px;
+}
+
+/* dark mode: a lighter icon on a darker tile; the selected tile is filled, as in light mode */
+.app.dark .nomie-blockly .nomie-rail-tile {
+  color: color-mix(in srgb, var(--category) 60%, #ffffff);
+  background: color-mix(in srgb, var(--category) 22%, var(--nb-surface));
+}
+
+.app.dark .nomie-blockly .blocklyToolboxSelected .nomie-rail-tile {
+  color: #ffffff;
+  background: var(--category);
+}
+
+/* ---- the drawer ---- */
+.nomie-blockly .blocklyFlyoutBackground {
+  stroke: var(--nb-line);
+  stroke-width: 1px;
+}
+
+.nomie-blockly .blocklyFlyoutLabelText {
+  fill: var(--nb-muted) !important;
+  font-family: var(--nb-font);
+  font-size: 11px;
+  font-weight: 700;
+  /* no letter-spacing or text-transform here: Blockly centres the label in a width it measures without them */
+}
+
+/* ---- the blocks ---- */
+.nomie-blockly .blocklyPath {
+  stroke-width: 1.5px;
+}
+
+.nomie-blockly .blocklyText,
+.nomie-blockly .blocklyText.blocklyDropdownText {
+  fill: var(--nb-ink) !important;
+  font-family: var(--nb-font);
+}
+
+/* fields on a block are white chips with a fine border */
+.nomie-blockly .blocklyEditableField > .blocklyFieldRect,
+.nomie-blockly .blocklyEditableText > rect {
+  fill: var(--nb-surface) !important;
+  fill-opacity: 1 !important;
+  stroke: var(--nb-control) !important;
+  stroke-width: 1px !important;
+}
+
+/* the ▾ of a dropdown: Blockly colours it like the block, which is invisible on a light block */
+.nomie-blockly .blocklyDropdownText tspan {
+  fill: var(--nb-muted) !important;
+}
+
+.nomie-blockly .blocklyEditableField:hover > .blocklyFieldRect {
+  stroke: var(--nb-ink) !important;
+}
+
+/* the block that is running (Run highlights each block in turn) */
+.nomie-blockly .blocklyHighlighted > .blocklyPath,
+.nomie-blockly .blocklySelected > .blocklyPath {
+  stroke: #f59e0b;
+  stroke-width: 3px;
+}
+
+/* ---- the controls on the canvas ---- */
+.nomie-blockly .blocklyZoom > image,
+.nomie-blockly .blocklyTrash > image {
+  opacity: 0.55;
+}
+
+.nomie-blockly .blocklyScrollbarHandle {
+  fill: var(--nb-control);
+}

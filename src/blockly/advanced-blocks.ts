@@ -20,7 +20,7 @@ export const defineAdvancedBlocks = (js: JavascriptGenerator) => {
       this.appendStatementInput('finally').appendField('finally');
       this.setPreviousStatement(true, null);
       this.setNextStatement(true, null);
-      this.setColour(ADVANCED_COLOUR);
+      this.setStyle('advanced_blocks');
       this.setTooltip('Runs the blocks in "try". If one fails, runs "catch" with the error. "finally" always runs.');
     },
   };

@@ -57,7 +57,7 @@ export const defineNomieBlocks = () => {
         { type: 'input_dummy' },
         { type: 'input_statement', name: 'script' },
       ],
-      colour: FRAME_COLOUR,
+      style: 'nomie_frame',
     },
     {
       type: 'display',
@@ -66,28 +66,28 @@ export const defineNomieBlocks = () => {
       inputsInline: true,
       previousStatement: null,
       nextStatement: null,
-      colour: NOMIE_COLOUR,
+      style: 'nomie_blocks',
     },
     {
       type: 's4e_daypicker',
       message0: 'Day %1',
       args0: [{ type: 'field_dropdown', name: 'Day', options: DAY_OPTIONS }],
       output: 'Day',
-      colour: NOMIE_COLOUR,
+      style: 'nomie_blocks',
     },
     {
       type: 's4e_periodpicker',
       message0: 'Period %1',
       args0: [{ type: 'field_dropdown', name: 'Period', options: PERIOD_OPTIONS }],
       output: 'Period',
-      colour: NOMIE_COLOUR,
+      style: 'nomie_blocks',
     },
     {
       type: 's4e_statspicker',
       message0: 'Statistics %1',
       args0: [{ type: 'field_dropdown', name: 'Stats', options: STAT_OPTIONS }],
       output: 'Statistics',
-      colour: NOMIE_COLOUR,
+      style: 'nomie_blocks',
     },
     {
       type: 's4e_datepicker',
@@ -95,14 +95,14 @@ export const defineNomieBlocks = () => {
       args0: [{ type: 'field_date', name: 'Date', date: new Date().toISOString().slice(0, 10) }],
       inputsInline: false,
       output: 'Day',
-      colour: NOMIE_COLOUR,
+      style: 'nomie_blocks',
     },
     {
       type: 's4e_trackers',
       message0: 'T: %1',
       args0: [{ type: 'field_dropdown', name: 'Trackers', options: () => trackerOptions() }],
       output: 'Tracker',
-      colour: NOMIE_COLOUR,
+      style: 'nomie_blocks',
     },
     {
       type: 's4e_dayvalue',
@@ -114,7 +114,7 @@ export const defineNomieBlocks = () => {
         { type: 'input_value', name: 'Statistics', check: 'Statistics' },
       ],
       output: 'Number',
-      colour: NOMIE_COLOUR,
+      style: 'nomie_blocks',
     },
     {
       type: 's4e_periodvalue',
@@ -128,7 +128,7 @@ export const defineNomieBlocks = () => {
         { type: 'input_value', name: 'Statistics', check: 'Statistics' },
       ],
       output: 'Number',
-      colour: NOMIE_COLOUR,
+      style: 'nomie_blocks',
     },
     {
       type: 's4e_logvalue',
@@ -143,7 +143,7 @@ export const defineNomieBlocks = () => {
       // an action: it sits in a script stack, like wait and the console blocks
       previousStatement: null,
       nextStatement: null,
-      colour: NOMIE_COLOUR,
+      style: 'nomie_blocks',
     },
     {
       type: 's4e_httprequest',
@@ -151,7 +151,7 @@ export const defineNomieBlocks = () => {
       args0: [{ type: 'input_dummy' }, { type: 'input_value', name: 'Value', check: 'String' }],
       inputsInline: false,
       output: null,
-      colour: NOMIE_COLOUR,
+      style: 'nomie_blocks',
     },
     {
       type: 'wait_seconds',
@@ -159,7 +159,7 @@ export const defineNomieBlocks = () => {
       args0: [{ type: 'field_number', name: 'SECONDS', min: 0, max: 600, value: 1 }],
       previousStatement: null,
       nextStatement: null,
-      colour: '#86D8F9',
+      style: 'nomie_blocks',
     },
     {
       type: 'pushto_console',
@@ -168,7 +168,7 @@ export const defineNomieBlocks = () => {
       inputsInline: true,
       previousStatement: null,
       nextStatement: null,
-      colour: NOMIE_COLOUR,
+      style: 'nomie_blocks',
     },
     {
       type: 'pushto_webconsole',
@@ -177,7 +177,7 @@ export const defineNomieBlocks = () => {
       inputsInline: true,
       previousStatement: null,
       nextStatement: null,
-      colour: NOMIE_COLOUR,
+      style: 'nomie_blocks',
     },
     // Kept so that older workspaces that use it still load. It is not in the palette.
     {
@@ -196,7 +196,7 @@ export const defineNomieBlocks = () => {
       ],
       inputsInline: true,
       output: 'attribute',
-      colour: NOMIE_COLOUR,
+      style: 'nomie_blocks',
     },
   ]);
 };
