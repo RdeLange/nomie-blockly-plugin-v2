@@ -4,13 +4,14 @@
 import type * as Blockly from 'blockly';
 import { CATEGORY_COLOURS } from './theme';
 import { SEARCH_CATEGORY } from './search';
+import { blockText } from './block-texts';
 
 type ToolboxDefinition = Blockly.utils.toolbox.ToolboxDefinition;
 
 const block = (type: string) => ({ kind: 'block', type });
 const xmlBlock = (blockxml: string) => ({ kind: 'block', blockxml });
 // group headings in the drawer, in capitals (written so, because Blockly measures the text as written)
-const label = (text: string) => ({ kind: 'label', text: text.toUpperCase() });
+const label = (text: string) => ({ kind: 'label', text: blockText(text).toUpperCase() });
 
 export const NOMIE_CATEGORY = 'Nomie';
 
@@ -20,7 +21,7 @@ export const toolbox = (nomieName: string = NOMIE_CATEGORY): ToolboxDefinition =
     contents: [
       {
         kind: 'category',
-        name: 'Search',
+        name: blockText('Search'),
         toolboxitemid: 'search',
         colour: '#1C1917',
         custom: SEARCH_CATEGORY,
@@ -80,14 +81,14 @@ export const toolbox = (nomieName: string = NOMIE_CATEGORY): ToolboxDefinition =
       },
       {
         kind: 'category',
-        name: 'Logic',
+        name: blockText('Logic'),
         toolboxitemid: 'logic',
         colour: CATEGORY_COLOURS.logic,
         contents: ['controls_if', 'logic_compare', 'logic_operation', 'logic_negate', 'logic_boolean', 'logic_null', 'logic_ternary'].map(block),
       },
       {
         kind: 'category',
-        name: 'Loops',
+        name: blockText('Loops'),
         toolboxitemid: 'loops',
         colour: CATEGORY_COLOURS.loops,
         contents: [
@@ -102,14 +103,14 @@ export const toolbox = (nomieName: string = NOMIE_CATEGORY): ToolboxDefinition =
       },
       {
         kind: 'category',
-        name: 'Math',
+        name: blockText('Math'),
         toolboxitemid: 'math',
         colour: CATEGORY_COLOURS.math,
         contents: ['math_number', 'math_single', 'math_trig', 'math_constant', 'math_number_property', 'math_round', 'math_on_list', 'math_modulo', 'math_constrain', 'math_random_int', 'math_random_float', 'math_atan2'].map(block),
       },
       {
         kind: 'category',
-        name: 'Text',
+        name: blockText('Text'),
         toolboxitemid: 'text',
         colour: CATEGORY_COLOURS.text,
         contents: [
@@ -120,21 +121,21 @@ export const toolbox = (nomieName: string = NOMIE_CATEGORY): ToolboxDefinition =
       },
       {
         kind: 'category',
-        name: 'Lists',
+        name: blockText('Lists'),
         toolboxitemid: 'lists',
         colour: CATEGORY_COLOURS.lists,
         contents: ['lists_create_empty', 'lists_create_with', 'lists_repeat', 'lists_length', 'lists_isEmpty', 'lists_indexOf', 'lists_getIndex', 'lists_setIndex'].map(block),
       },
       {
         kind: 'category',
-        name: 'Variables',
+        name: blockText('Variables'),
         toolboxitemid: 'variables',
         custom: 'VARIABLE',
         colour: CATEGORY_COLOURS.variables,
       },
       {
         kind: 'category',
-        name: 'Functions',
+        name: blockText('Functions'),
         toolboxitemid: 'functions',
         // Blockly's own function blocks: with parameters and a return value (the old function blocks could not
         // pass arguments). Old workspaces keep their old blocks, see compat-blocks.ts and migrate.ts.
@@ -143,14 +144,14 @@ export const toolbox = (nomieName: string = NOMIE_CATEGORY): ToolboxDefinition =
       },
       {
         kind: 'category',
-        name: 'Objects',
+        name: blockText('Objects'),
         toolboxitemid: 'objects',
         colour: CATEGORY_COLOURS.objects,
         contents: ['object_create', 'object_get', 'object_set', 'object_keys', 'object_from_json', 'object_to_json', 'value_from_json_key'].map(block),
       },
       {
         kind: 'category',
-        name: 'Advanced',
+        name: blockText('Advanced'),
         toolboxitemid: 'advanced',
         colour: CATEGORY_COLOURS.advanced,
         contents: ['bi_try_catch'].map(block),

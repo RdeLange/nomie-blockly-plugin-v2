@@ -6,6 +6,7 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { EXAMPLES } from './example-library';
+import { EXAMPLE_TRANSLATIONS } from './example-translations';
 import { examplesJson } from './examples-build';
 import { exampleWorkspaces } from './workspace';
 import { compileWorkspace } from '../blockly/compile';
@@ -67,6 +68,25 @@ describe('the example library', () => {
       expect(result.ok, result.ok ? '' : result.error).toBe(true);
     });
   }
+
+  it('every example has a name, a card line and a tutorial in Dutch, German and Italian', () => {
+    for (const example of EXAMPLES) {
+      for (const lang of ['nl', 'de', 'it'] as const) {
+        const translated = EXAMPLE_TRANSLATIONS[example.name]?.[lang];
+        expect(translated?.displayName, `${example.name} ${lang}`).toBeTruthy();
+        expect(translated?.description, `${example.name} ${lang}`).toBeTruthy();
+        expect(translated?.detailedDescription.length, `${example.name} ${lang} tutorial`).toBeGreaterThan(150);
+      }
+    }
+  });
+
+  it('the Add screen shows the examples in the language of the Nomie user', () => {
+    const dutch = exampleWorkspaces('nl');
+    expect(dutch[0].displayName).toBe(EXAMPLE_TRANSLATIONS[EXAMPLES[0].name].nl!.displayName);
+    expect(dutch[0].detailedDescription).toBe(EXAMPLE_TRANSLATIONS[EXAMPLES[0].name].nl!.detailedDescription);
+    expect(dutch[0].name).toBe(EXAMPLES[0].name);
+    expect(exampleWorkspaces('en')[0].displayName).toBe(EXAMPLES[0].displayName);
+  });
 
   it('the Add screen gets each example as a workspace, with its tutorial and a new id', () => {
     const workspaces = exampleWorkspaces();

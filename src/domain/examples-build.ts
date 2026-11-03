@@ -3,6 +3,7 @@
 import { workspaceXml } from './example-xml';
 import type { Example } from './example-library';
 import type { CompiledWorkspace } from '../blockly/compile';
+import { EXAMPLE_TRANSLATIONS, type ExampleLanguage, type ExampleTranslation } from './example-translations';
 
 const COLOURS = ['#E3F2FD', '#FDF0A4', '#C47ADA', '#EC9740', '#5E7ABC', '#34C759', '#FF3B30'];
 
@@ -19,6 +20,8 @@ export type StoredExample = {
   workspacePosition: { scrollX: number; scrollY: number; scale: number };
   jscode: string;
   schedule: 'none' | 'daily';
+  // the card and the tutorial in the other languages (phase 22)
+  translations: Partial<Record<ExampleLanguage, ExampleTranslation>>;
 };
 
 export const storedExamples = (examples: Example[], compile: (xml: string) => CompiledWorkspace): StoredExample[] => {
@@ -43,6 +46,7 @@ export const storedExamples = (examples: Example[], compile: (xml: string) => Co
       workspacePosition: { scrollX: 0, scrollY: 0, scale: 0.8 },
       jscode: compiled.code,
       schedule: compiled.schedule,
+      translations: EXAMPLE_TRANSLATIONS[example.name] ?? {},
     };
   });
 };

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { t, tf } from './i18n.svelte';
+  import { i18n, t, tf } from './i18n.svelte';
   import { appState } from './state.svelte';
   import { ui } from './ui.svelte';
   import { actionDeps, askConfirm, notify } from './dialogs';
@@ -15,8 +15,8 @@
   import { healthOf } from './health';
   import { downloadText } from './download';
 
-  // the example library: built once, from examples.json (see domain/example-library.ts)
-  const examples = exampleWorkspaces();
+  // the example library, in the language of the Nomie user (see domain/example-library.ts)
+  const examples = $derived(exampleWorkspaces(i18n.lang));
   let adding = $state(false);
   let message = $state('');
   let fileInput: HTMLInputElement | undefined = $state();

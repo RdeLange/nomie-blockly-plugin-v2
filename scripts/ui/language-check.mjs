@@ -19,9 +19,9 @@ const check = (label, ok) => {
 // the words each language shows: the list's Add, the card's Edit, the editor's Save, Run and Detailed tabs, the
 // Settings screen's Import and add, and Blockly's repeat block
 const LANGS = [
-  { code: 'nl', add: 'Toevoegen', edit: 'Bewerken', save: 'Opslaan', run: 'Uitvoeren', detailed: 'Uitgebreid', settings: 'Instellingen', importAdd: 'Importeren en toevoegen', repeat: 'keer herhalen' },
-  { code: 'de', add: 'Hinzufügen', edit: 'Bearbeiten', save: 'Speichern', run: 'Ausführen', detailed: 'Ausführlich', settings: 'Einstellungen', importAdd: 'Importieren und hinzufügen', repeat: 'wiederhole' },
-  { code: 'it', add: 'Aggiungi', edit: 'Modifica', save: 'Salva', run: 'Esegui', detailed: 'Approfondita', settings: 'Impostazioni', importAdd: 'Importa e aggiungi', repeat: 'ripeti' },
+  { code: 'nl', add: 'Toevoegen', edit: 'Bewerken', save: 'Opslaan', run: 'Uitvoeren', detailed: 'Uitgebreid', settings: 'Instellingen', importAdd: 'Importeren en toevoegen', repeat: 'keer herhalen', loops: 'Lussen', yesterday: 'Voorbeeld: Gisteren in één getal', example: 'Voorbeeld: Hallo, console', readNotes: 'LEES JE NOTITIES' },
+  { code: 'de', add: 'Hinzufügen', edit: 'Bearbeiten', save: 'Speichern', run: 'Ausführen', detailed: 'Ausführlich', settings: 'Einstellungen', importAdd: 'Importieren und hinzufügen', repeat: 'wiederhole', loops: 'Schleifen', yesterday: 'Beispiel: Gestern als eine Zahl', example: 'Beispiel: Hallo, Konsole', readNotes: 'NOTIZEN LESEN' },
+  { code: 'it', add: 'Aggiungi', edit: 'Modifica', save: 'Salva', run: 'Esegui', detailed: 'Approfondita', settings: 'Impostazioni', importAdd: 'Importa e aggiungi', repeat: 'ripeti', loops: 'Cicli', yesterday: 'Esempio: Ieri in un numero', example: 'Esempio: Ciao, console', readNotes: 'LEGGI LE NOTE' },
 ];
 
 try {
@@ -40,8 +40,11 @@ try {
     check(`${lang.code}: the Settings screen is translated`, (await page.getByRole('button', { name: lang.importAdd, exact: true }).count()) === 1);
     await page.goto(url);
     await page.getByRole('button', { name: lang.add, exact: true }).click();
-    await page.locator('.row', { hasText: 'Example: Yesterday in one number' }).getByRole('button', { name: lang.add }).first().click();
-    await page.locator('.card', { hasText: 'Example: Yesterday in one number' }).filter({ has: page.getByRole('button', { name: lang.edit }) }).first().getByRole('button', { name: lang.edit }).click();
+    // the examples are in the language too (phase 22)
+    await page.getByText(lang.example).first().waitFor({ timeout: 5000 }).catch(() => undefined);
+    check(`${lang.code}: the examples are translated`, (await page.getByText(lang.example).count()) >= 1);
+    await page.locator('.row', { hasText: lang.yesterday }).getByRole('button', { name: lang.add }).first().click();
+    await page.locator('.card', { hasText: lang.yesterday }).filter({ has: page.getByRole('button', { name: lang.edit }) }).first().getByRole('button', { name: lang.edit }).click();
     await page.locator('.ed-toolbar').waitFor({ timeout: 15000 });
 
     check(`${lang.code}: the editor toolbar is translated`, (await page.getByRole('button', { name: lang.save, exact: true }).count()) === 1);
@@ -49,10 +52,15 @@ try {
     check(`${lang.code}: the Detailed tab is translated`, (await page.getByRole('tab', { name: lang.detailed }).count()) === 1);
 
     // a standard block: the repeat block's text in the Loops drawer (Blockly's own table, in this language)
-    await page.locator('.blocklyToolboxCategory', { hasText: 'Loops' }).click();
+    await page.locator('.blocklyToolboxCategory', { hasText: lang.loops }).click();
     await page.waitForFunction((word) => document.querySelector('.blocklyFlyout')?.textContent?.replace(/\s/g, ' ').includes(word), lang.repeat, { timeout: 10000 }).catch(() => undefined);
     const flyout = (await page.locator('.blocklyFlyout').allTextContents()).join(' ').replace(/\s/g, ' ');
     check(`${lang.code}: a standard block shows its text in this language`, flyout.includes(lang.repeat));
+    // the Nomie blocks and their group names (phase 22)
+    await page.locator('.blocklyToolboxCategory', { hasText: 'Nomie' }).click();
+    await page.waitForTimeout(400);
+    const nomieFlyout = (await page.locator('.blocklyFlyout').allTextContents()).join(' ').replace(/\s/g, ' ');
+    check(`${lang.code}: the Nomie blocks show their group names in this language`, nomieFlyout.includes(lang.readNotes));
     if (lang.code === 'de') await page.screenshot({ path: 'screenshots/language-de.png' });
     await context.close();
   }

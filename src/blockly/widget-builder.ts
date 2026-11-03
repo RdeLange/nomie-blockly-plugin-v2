@@ -5,6 +5,7 @@ import * as Blockly from 'blockly';
 import type { Block } from 'blockly';
 import { Order, type JavascriptGenerator } from 'blockly/javascript';
 import { CHART_COLOURS, CHART_MAX_DAYS, TREND_DAYS } from '../runtime/widget';
+import { defineLocalisedBlocks } from './block-texts';
 
 export const WIDGET_BLOCKS = [
   's4e_dashboard', 's4e_wvalue', 's4e_wtrend', 's4e_wchart', 's4e_wbars', 's4e_wfooter', 's4e_whtml', 's4e_wparam',
@@ -16,7 +17,7 @@ const COLOUR_OPTIONS = CHART_COLOURS.map((colour, i) => [COLOUR_NAMES[i], colour
 const quote = (value: unknown) => JSON.stringify(String(value ?? ''));
 
 export const defineWidgetBlocks = () => {
-  Blockly.defineBlocksWithJsonArray([
+  defineLocalisedBlocks([
     {
       // the widget: its name and emoji (the header), and the content blocks inside it
       type: 's4e_dashboard',

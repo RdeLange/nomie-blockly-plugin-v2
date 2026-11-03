@@ -1,7 +1,8 @@
 // The Nomie blocks: they read your notes, write to them, and show results.
 // The block type names, field names and generated code are the same as in Nomie Blockly v1,
 // so workspaces saved with v1 (.wsp files) load and run the same way.
-import { defineBlocksWithJsonArray, Extensions } from 'blockly';
+import { Extensions } from 'blockly';
+import { defineLocalisedBlocks } from './block-texts';
 import type { Block, FieldDropdown } from 'blockly';
 import { pickTracker } from '../nomie/picker';
 import { Order, type JavascriptGenerator } from 'blockly/javascript';
@@ -112,7 +113,7 @@ const STAT_OPTIONS = [
 
 export const defineNomieBlocks = () => {
   registerTrackerPicker();
-  defineBlocksWithJsonArray([
+  defineLocalisedBlocks([
     {
       type: 's4eblocklyframe',
       tooltip: "Runs the blocks inside it once for each day of a scheduled run, or once for the day you run it by hand. Example: put show message inside it to show a message each day.",

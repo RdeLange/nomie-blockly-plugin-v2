@@ -5,6 +5,7 @@
 import * as Blockly from 'blockly';
 import type { Block } from 'blockly';
 import { Order, type JavascriptGenerator } from 'blockly/javascript';
+import { defineLocalisedBlocks } from './block-texts';
 
 export const OBJECT_COLOUR = '#F99EA3';
 
@@ -119,7 +120,7 @@ export const defineObjectBlocks = (js: JavascriptGenerator) => {
     Blockly.Extensions.registerMutator('controls_create_mutator', objectCreateMutator, undefined, ['object_field']);
   }
 
-  Blockly.defineBlocksWithJsonArray([
+  defineLocalisedBlocks([
     {
       type: 'object_from_json',
       message0: 'get object from JSON text %1',

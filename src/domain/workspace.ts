@@ -125,11 +125,22 @@ export const templateWorkspaces = (): Workspace[] =>
     normaliseWorkspace({ ...template, id: newId(), latestrun: '' })
   );
 
-// The example library (examples.json, built from example-library.ts): each example as a workspace to add
-export const exampleWorkspaces = (): Workspace[] =>
-  (examples as Array<Record<string, unknown>>).map((example) =>
-    normaliseWorkspace({ ...example, id: newId(), latestrun: '' })
-  );
+// The example library (examples.json, built from example-library.ts): each example as a workspace to add. The name and
+// the tutorial are in the language of the Nomie user, when the library has them (phase 22); the name of the workspace
+// stays the same in every language.
+export const exampleWorkspaces = (lang: string = 'en'): Workspace[] =>
+  (examples as Array<Record<string, unknown>>).map((example) => {
+    const translations = (example.translations ?? {}) as Record<string, Partial<Record<'displayName' | 'description' | 'detailedDescription', string>>>;
+    const text = translations[lang] ?? {};
+    return normaliseWorkspace({
+      ...example,
+      displayName: text.displayName ?? example.displayName,
+      description: text.description ?? example.description,
+      detailedDescription: text.detailedDescription ?? example.detailedDescription,
+      id: newId(),
+      latestrun: '',
+    });
+  });
 
 // Saves new blocks for a workspace. When they differ, the blocks being replaced become the previous version, with the
 // time they were saved: one level of history (phase 17).
