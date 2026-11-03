@@ -27,12 +27,30 @@ describe('a saved workspace loads with its trackers and its blocks', () => {
     setTrackerOptions(() => [['#coffee', '#coffee']]);
     const workspace = new Blockly.Workspace();
     try {
-      const restore = loadWorkspace(workspace, PROGRAM);
+      loadWorkspace(workspace, PROGRAM);
       const tracker = workspace.getBlockById('tr');
       expect(tracker?.getFieldValue('Trackers')).toBe('#news');
-      restore();
     } finally {
       workspace.dispose();
+      setTrackerOptions(previous);
+    }
+  });
+
+  it('offers the saved trackers of a workspace in that workspace only (L2)', () => {
+    const previous = currentTrackerOptions();
+    setTrackerOptions(() => [['#coffee', '#coffee']]);
+    const open = new Blockly.Workspace();
+    const other = new Blockly.Workspace();
+    try {
+      // the editor keeps its workspace open; meanwhile another workspace is compiled or built
+      loadWorkspace(open, PROGRAM);
+      const options = (workspace: Blockly.Workspace) =>
+        (workspace.newBlock('s4e_trackers').getField('Trackers') as Blockly.FieldDropdown).getOptions(false).map((o) => o[1]);
+      expect(options(open)).toEqual(['#coffee', '#news']);
+      expect(options(other)).toEqual(['#coffee']);
+    } finally {
+      open.dispose();
+      other.dispose();
       setTrackerOptions(previous);
     }
   });
@@ -40,7 +58,7 @@ describe('a saved workspace loads with its trackers and its blocks', () => {
   it('keeps the Log Value block connected inside the script', () => {
     const workspace = new Blockly.Workspace();
     try {
-      loadWorkspace(workspace, PROGRAM)();
+      loadWorkspace(workspace, PROGRAM);
       const log = workspace.getBlockById('log');
       expect(log?.getParent()?.type).toBe('s4eblocklyframe');
     } finally {

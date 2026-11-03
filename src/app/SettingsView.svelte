@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { onMount } from 'svelte';
   import { appState } from './state.svelte';
   import { ui } from './ui.svelte';
   import { actionDeps, askConfirm, notify } from './dialogs';
@@ -18,7 +19,12 @@
   let startText = $state(localDayKey(new Date()));
   let startError = $state('');
 
-  const now = new Date();
+  // the time the overview is for; kept current, so it does not go stale when Settings stays open past midnight
+  let now = $state(new Date());
+  onMount(() => {
+    const timer = setInterval(() => (now = new Date()), 60_000);
+    return () => clearInterval(timer);
+  });
   // the daily workspaces, with the days their next run covers
   const overview = $derived(
     appState.workspaces.map((w) => ({

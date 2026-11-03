@@ -1,7 +1,7 @@
 // The data blocks: read a tracker's value for a day or a period, and write a value to a day.
 // The arithmetic and the search windows are the same as in Nomie Blockly v1.
-import type { NomieApi, NoteLike } from '../nomie/api';
-import { addDays, parseDayKey, resolveDay } from './dates';
+import { notesOnDay, type NomieApi, type NoteLike } from '../nomie/api';
+import { resolveDay } from './dates';
 import { formatValue } from './format';
 
 // v1 read these period names as a number of days (TODAY counted as 1, the default is 7)
@@ -46,9 +46,7 @@ export const getDailyTrackerValue = async (api: NomieApi, rawTracker: string, ra
   const tracker = clean(rawTracker);
   const stats = clean(rawStats);
   const day = resolveDay(clean(rawDay), new Date());
-  // v1 asked for the day after and a window of one day, which the search turns into the day itself
-  const start = addDays(parseDayKey(day), 1);
-  const notes: NoteLike[] = await api.searchNotes(tracker, start, 1);
+  const notes: NoteLike[] = await notesOnDay(api, tracker, day);
   const values: number[] = [];
   for (const note of notes) {
     for (const element of note.elements) {

@@ -13,9 +13,8 @@ import {
   defineNomieBlocks,
   registerNomieGenerators,
   NOMIE_RESERVED_WORDS,
-  currentTrackerOptions,
+  rememberSavedTrackers,
   setTrackerOptions,
-  trackersUsedIn,
   type TrackerOption,
 } from './nomie-blocks';
 
@@ -39,28 +38,24 @@ export const setupBlockly = (trackers?: () => TrackerOption[]) => {
 export const generateCode = (workspaceBlocks: string): string => {
   setupBlockly();
   const workspace = new Blockly.Workspace();
-  // the saved trackers stay valid for this workspace, even when they are not in the recent notes
-  const previous = currentTrackerOptions();
-  setTrackerOptions(() => [...previous(), ...trackersUsedIn(workspaceBlocks)]);
   try {
-    Blockly.Xml.domToWorkspace(Blockly.utils.xml.textToDom(migrateWorkspaceXml(workspaceBlocks).xml), workspace);
+    readBlocksInto(workspace, workspaceBlocks);
     return javascriptGenerator.workspaceToCode(workspace);
   } finally {
     workspace.dispose();
-    setTrackerOptions(previous);
   }
 };
 
-// Loads a saved workspace into a Blockly workspace (the editor uses this too). The trackers the workspace was saved with
-// stay in the Tracker dropdowns while it is loaded, so a tracker missing from the recent notes is not replaced.
-// The returned function puts the previous options back; the editor calls it when it closes.
-export const loadWorkspace = (workspace: Blockly.Workspace, workspaceBlocks: string): (() => void) => {
+// Loads a saved workspace into a Blockly workspace: old function blocks become Functions blocks where that runs
+// the same (migrate.ts), and the trackers it was saved with stay in its Tracker dropdowns, also when they are not
+// in the recent notes. The editor, the compiler and the generator all load blocks this way.
+export const readBlocksInto = (workspace: Blockly.Workspace, workspaceBlocks: string) => {
   setupBlockly();
-  const previous = currentTrackerOptions();
-  setTrackerOptions(() => [...previous(), ...trackersUsedIn(workspaceBlocks)]);
-  // old function blocks become Functions blocks where that runs the same (see migrate.ts)
+  rememberSavedTrackers(workspace, workspaceBlocks);
   Blockly.Xml.domToWorkspace(Blockly.utils.xml.textToDom(migrateWorkspaceXml(workspaceBlocks).xml), workspace);
-  return () => setTrackerOptions(previous);
 };
+
+// The editor's name for it
+export const loadWorkspace = readBlocksInto;
 
 export { Blockly, javascriptGenerator };

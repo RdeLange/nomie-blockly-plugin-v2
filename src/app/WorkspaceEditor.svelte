@@ -69,7 +69,6 @@
   let frame: HTMLDivElement | undefined = $state();
   let host: HTMLDivElement | undefined = $state();
   let workspace: Blockly.WorkspaceSvg | undefined;
-  let restoreTrackers: (() => void) | undefined;
   let resizeObserver: ResizeObserver | undefined;
   const stop = { stopped: false };
   const scale = start?.workspacePosition?.scale ?? 0.8;
@@ -134,8 +133,8 @@
         showResults?.();
       }
     });
-    // the saved trackers stay in the dropdowns while the editor is open (see loadWorkspace)
-    if (draft.xml) restoreTrackers = loadWorkspace(workspace, draft.xml);
+    // the saved trackers stay in this workspace's dropdowns (see readBlocksInto)
+    if (draft.xml) loadWorkspace(workspace, draft.xml);
     readBlocks();
     // a little room between the program and the edge of the canvas
     workspace.scroll(workspace.scrollX + 32, workspace.scrollY + 24);
@@ -163,7 +162,6 @@
     if (syncTimer) clearTimeout(syncTimer);
     if (highlightFrame) cancelAnimationFrame(highlightFrame);
     resizeObserver?.disconnect();
-    restoreTrackers?.();
     workspace?.dispose();
   });
 

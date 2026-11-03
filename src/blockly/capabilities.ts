@@ -1,9 +1,7 @@
 // What a workspace does with your notes and the network, read from its blocks (headless). Shown before a workspace
 // from a file or a backup is added: a shared workspace is code from someone else (review finding C4).
 import * as Blockly from 'blockly';
-import { setupBlockly } from './setup';
-import { migrateWorkspaceXml } from './migrate';
-import { currentTrackerOptions, setTrackerOptions, trackersUsedIn } from './nomie-blocks';
+import { readBlocksInto, setupBlockly } from './setup';
 
 export type Capabilities = {
   readsNotes: boolean;
@@ -23,11 +21,9 @@ const unique = (list: string[]) => [...new Set(list.filter(Boolean))];
 export const describeCapabilities = (workspaceBlocks: string): Capabilities => {
   setupBlockly();
   const workspace = new Blockly.Workspace();
-  const previous = currentTrackerOptions();
-  setTrackerOptions(() => [...previous(), ...trackersUsedIn(workspaceBlocks)]);
   const caps: Capabilities = { readsNotes: false, reads: [], writes: [], hosts: [], dynamicRequests: false };
   try {
-    Blockly.Xml.domToWorkspace(Blockly.utils.xml.textToDom(migrateWorkspaceXml(workspaceBlocks).xml), workspace);
+    readBlocksInto(workspace, workspaceBlocks);
     const trackerIn = (block: Blockly.Block, input: string) => {
       const target = input ? block.getInputTargetBlock(input) : null;
       return target?.type === 's4e_trackers' ? String(target.getFieldValue('Trackers')) : '';
@@ -51,7 +47,6 @@ export const describeCapabilities = (workspaceBlocks: string): Capabilities => {
   } catch {
     // blocks that cannot be read: the import itself reports that
   } finally {
-    setTrackerOptions(previous);
     workspace.dispose();
   }
   caps.reads = unique(caps.reads).filter((t) => t !== '#none');

@@ -3,11 +3,9 @@
 // could carry code that does something else than its blocks show.
 import * as Blockly from 'blockly';
 import { javascriptGenerator } from 'blockly/javascript';
-import { setupBlockly } from './setup';
-import { currentTrackerOptions, setTrackerOptions, trackersUsedIn } from './nomie-blocks';
+import { readBlocksInto, setupBlockly } from './setup';
 import { NEVER_WORKED } from './unsupported';
 import { COMPAT_BLOCKS } from './compat-blocks';
-import { migrateWorkspaceXml } from './migrate';
 
 const OLD_BLOCKS = new Set<string>(COMPAT_BLOCKS);
 
@@ -77,13 +75,10 @@ const labelOf = (block: Blockly.Block) => block.toString(60).replace(/\s+/g, ' '
 export const compileWorkspace = (workspaceBlocks: string, options: { highlight: boolean }): CompiledWorkspace => {
   setupBlockly();
   const workspace = new Blockly.Workspace();
-  // the saved trackers stay valid for this workspace, even when they are not in the recent notes
-  const previousTrackers = currentTrackerOptions();
-  setTrackerOptions(() => [...previousTrackers(), ...trackersUsedIn(workspaceBlocks)]);
   const previousPrefix = javascriptGenerator.STATEMENT_PREFIX;
   try {
     try {
-      Blockly.Xml.domToWorkspace(Blockly.utils.xml.textToDom(migrateWorkspaceXml(workspaceBlocks).xml), workspace);
+      readBlocksInto(workspace, workspaceBlocks);
     } catch (error) {
       return {
         code: '',
@@ -106,7 +101,6 @@ export const compileWorkspace = (workspaceBlocks: string, options: { highlight: 
     };
   } finally {
     javascriptGenerator.STATEMENT_PREFIX = previousPrefix;
-    setTrackerOptions(previousTrackers);
     workspace.dispose();
   }
 };

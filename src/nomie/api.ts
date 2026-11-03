@@ -10,7 +10,8 @@ export type NoteElement = {
 
 export type NoteLike = {
   note: string;
-  end: string | Date;
+  // when the note was made: Nomie sends a timestamp
+  end: string | number | Date;
   elements: NoteElement[];
 };
 
@@ -65,3 +66,16 @@ export const createNomieApi = (plugin: any): NomieApi => ({
     return reply && reply.value != null ? String(reply.value) : null;
   },
 });
+
+// The notes of one day ('YYYY-MM-DD', local time) that match the term. Nomie's search runs from the start of the day
+// `daysBack` days before the date to the end of the date, so it cannot ask for exactly one day; this asks for that
+// day and the one before, and keeps the notes made on the day. (v1 asked for the day after, which also counted the
+// notes of the next day.)
+export const notesOnDay = async (api: NomieApi, term: string, day: string): Promise<NoteLike[]> => {
+  const [year, month, date] = day.split('-').map(Number);
+  const notes = await api.searchNotes(term, new Date(year, month - 1, date, 12), 1);
+  return notes.filter((note) => {
+    const at = new Date(note.end);
+    return at.getFullYear() === year && at.getMonth() === month - 1 && at.getDate() === date;
+  });
+};

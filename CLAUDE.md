@@ -42,7 +42,7 @@ A phase is done only when `npm test`, `npm run check` and `npm run build` all pa
 
 ## Checking the UI
 
-The `*-check.mjs` scripts in the repo root drive the dev server with Playwright and take screenshots. They import
-Playwright from a path on the maintainer's machine; phase 0 of the plan replaces that with a dev dependency. After a
-UI change, take screenshots at 1440×900 (desktop) and 390×844 (phone), look at them, and compare with the mockups
-described in the plan.
+The scripts in `scripts/ui/` start their own dev server, drive it with Playwright and save screenshots in
+`screenshots/` (see the README). `run-check.mjs` uses `fake-nomie.js`, a stand-in for the Nomie SDK, to do real runs.
+After a UI change, take screenshots at 1440×900 (desktop) and 390×844 (phone), look at them, and compare with the
+mockups described in the plan.

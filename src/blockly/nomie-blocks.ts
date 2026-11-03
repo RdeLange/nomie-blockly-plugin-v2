@@ -16,10 +16,30 @@ export const currentTrackerOptions = () => trackerOptions;
 
 // A workspace keeps the tracker it was saved with. A dropdown only accepts values in its options, so a tracker
 // that is not in the recent notes would be replaced with the first option. These are the trackers a workspace uses.
+const XML_ENTITIES: Record<string, string> = { '&amp;': '&', '&lt;': '<', '&gt;': '>', '&quot;': '"', '&apos;': "'" };
 export const trackersUsedIn = (workspaceBlocks: string): TrackerOption[] => {
-  const found = [...workspaceBlocks.matchAll(/<field name="Trackers">([^<]*)<\/field>/g)].map((m) => m[1]);
+  const found = [...workspaceBlocks.matchAll(/<field name="Trackers">([^<]*)<\/field>/g)].map((m) =>
+    m[1].replace(/&(amp|lt|gt|quot|apos);/g, (entity) => XML_ENTITIES[entity])
+  );
   return [...new Set(found)].map((tag) => [tag, tag] as TrackerOption);
 };
+
+// The saved trackers of each workspace, offered in that workspace's dropdowns only. (They used to be added to the
+// one list every workspace shares, and taken out again afterwards.)
+const savedTrackers = new WeakMap<object, TrackerOption[]>();
+export const rememberSavedTrackers = (workspace: object, workspaceBlocks: string) => {
+  const known = savedTrackers.get(workspace) ?? [];
+  const added = trackersUsedIn(workspaceBlocks).filter(([, tag]) => !known.some(([, k]) => k === tag));
+  savedTrackers.set(workspace, [...known, ...added]);
+};
+
+// The options of a Tracker dropdown: the trackers of your recent notes, then the saved ones of its workspace
+function trackerDropdownOptions(this: { getSourceBlock(): { workspace: object } | null }): TrackerOption[] {
+  const recent = trackerOptions();
+  const workspace = this.getSourceBlock?.()?.workspace;
+  const saved = workspace ? (savedTrackers.get(workspace) ?? []) : [];
+  return [...recent, ...saved.filter(([, tag]) => !recent.some(([, r]) => r === tag))];
+}
 
 const DAY_OPTIONS = [
   ['Today', 'today'],
@@ -100,7 +120,7 @@ export const defineNomieBlocks = () => {
     {
       type: 's4e_trackers',
       message0: 'T: %1',
-      args0: [{ type: 'field_dropdown', name: 'Trackers', options: () => trackerOptions() }],
+      args0: [{ type: 'field_dropdown', name: 'Trackers', options: trackerDropdownOptions }],
       output: 'Tracker',
       style: 'nomie_blocks',
     },
