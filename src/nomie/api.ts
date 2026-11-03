@@ -27,8 +27,8 @@ export interface NomieApi {
   searchNotes(term: string, date: Date, daysBack: number): Promise<NoteLike[]>;
   // the trackers Nomie has for this tag, or null when Nomie does not have the tracker
   getTracker(tag: string): Promise<TrackerInfo | null>;
-  // the values of a tracker, one per day, going back `daysBack` days
-  getTrackerValues(tag: string, daysBack: number): Promise<number[]>;
+  // the values of a tracker, one per day, going back `daysBack` days from `end` (default: now)
+  getTrackerValues(tag: string, daysBack: number, end?: Date): Promise<number[]>;
   createNote(note: string, end: Date): void;
   alert(title: string, message: string): void;
   prompt(title: string, message: string): Promise<string | null>;
@@ -53,8 +53,9 @@ export const createNomieApi = (plugin: any): NomieApi => ({
       color: tracker.color || '',
     };
   },
-  getTrackerValues: async (tag, daysBack) => {
-    const reply = await plugin.getTrackableUsage({ tag, daysBack });
+  getTrackerValues: async (tag, daysBack, end) => {
+    // Nomie counts back from `date` (and caps daysBack at 90)
+    const reply = await plugin.getTrackableUsage(end ? { tag, daysBack, date: end } : { tag, daysBack });
     return (reply && reply.usage && reply.usage.values) || [];
   },
   createNote: (note, end) => plugin.createNote({ note, end }),

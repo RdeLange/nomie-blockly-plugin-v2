@@ -5,9 +5,9 @@ import { MAX_CATCH_UP_DAYS, parseTypedDay, scheduleWindow } from './scheduler';
 const now = new Date(2026, 9, 24, 9);
 
 describe('the scheduler window', () => {
-  it('starts 30 days back when a workspace never ran, and ends yesterday', () => {
+  it('starts at yesterday when a workspace never ran, and ends yesterday', () => {
     const w = scheduleWindow(undefined, now);
-    expect(localDayKey(w.start)).toBe('2026-09-24');
+    expect(localDayKey(w.start)).toBe('2026-10-23');
     expect(localDayKey(w.end)).toBe('2026-10-23');
   });
 
@@ -25,7 +25,7 @@ describe('the scheduler window', () => {
 
   it('ignores a last run date that is not a date', () => {
     const w = scheduleWindow('not a date', now);
-    expect(localDayKey(w.start)).toBe('2026-09-24');
+    expect(localDayKey(w.start)).toBe('2026-10-23');
   });
 });
 

@@ -60,19 +60,27 @@ export const getDailyTrackerValue = async (api: NomieApi, rawTracker: string, ra
   return pick(stats, summarise(values));
 };
 
-// The value of a tracker, or the count of notes that mention a word, over a period.
-export const getPeriodTrackerValue = async (api: NomieApi, rawTrackable: string, period: string, rawStats: string) => {
+// The value of a tracker, or the count of notes that mention a word, over a period that ends on `day` (the day the
+// run is for; today by default). v1 always counted back from now, so a catch-up run wrote today's value for every day.
+export const getPeriodTrackerValue = async (
+  api: NomieApi,
+  rawTrackable: string,
+  period: string,
+  rawStats: string,
+  day: Date = new Date()
+) => {
   const trackable = clean(rawTrackable);
   const statistic = clean(rawStats);
-  const days = parseInt(PERIOD_DAYS[period] ?? '7', 10);
+  const days = parseInt(PERIOD_DAYS[clean(period)] ?? '7', 10);
+  const end = new Date(day.getFullYear(), day.getMonth(), day.getDate(), 23, 59, 59, 999);
 
   if (trackable.startsWith('#') || trackable.startsWith('@')) {
-    const values = await api.getTrackerValues(trackable, days);
+    const values = await api.getTrackerValues(trackable, days, end);
     return pick(statistic, summarise(values));
   }
 
   // A word, not a tracker: the result is the number of notes that mention it
-  const notes = await api.searchNotes(trackable, new Date(), days);
+  const notes = await api.searchNotes(trackable, end, days);
   const total = notes.length;
   if (statistic === 'sum') return total;
   if (statistic === 'avg') return total / days;

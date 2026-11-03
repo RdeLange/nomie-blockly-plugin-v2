@@ -95,7 +95,7 @@
 
 <div class="card">
   <p><strong>Scheduler</strong></p>
-  <p class="muted">Last run: {new Date(appState.lastCentralSchedule).toLocaleString()}</p>
+  <p class="muted">Last run: {appState.lastCentralSchedule ? new Date(appState.lastCentralSchedule).toLocaleString() : 'never'}</p>
   <p class="muted">Daily workspaces run for the days since their last run, up to yesterday.</p>
   <p class="muted">Next run starts from</p>
   <div class="row">

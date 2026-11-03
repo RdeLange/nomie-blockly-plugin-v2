@@ -4,7 +4,7 @@ import { normaliseWorkspace } from '../domain/workspace';
 
 export type StoredState = {
   workspaces: Workspace[];
-  // ISO date of the last scheduler run
+  // ISO date of the last scheduler run ('' when it never ran)
   lastcentralschedule: string;
   // the log of the scheduler runs, newest first
   centralscheduleslist: string;
@@ -12,9 +12,11 @@ export type StoredState = {
 
 export const STORAGE_KEY = 'blockly';
 
+// '' when there is no date: the schedule then counts as never run, and runs on the first day
 const toIso = (value: unknown): string => {
-  const date = new Date(typeof value === 'number' ? value : String(value ?? ''));
-  return isNaN(date.getTime()) ? new Date().toISOString() : date.toISOString();
+  if (value === undefined || value === null || value === '') return '';
+  const date = new Date(typeof value === 'number' ? value : String(value));
+  return isNaN(date.getTime()) ? '' : date.toISOString();
 };
 
 // Reads what was stored. v1 stored the scheduler date as milliseconds, and some workspaces have no fields yet.
@@ -29,14 +31,14 @@ export const readState = (raw: unknown): StoredState => {
         return [];
       }
     }),
-    lastcentralschedule: toIso(data.lastcentralschedule ?? Date.now()),
+    lastcentralschedule: toIso(data.lastcentralschedule),
     centralscheduleslist: typeof data.centralscheduleslist === 'string' ? data.centralscheduleslist : '',
   };
 };
 
 class AppState {
   workspaces = $state<Workspace[]>([]);
-  lastCentralSchedule = $state(new Date().toISOString());
+  lastCentralSchedule = $state('');
   centralLog = $state('');
   loaded = $state(false);
 

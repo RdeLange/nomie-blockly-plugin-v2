@@ -2,7 +2,7 @@
 import type { NomieApi } from '../nomie/api';
 import type { Workspace } from '../domain/workspace';
 import { createRunQueue, runWorkspace, RUN_DEADLINE_MS, type RunResult } from '../runtime/run';
-import { runSchedule, type ScheduledWorkspace, type ScheduleOutcome } from '../runtime/scheduler';
+import { MAX_CATCH_UP_DAYS, runSchedule, type ScheduledWorkspace, type ScheduleOutcome } from '../runtime/scheduler';
 import type { ScheduleWindow } from '../runtime/host';
 import { compileWorkspace, hasErrors, workspaceInfo, type CompiledWorkspace } from '../blockly/compile';
 import { localDayKey, parseDayKey } from '../runtime/dates';
@@ -10,10 +10,10 @@ import { appState } from './state.svelte';
 
 export type Deps = {
   api: NomieApi;
-  save: () => void;
+  // saves the app state; false (or a rejected promise) when it was not saved
+  save: () => Promise<boolean> | boolean | void;
 };
 
-const DAY_MS = 24 * 60 * 60 * 1000;
 // how many runs the log keeps
 const LOG_ENTRIES = 40;
 const runQueue = createRunQueue();
@@ -87,13 +87,20 @@ export const runRange = (deps: Deps, workspace: Workspace, start: Date, end: Dat
 const describe = (outcome: ScheduleOutcome): string => {
   if (outcome.result === 'skipped') return `${outcome.displayName}: not scheduled`;
   const shown = (outcome.output ?? []).map((text) => `  ${text}`);
-  const head = outcome.result.ok
-    ? `${outcome.displayName}: ran ${outcome.from} to ${outcome.to}`
-    : `${outcome.displayName}: failed (${outcome.result.error})`;
+  const days = outcome.days ?? [];
+  const failed = days.find((d) => !d.result.ok);
+  let head: string;
+  if (outcome.result.ok) head = `${outcome.displayName}: ran ${outcome.from} to ${outcome.to}`;
+  else if (failed) {
+    const done = days.length - 1;
+    const before = done ? `ran ${done} day${done === 1 ? '' : 's'}, then ` : '';
+    head = `${outcome.displayName}: ${before}failed on ${failed.day} (${outcome.result.error}); the next run starts at ${failed.day}`;
+  } else head = `${outcome.displayName}: failed (${outcome.result.error})`;
   return [head, ...shown].join('\n');
 };
 
-// Runs the daily workspaces. A workspace's last run moves on only when its run succeeded.
+// Runs the daily workspaces, one day at a time. A workspace's latestrun moves on after each day that ran well and is
+// saved straight away, so a failure later on (or Nomie closing) does not run that day again.
 export const scheduleNow = async (deps: Deps, now = new Date()): Promise<ScheduleOutcome[]> => {
   // the schedule runs the code of each workspace's blocks; a workspace whose blocks have errors does not run
   const compiled = appState.workspaces.map((w) => ({ workspace: w, compiled: compileWorkspace(w.workspaceBlocks, { highlight: false }) }));
@@ -109,43 +116,58 @@ export const scheduleNow = async (deps: Deps, now = new Date()): Promise<Schedul
       latestrun: w.latestrun,
       daily: c.frame && c.schedule === 'daily',
     }));
+  const progress = (id: string, nextDay: string) => {
+    const workspace = appState.workspaces.find((w) => w.id === id);
+    if (!workspace) return;
+    workspace.latestrun = parseDayKey(nextDay).toISOString();
+    void deps.save();
+  };
   const ran = await queue(
-    () => runSchedule(deps.api, runnable, now),
+    () => runSchedule(deps.api, runnable, now, undefined, progress),
     (error): ScheduleOutcome[] => [{ id: '', displayName: 'Schedule', result: { ok: false, error } }],
-    // the schedule runs every workspace in one task, so each one gets a full run's time
-    RUN_DEADLINE_MS * Math.max(1, runnable.length)
+    // the schedule runs every workspace in one task, so it gets a full run's time for every day it may catch up;
+    // each run ends on its own long before that, this only guards against something outside the runs being stuck
+    RUN_DEADLINE_MS * Math.max(1, runnable.length) * MAX_CATCH_UP_DAYS
   );
   const outcomes = [...ran, ...broken];
-  for (const outcome of outcomes) {
-    if (outcome.result !== 'skipped' && outcome.result.ok) {
-      const workspace = appState.workspaces.find((w) => w.id === outcome.id);
-      if (workspace) workspace.latestrun = now.toISOString();
-    }
-  }
   const lines = outcomes.map(describe);
   appState.lastCentralSchedule = now.toISOString();
   if (lines.length) {
     const entry = `Schedule finished ${now.toString()}\n${lines.join('\n')}`;
     appState.centralLog = [entry, ...appState.centralLog.split('\n\n')].slice(0, LOG_ENTRIES).join('\n\n');
   }
-  deps.save();
+  await deps.save();
   return outcomes;
 };
 
-// Runs the schedule when the last one is more than a day old. Called when the plugin starts, and every hour after.
+// Due once per calendar day: when the last schedule ran on an earlier day than today (or never ran). A last run in
+// the future (the clock went back) is not due. v1 waited 24 hours, so the time of day drifted from day to day.
+export const isScheduleDue = (lastCentralSchedule: string, now: Date): boolean => {
+  if (!lastCentralSchedule) return true;
+  const last = new Date(lastCentralSchedule);
+  if (isNaN(last.getTime())) return true;
+  return localDayKey(last) < localDayKey(now);
+};
+
+// Runs the schedule when it is due. Called when the plugin starts, and every hour after. Nothing happens before the
+// stored state is loaded: a schedule then would run no workspaces and save an empty list over the stored one.
 export const scheduleIfDue = (deps: Deps, now = new Date()) => {
-  const last = new Date(appState.lastCentralSchedule).getTime();
-  if (Math.abs(now.getTime() - last) / DAY_MS > 1) return scheduleNow(deps, now);
+  if (!appState.loaded) return undefined;
+  if (isScheduleDue(appState.lastCentralSchedule, now)) return scheduleNow(deps, now);
   return undefined;
 };
 
-// A note that says "Run Blockly Workspace: <name>" runs that workspace.
-export const runFromNote = (deps: Deps, noteText: string) => {
-  const matches = appState.workspaces.filter((w) => w.name && noteText.includes(w.name));
+const NOTE_TRIGGER = /Run Blockly Workspace:[ \t]*([^\n\r]+)/i;
+
+// A note with the line "Run Blockly Workspace: <name>" runs the workspace with exactly that name (any case).
+export const runFromNote = (deps: Deps, noteText: string): Workspace[] => {
+  const name = NOTE_TRIGGER.exec(noteText)?.[1].trim().toLowerCase();
+  if (!name) return [];
+  const matches = appState.workspaces.filter((w) => w.name.trim().toLowerCase() === name);
   for (const workspace of matches) {
     void runNow(deps, workspace);
   }
-  return matches.length;
+  return matches;
 };
 
 // Sets the day the next scheduled run starts from, for every daily workspace. Nothing runs now.
@@ -159,6 +181,6 @@ export const setScheduleStart = (deps: Deps, day: string) => {
     count += 1;
   }
   appState.centralLog = [`Next run starts from ${day} (${count} workspace${count === 1 ? '' : 's'})`, ...appState.centralLog.split('\n\n')].slice(0, LOG_ENTRIES).join('\n\n');
-  deps.save();
+  void deps.save();
   return count;
 };

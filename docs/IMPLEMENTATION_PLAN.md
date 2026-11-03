@@ -281,6 +281,11 @@ starts from" stays the way to back-fill.
 `fetchPeriodValue(t, p, s, loop)` and add an optional fourth argument to the host function: the end of the window.
 Keep the three-argument form working for v1 code. Do the same for `getPromise` (the legacy `tracker` block).
 
+As built (phase 4): no fourth argument is generated, because that would change the code of v1 workspaces (the v1
+equality tests). The host function reads the sandbox's `loop` variable (the Scheduler block's day) instead, so v1
+workspaces get the fix too. Nomie's `getTrackableUsage` takes the end date as `date`. Note: Nomie caps a word search
+at 60 days back, so "Last 90 days" for a word counts 60 days; this is Nomie's limit, not the plugin's.
+
 ### M1–M3. Safe and predictable start
 
 - `scheduleIfDue` does nothing until `appState.loaded` is true, and `save()` refuses to write before load. This

@@ -163,10 +163,10 @@ describe('the scheduler', () => {
   const daily = JSON.parse(readFileSync(join(__dirname, '../test/fixtures/retrieve-data-example.wsp'), 'utf8'))[0];
   const dailyCode = daily.jscode.replace('var schedule = "none";', 'var schedule = "daily";');
 
-  it('runs from the last run to yesterday, and starts 30 days back when it never ran', () => {
+  it('runs from the last run to yesterday, and starts at yesterday when it never ran', () => {
     const now = new Date(2026, 9, 24, 9);
     const never = scheduleWindow(undefined, now);
-    expect(localDayKey(never.start)).toBe('2026-09-24');
+    expect(localDayKey(never.start)).toBe('2026-10-23');
     expect(localDayKey(never.end)).toBe('2026-10-23');
     const lastRun = scheduleWindow(new Date(2026, 9, 20).toISOString(), now);
     expect(localDayKey(lastRun.start)).toBe('2026-10-20');

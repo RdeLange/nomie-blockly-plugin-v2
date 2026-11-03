@@ -102,7 +102,7 @@
   const scheduleNow = (): 'daily' | 'none' =>
     workspace?.getBlocksByType('s4eblocklyframe', false).some((b) => b.isEnabled() && b.getFieldValue('NAME') === 'daily') ? 'daily' : 'none';
 
-  const save = () => {
+  const save = async () => {
     const target = appState.workspaces.find((w) => w.id === id);
     if (!target) return;
     const scaleNow = workspace?.getScale() ?? scale;
@@ -117,8 +117,9 @@
       workspacePosition: { scrollX: 0, scrollY: 0, scale: scaleNow },
       schedule: scheduleNow(),
     } satisfies Partial<Workspace>);
-    actionDeps()?.save();
-    dirty = false;
+    // a failed save says so (see nomie/plugin.ts) and leaves the changes marked as unsaved
+    const saved = await actionDeps()?.save();
+    if (saved !== false) dirty = false;
   };
 
   const back = async () => {

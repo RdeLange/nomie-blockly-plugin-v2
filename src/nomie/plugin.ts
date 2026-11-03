@@ -9,7 +9,7 @@ import { setupBlockly } from '../blockly/setup';
 
 declare const NomiePlugin: any;
 
-export type NomieHandle = { api: NomieApi; save: () => void; plugin: any };
+export type NomieHandle = { api: NomieApi; save: () => Promise<boolean>; plugin: any };
 
 let handle: NomieHandle | undefined;
 // the connection to Nomie, once the plugin has started (undefined when the page runs outside Nomie)
@@ -55,11 +55,38 @@ export const startNomie = (): NomieHandle | undefined => {
     addToMoreMenu: true,
     addToWidgets: true,
   });
-  const api = createNomieApi(plugin);
-  const save = () => {
-    void plugin.storage.setItem(STORAGE_KEY, appState.toStored());
+  // Notes this plugin wrote in the last two minutes. A workspace that logs "Run Blockly Workspace: X" must not start
+  // itself again through the note trigger.
+  const written = new Map<string, number>();
+  const nomieApi = createNomieApi(plugin);
+  const api: NomieApi = {
+    ...nomieApi,
+    createNote: (note, end) => {
+      written.set(note, Date.now());
+      nomieApi.createNote(note, end);
+    },
+  };
+  const writtenByUs = (note: string) => {
+    const now = Date.now();
+    for (const [text, at] of written) if (now - at > 2 * 60_000) written.delete(text);
+    return written.has(note);
+  };
+
+  // Saving waits for Nomie and says when it failed. Before the stored state is loaded nothing is saved: that would
+  // write an empty list of workspaces over the stored one.
+  const save = async (): Promise<boolean> => {
+    if (!appState.loaded) return false;
+    try {
+      await plugin.storage.setItem(STORAGE_KEY, appState.toStored());
+      return true;
+    } catch (error) {
+      plugin.alert('Not saved', `Nomie Blockly could not save your workspaces: ${String(error)}`);
+      return false;
+    }
   };
   const deps = { api, save };
+  let launched = false;
+  let timer: ReturnType<typeof setInterval> | undefined;
   setupBlockly(trackerOptionsNow);
 
   plugin.onRegistered(async () => {
@@ -68,6 +95,8 @@ export const startNomie = (): NomieHandle | undefined => {
     appState.load(plugin.storage.getItem(STORAGE_KEY));
     ui.ready = true;
     void refreshTrackers(api);
+    // Nomie may launch the plugin before its storage is ready; the schedule then starts here
+    if (launched) void scheduleIfDue(deps);
   });
   plugin.onUIOpened(() => {
     applyTheme(plugin);
@@ -79,11 +108,15 @@ export const startNomie = (): NomieHandle | undefined => {
     ui.mode = 'widget';
   });
   plugin.onLaunch(() => {
+    launched = true;
     void scheduleIfDue(deps);
-    setInterval(() => void scheduleIfDue(deps), 60 * 60 * 1000);
+    // one timer, also when Nomie launches the plugin more than once
+    if (timer) clearInterval(timer);
+    timer = setInterval(() => void scheduleIfDue(deps), 60 * 60 * 1000);
   });
   plugin.onNote((note: { note: string }) => {
-    if (note?.note?.includes('Run Blockly Workspace:')) runFromNote(deps, note.note);
+    const text = note?.note ?? '';
+    if (text.includes('Run Blockly Workspace:') && !writtenByUs(text)) runFromNote(deps, text);
   });
   handle = { api, save, plugin };
   return handle;

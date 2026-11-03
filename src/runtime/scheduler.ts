@@ -1,5 +1,6 @@
 // The daily scheduler: each workspace with a daily schedule runs for the days since its last successful run,
-// up to yesterday. Workspaces run one after the other.
+// up to yesterday. Workspaces run one after the other, and each workspace runs one day at a time: its progress is
+// kept after every day, so a retry after a failure starts at the failed day and never writes a day twice.
 import type { NomieApi } from '../nomie/api';
 import { addDays, localDayKey, parseDayKey } from './dates';
 import { canRun, runWorkspace, type RunResult } from './run';
@@ -13,6 +14,9 @@ export type ScheduledWorkspace = {
   daily?: boolean;
 };
 
+// One day of a scheduled run
+export type DayOutcome = { day: string; result: RunResult; output: string[] };
+
 export type ScheduleOutcome = {
   id: string;
   displayName: string;
@@ -20,20 +24,24 @@ export type ScheduleOutcome = {
   from?: string;
   to?: string;
   result: RunResult | 'skipped';
-  // what the run showed (display messages and errors), without the end marker
+  // what the run showed (display messages and errors), without the end markers
   output?: string[];
+  // each day that ran, in order; the last one is the one that failed, if one did
+  days?: DayOutcome[];
 };
 
 // The most days one scheduled run covers. After a long time off, the scheduler catches up this far, not further back.
 export const MAX_CATCH_UP_DAYS = 60;
 
-// The days to run: from the last run (or 30 days back, when there was none) to yesterday, both at local midnight.
-// The start never goes further back than MAX_CATCH_UP_DAYS.
+// The days to run: from the day of the last run to yesterday, both at local midnight. `latestrun` is the first day
+// that has not run yet. A workspace that never ran starts at yesterday (it used to start 30 days back, which wrote
+// a month of notes on the first run; Settings can still set an earlier start). The start never goes further back
+// than MAX_CATCH_UP_DAYS.
 export const scheduleWindow = (latestrun: string | undefined, now: Date) => {
   const end = parseDayKey(localDayKey(addDays(now, -1)));
   const earliest = addDays(end, -(MAX_CATCH_UP_DAYS - 1));
   const last = latestrun ? new Date(latestrun) : undefined;
-  let start = last && !isNaN(last.getTime()) ? parseDayKey(localDayKey(last)) : addDays(end, -29);
+  let start = last && !isNaN(last.getTime()) ? parseDayKey(localDayKey(last)) : end;
   if (start < earliest) start = earliest;
   return { start, end };
 };
@@ -51,12 +59,16 @@ export const parseTypedDay = (text: string): string | undefined => {
 export const isDailyWorkspace = (jscode: string): boolean =>
   jscode.includes('var schedule = "daily"') && canRun(jscode, true);
 
-// The schedule for the given workspaces, one at a time. Returns what happened to each one.
+const MARKERS = new Set(['<< Program complete >>', '<< Stopped >>']);
+
+// The schedule for the given workspaces, one at a time, one day at a time. Returns what happened to each one.
+// onProgress gets the first day that has not run yet, after every day that ran well; save it as the latestrun.
 export const runSchedule = async (
   api: NomieApi,
   workspaces: ScheduledWorkspace[],
   now: Date,
-  onOutput?: (text: string) => void
+  onOutput?: (text: string) => void,
+  onProgress?: (id: string, nextDay: string) => void
 ): Promise<ScheduleOutcome[]> => {
   const outcomes: ScheduleOutcome[] = [];
   for (const workspace of workspaces) {
@@ -69,30 +81,38 @@ export const runSchedule = async (
       outcomes.push({ id: workspace.id, displayName: workspace.displayName, result: 'skipped' });
       continue;
     }
-    // the same window the daily block uses: from the start day to the end day, both at 13:00
-    const window = {
-      active: true,
-      start: new Date(start.getFullYear(), start.getMonth(), start.getDate(), 13),
-      end: new Date(end.getFullYear(), end.getMonth(), end.getDate(), 13),
-    };
-    const shown: string[] = [];
-    const result = await runWorkspace({
-      api,
-      jscode: workspace.jscode,
-      scheduled: true,
-      schedule: window,
-      output: (text) => {
-        shown.push(text);
-        onOutput?.(text);
-      },
-    });
+    const days: DayOutcome[] = [];
+    let result: RunResult = { ok: true, steps: 0 };
+    for (let day = start; day <= end; day = addDays(day, 1)) {
+      // the window the Scheduler block loops over: this one day, at 13:00
+      const at13 = new Date(day.getFullYear(), day.getMonth(), day.getDate(), 13);
+      const shown: string[] = [];
+      const dayResult = await runWorkspace({
+        api,
+        jscode: workspace.jscode,
+        scheduled: true,
+        schedule: { active: true, start: at13, end: at13 },
+        output: (text) => {
+          shown.push(text);
+          onOutput?.(text);
+        },
+      });
+      days.push({ day: localDayKey(day), result: dayResult, output: shown.filter((text) => !MARKERS.has(text)) });
+      if (!dayResult.ok) {
+        result = dayResult;
+        break;
+      }
+      result = { ok: true, steps: (result.ok ? result.steps : 0) + dayResult.steps };
+      onProgress?.(workspace.id, localDayKey(addDays(day, 1)));
+    }
     outcomes.push({
       id: workspace.id,
       displayName: workspace.displayName,
       from: localDayKey(start),
       to: localDayKey(end),
       result,
-      output: shown.filter((text) => text !== '<< Program complete >>'),
+      output: days.flatMap((d) => d.output),
+      days,
     });
   }
   return outcomes;

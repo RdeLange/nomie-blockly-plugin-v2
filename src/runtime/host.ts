@@ -105,6 +105,13 @@ export const installHost = (interpreter: any, scope: any, ctx: HostContext) => {
   });
   asyncFn('prompt', (text) => ctx.api.prompt('Message', formatValue(text)), 1, timeouts.prompt);
 
+  // The day the run is at: the Scheduler block's loop variable. Read from the sandbox, so the code v1 generated
+  // (which does not pass it) gets the right day too. Undefined outside a Scheduler block.
+  const loopDay = (): Date | undefined => {
+    const loop = toNative(interpreter.getProperty(scope, 'loop'));
+    return loop instanceof Date && !isNaN(loop.getTime()) ? loop : undefined;
+  };
+
   native('getdate', (daypicked, date) => resolveDay(String(daypicked), dateFrom(date)));
   native('scheduler_activated', () => ctx.schedule.active);
   native('scheduler_start', () => ctx.schedule.start);
@@ -120,10 +127,15 @@ export const installHost = (interpreter: any, scope: any, ctx: HostContext) => {
   );
 
   asyncFn('fetchDayValue', (tracker, day, stats) => getDailyTrackerValue(ctx.api, tracker, day, stats), 3, timeouts.nomie);
-  asyncFn('fetchPeriodValue', (trackable, period, stats) => getPeriodTrackerValue(ctx.api, trackable, period, stats), 3, timeouts.nomie);
+  asyncFn(
+    'fetchPeriodValue',
+    (trackable, period, stats) => getPeriodTrackerValue(ctx.api, trackable, period, stats, loopDay()),
+    3,
+    timeouts.nomie
+  );
   asyncFn('logValue', async (value, tracker, day) => logDailyTrackerValue(ctx.api, value, tracker, day), 3, timeouts.nomie);
-  // the trackervalue block (kept for older workspaces): today's total
-  asyncFn('getPromise', (tracker) => getDailyTrackerValue(ctx.api, tracker, localDayKey(new Date()), 'sum'), 1, timeouts.nomie);
+  // the trackervalue block (kept for older workspaces): the total of the day the run is at
+  asyncFn('getPromise', (tracker) => getDailyTrackerValue(ctx.api, tracker, localDayKey(loopDay() ?? new Date()), 'sum'), 1, timeouts.nomie);
 
   asyncFn(
     'httpRequest',
