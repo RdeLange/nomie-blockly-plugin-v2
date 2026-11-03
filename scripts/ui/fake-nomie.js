@@ -15,7 +15,7 @@
     elements: [{ type: 'tracker', id: 'mood', prefix: '#', value: 4 + (i % 5) }],
   }));
   const store = {};
-  const state = { notes, created: [], dialogs: [], saved: 0 };
+  const state = { notes, created: [], dialogs: [], saved: 0, pickers: [], opened: [] };
   window.__nomie = state;
 
   class FakeNomiePlugin {
@@ -59,6 +59,17 @@
     }
     alert(title, message) {
       state.dialogs.push(`${title}: ${message}`);
+    }
+    // Nomie's tracker picker: answers with the tracker 'hydration' (a cancelled picker would never answer)
+    async selectTrackables(type, multiple) {
+      state.pickers.push({ type, multiple });
+      return [{ type: 'tracker', id: '#hydration', tracker: { tag: 'hydration' } }];
+    }
+    async getLocation() {
+      return { id: 'location', lat: 52.37, lng: 4.9 };
+    }
+    openURL(url, title) {
+      state.opened.push({ url, title });
     }
     async confirm(title, message) {
       state.dialogs.push(`${title}: ${message}`);

@@ -11,6 +11,9 @@ const api: NomieApi = {
   createNote: () => undefined,
   alert: () => undefined,
   prompt: async () => null,
+  getLocation: async () => null,
+  openURL: () => undefined,
+  pickTracker: async () => null,
 };
 
 const runCode = (jscode: string, extra: { memory?: Memory; test?: boolean } = {}) => {

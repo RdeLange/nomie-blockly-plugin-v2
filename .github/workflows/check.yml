@@ -49,6 +49,7 @@ jobs:
       - run: node scripts/ui/drawer-check.mjs
       - run: node scripts/ui/test-run-check.mjs
       - run: node scripts/ui/memory-check.mjs
+      - run: node scripts/ui/history-check.mjs
       - name: Upload screenshots
         if: always()
         uses: actions/upload-artifact@v4

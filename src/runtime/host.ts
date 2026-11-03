@@ -6,7 +6,16 @@
 // Every call that waits has a timeout, so a Nomie call that never answers cannot hang the run.
 import Interpreter from 'js-interpreter';
 import type { NomieApi } from '../nomie/api';
-import { dailyTrackerNote, getDailyTrackerValue, getPeriodTrackerValue, logDailyTrackerValue } from './nomie-data';
+import {
+  dailyTrackerNote,
+  getDaysSinceTracker,
+  getDailyTrackerValue,
+  getLastTrackerValue,
+  getPeriodTrackerValue,
+  getTrackerStreak,
+  logDailyTrackerValue,
+  logNoteOn,
+} from './nomie-data';
 import { localDayKey, resolveDay } from './dates';
 import { formatValue } from './format';
 import { memoryProblem, type Memory } from './memory';
@@ -14,13 +23,15 @@ import { memoryProblem, type Memory } from './memory';
 export type ScheduleWindow = { active: boolean; start: Date; end: Date };
 
 // How long a call may wait, in milliseconds
-export type HostTimeouts = { nomie: number; prompt: number; http: number };
+export type HostTimeouts = { nomie: number; prompt: number; http: number; location: number };
 
 export const DEFAULT_TIMEOUTS: HostTimeouts = {
   nomie: 20_000,
   // a person is typing
   prompt: 10 * 60_000,
   http: 15_000,
+  // Nomie sends no reply when it cannot locate the device
+  location: 15_000,
 };
 
 // The longest a Wait block may wait
@@ -190,6 +201,36 @@ export const installHost = (interpreter: any, scope: any, ctx: HostContext) => {
     3,
     timeouts.nomie
   );
+  // history: the loop day, or today outside a Scheduler block
+  const historyDay = () => loopDay() ?? new Date();
+  asyncFn('lastValue', (tracker, days) => getLastTrackerValue(ctx.api, String(tracker), days, historyDay()), 2, timeouts.nomie);
+  asyncFn('daysSince', (tracker) => getDaysSinceTracker(ctx.api, String(tracker), historyDay()), 1, timeouts.nomie);
+  asyncFn('streak', (tracker) => getTrackerStreak(ctx.api, String(tracker), historyDay()), 1, timeouts.nomie);
+  asyncFn('myLocation', () => ctx.api.getLocation(), 0, timeouts.location);
+
+  // a note on a day, at 13:00 as the logValue block writes it. A test run only says what it would write.
+  native('logNote', (text, day) => {
+    if (ctx.test) {
+      ctx.output(`Would write the note "${formatValue(text)}" on ${resolveDay(String(day), historyDay())}`);
+      return true;
+    }
+    return logNoteOn(ctx.api, text, String(day), historyDay());
+  });
+  // a web page in a window inside Nomie. A scheduled run or a test run has nobody to show it to: it says what it would open.
+  native('openLink', (url) => {
+    const address = webAddress(String(url));
+    if (!address) {
+      ctx.output('Error: only web addresses (https://) can be opened');
+      return false;
+    }
+    if (ctx.scheduled || ctx.test) {
+      ctx.output(`Would open ${address.href}`);
+      return true;
+    }
+    ctx.api.openURL(address.href, address.href);
+    return true;
+  });
+
   // the trackervalue block (kept for older workspaces): the total of the day the run is at
   asyncFn('getPromise', (tracker) => getDailyTrackerValue(ctx.api, tracker, localDayKey(loopDay() ?? new Date()), 'sum'), 1, timeouts.nomie);
 

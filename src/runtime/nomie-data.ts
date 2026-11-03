@@ -1,7 +1,7 @@
 // The data blocks: read a tracker's value for a day or a period, and write a value to a day.
 // The arithmetic and the search windows are the same as in Nomie Blockly v1.
 import { notesOnDay, type NomieApi, type NoteLike } from '../nomie/api';
-import { resolveDay } from './dates';
+import { dayKeyBack, daysBetweenKeys, localDayKey, resolveDay } from './dates';
 import { formatValue } from './format';
 
 // v1 read these period names as a number of days (TODAY counted as 1, the default is 7)
@@ -98,6 +98,60 @@ export const logDailyTrackerValue = (api: NomieApi, value: unknown, tracker: str
     const [year, month, date] = day.split('-').map(Number);
     const end = new Date(year, month - 1, date, 13, 0, 0);
     api.createNote(note, end);
+    return true;
+  } catch {
+    return false;
+  }
+};
+
+// ---- history (phase 13): the notes of the days before the loop day, within the 60 days Nomie's search allows.
+
+// The most days a history block looks back, the loop day included
+export const MAX_HISTORY_DAYS = 60;
+
+// The notes with the tracker in the `days` days that end on the loop day (the loop day included), latest first
+const trackerNotes = async (api: NomieApi, tracker: string, loopDay: Date, days: number): Promise<NoteLike[]> => {
+  const daysBack = Math.min(Math.max(days, 1), MAX_HISTORY_DAYS) - 1;
+  const notes = await api.searchNotes(tracker, loopDay, daysBack);
+  const hasTracker = (note: NoteLike) => note.elements.some((e) => `${e.prefix ?? ''}${e.id}` === tracker);
+  return notes.filter(hasTracker).sort((a, b) => new Date(b.end).getTime() - new Date(a.end).getTime());
+};
+
+// The value of the latest note with the tracker in the days looked back, or null when there is none with a value
+export const getLastTrackerValue = async (api: NomieApi, rawTracker: string, rawDays: unknown, loopDay: Date): Promise<number | null> => {
+  const tracker = clean(rawTracker);
+  const days = parseInt(clean(rawDays), 10) || 7;
+  for (const note of await trackerNotes(api, tracker, loopDay, days)) {
+    const element = note.elements.find((e) => `${e.prefix ?? ''}${e.id}` === tracker);
+    if (element && typeof element.value === 'number') return element.value;
+  }
+  return null;
+};
+
+// The whole days from the last note with the tracker to the loop day (0 when it was logged that day), or null when
+// there is none in the 60 days
+export const getDaysSinceTracker = async (api: NomieApi, rawTracker: string, loopDay: Date): Promise<number | null> => {
+  const notes = await trackerNotes(api, clean(rawTracker), loopDay, MAX_HISTORY_DAYS);
+  if (notes.length === 0) return null;
+  return daysBetweenKeys(localDayKey(new Date(notes[0].end)), localDayKey(loopDay));
+};
+
+// The days in a row, up to and including the loop day, with a note for the tracker. At most 60 days are counted.
+export const getTrackerStreak = async (api: NomieApi, rawTracker: string, loopDay: Date): Promise<number> => {
+  const tracker = clean(rawTracker);
+  const loopKey = localDayKey(loopDay);
+  const logged = new Set((await trackerNotes(api, tracker, loopDay, MAX_HISTORY_DAYS)).map((n) => localDayKey(new Date(n.end))));
+  let streak = 0;
+  while (streak < MAX_HISTORY_DAYS && logged.has(dayKeyBack(loopKey, streak))) streak += 1;
+  return streak;
+};
+
+// The note a logNote block writes, and the day it goes on (text as the block gives it, the day 'YYYY-MM-DD')
+export const logNoteOn = (api: NomieApi, rawText: unknown, rawDay: string, runDay: Date): boolean => {
+  try {
+    const day = resolveDay(clean(rawDay), runDay);
+    const [year, month, date] = day.split('-').map(Number);
+    api.createNote(String(rawText ?? ''), new Date(year, month - 1, date, 13, 0, 0));
     return true;
   } catch {
     return false;

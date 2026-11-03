@@ -17,6 +17,9 @@ const fakeApi = (overrides: Partial<NomieApi> = {}) => {
     createNote: (note) => created.push(note),
     alert: (_title, message) => alerts.push(message),
     prompt: async () => 'typed',
+    getLocation: async () => null,
+    openURL: () => undefined,
+    pickTracker: async () => null,
     ...overrides,
   };
   return { api, created, alerts };

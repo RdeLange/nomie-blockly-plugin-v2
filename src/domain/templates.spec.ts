@@ -13,6 +13,9 @@ const api: NomieApi = {
   createNote: () => undefined,
   alert: () => undefined,
   prompt: async () => 'Amsterdam',
+  getLocation: async () => null,
+  openURL: () => undefined,
+  pickTracker: async () => null,
 };
 
 describe('the templates', () => {

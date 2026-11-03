@@ -1,8 +1,8 @@
 // The Nomie blocks: they read your notes, write to them, and show results.
 // The block type names, field names and generated code are the same as in Nomie Blockly v1,
 // so workspaces saved with v1 (.wsp files) load and run the same way.
-import { defineBlocksWithJsonArray } from 'blockly';
-import type { Block } from 'blockly';
+import { defineBlocksWithJsonArray, Extensions } from 'blockly';
+import type { Block, FieldDropdown } from 'blockly';
 import { Order, type JavascriptGenerator } from 'blockly/javascript';
 
 export const NOMIE_COLOUR = '#0AB3F5';
@@ -41,13 +41,59 @@ export const rememberSavedTrackers = (workspace: object, workspaceBlocks: string
   savedTrackers.set(workspace, [...known, ...added]);
 };
 
-// The options of a Tracker dropdown: the trackers of your recent notes, then the saved ones of its workspace
-function trackerDropdownOptions(this: { getSourceBlock(): { workspace: object } | null }): TrackerOption[] {
+// A tracker picked in Nomie is kept with its workspace, so it stays in that workspace's dropdowns (phase 13)
+export const addSavedTracker = (workspace: object, tag: string) => {
+  if (!tag) return;
+  const known = savedTrackers.get(workspace) ?? [];
+  if (!known.some(([, k]) => k === tag)) savedTrackers.set(workspace, [...known, [tag, tag]]);
+};
+
+// The last option of a Tracker dropdown: opens Nomie's tracker picker (editor only)
+export const PICK_FROM_NOMIE = '__pick_from_nomie__';
+const PICK_LABEL = 'Pick from Nomie…';
+
+// The options of a Tracker dropdown for a workspace: the trackers of your recent notes, then the saved ones of the
+// workspace, then the picker
+export const trackerOptionsFor = (workspace: object | undefined): TrackerOption[] => {
   const recent = trackerOptions();
-  const workspace = this.getSourceBlock?.()?.workspace;
   const saved = workspace ? (savedTrackers.get(workspace) ?? []) : [];
-  return [...recent, ...saved.filter(([, tag]) => !recent.some(([, r]) => r === tag))];
+  return [
+    ...recent,
+    ...saved.filter(([, tag]) => !recent.some(([, r]) => r === tag)),
+    [PICK_LABEL, PICK_FROM_NOMIE],
+  ];
+};
+
+function trackerDropdownOptions(this: { getSourceBlock(): { workspace: object } | null }): TrackerOption[] {
+  return trackerOptionsFor(this.getSourceBlock?.()?.workspace);
 }
+
+// Opens Nomie's picker (set by the plugin when it runs inside Nomie; outside Nomie it picks nothing)
+let trackerPicker: () => Promise<string | null> = async () => null;
+export const setTrackerPicker = (fn: () => Promise<string | null>) => (trackerPicker = fn);
+
+// Picking a tracker: the Tracker field keeps its value until a tracker is picked; cancelling keeps it too
+const pickInto = async (block: Block) => {
+  const tag = await trackerPicker();
+  if (!tag || !block.workspace) return;
+  addSavedTracker(block.workspace, tag);
+  const field = block.getField('Trackers') as FieldDropdown | null;
+  // Blockly checks a value against the options it cached before the pick: regenerate them first
+  field?.getOptions(false);
+  field?.setValue(tag);
+};
+const TRACKER_PICKER = 's4e_tracker_picker';
+const registerTrackerPicker = () => {
+  if (Extensions.isRegistered(TRACKER_PICKER)) return;
+  Extensions.register(TRACKER_PICKER, function (this: Block) {
+    (this.getField('Trackers') as FieldDropdown | null)?.setValidator((value: string) => {
+      if (value !== PICK_FROM_NOMIE) return value;
+      void pickInto(this);
+      // reject the choice: the field keeps its tracker, and the pick sets the new one
+      return null;
+    });
+  });
+};
 
 const DAY_OPTIONS = [
   ['Today', 'today'],
@@ -68,6 +114,7 @@ const STAT_OPTIONS = [
 ];
 
 export const defineNomieBlocks = () => {
+  registerTrackerPicker();
   defineBlocksWithJsonArray([
     {
       type: 's4eblocklyframe',
@@ -130,6 +177,7 @@ export const defineNomieBlocks = () => {
       message0: 'T: %1',
       args0: [{ type: 'field_dropdown', name: 'Trackers', options: trackerDropdownOptions }],
       output: 'Tracker',
+      extensions: [TRACKER_PICKER],
       style: 'nomie_blocks',
     },
     {
@@ -202,6 +250,61 @@ export const defineNomieBlocks = () => {
       type: 'pushto_webconsole',
       message0: 'Push to Web Console %1 %2',
       args0: [{ type: 'input_dummy' }, { type: 'input_value', name: 'Value' }],
+      inputsInline: true,
+      previousStatement: null,
+      nextStatement: null,
+      style: 'nomie_blocks',
+    },
+    {
+      type: 's4e_lastvalue',
+      message0: 'last value of %1 looking back %2 days',
+      args0: [
+        { type: 'input_value', name: 'Tracker', check: 'Tracker' },
+        { type: 'input_value', name: 'Days', check: 'Number' },
+      ],
+      inputsInline: false,
+      output: null,
+      style: 'nomie_blocks',
+    },
+    {
+      type: 's4e_dayssince',
+      message0: 'days since %1 was last logged',
+      args0: [{ type: 'input_value', name: 'Tracker', check: 'Tracker' }],
+      inputsInline: true,
+      output: null,
+      style: 'nomie_blocks',
+    },
+    {
+      type: 's4e_streak',
+      message0: 'streak of %1',
+      args0: [{ type: 'input_value', name: 'Tracker', check: 'Tracker' }],
+      inputsInline: true,
+      output: null,
+      style: 'nomie_blocks',
+    },
+    {
+      type: 's4e_lognote',
+      message0: 'log a note %1 on %2',
+      args0: [
+        { type: 'input_value', name: 'Text', check: 'String' },
+        { type: 'input_value', name: 'Date', check: 'Day' },
+      ],
+      inputsInline: false,
+      previousStatement: null,
+      nextStatement: null,
+      style: 'nomie_blocks',
+    },
+    {
+      type: 's4e_mylocation',
+      message0: 'my location',
+      args0: [],
+      output: null,
+      style: 'nomie_blocks',
+    },
+    {
+      type: 's4e_openlink',
+      message0: 'open link %1',
+      args0: [{ type: 'input_value', name: 'Value', check: 'String' }],
       inputsInline: true,
       previousStatement: null,
       nextStatement: null,
@@ -337,6 +440,16 @@ export const registerNomieGenerators = (js: JavascriptGenerator) => {
   js.forBlock['s4e_forget'] = (block: Block) => `forget(${quote(block.getFieldValue('NAME'))});\n`;
   js.forBlock['s4e_secret'] = (block: Block) => [`secret(${quote(block.getFieldValue('NAME'))})`, Order.NONE];
 
+  // History and places (phase 13). The day arithmetic is in runtime/dates.ts; the host functions do the lookups.
+  js.forBlock['s4e_lastvalue'] = (block: Block, g) =>
+    [`lastValue(${input(block, g, 'Tracker', '""')},${input(block, g, 'Days', '7')})`, Order.NONE];
+  js.forBlock['s4e_dayssince'] = (block: Block, g) => [`daysSince(${input(block, g, 'Tracker', '""')})`, Order.NONE];
+  js.forBlock['s4e_streak'] = (block: Block, g) => [`streak(${input(block, g, 'Tracker', '""')})`, Order.NONE];
+  js.forBlock['s4e_lognote'] = (block: Block, g) =>
+    `logNote(${input(block, g, 'Text', "''")},${input(block, g, 'Date', '"today"')});\n`;
+  js.forBlock['s4e_mylocation'] = () => ['myLocation()', Order.NONE];
+  js.forBlock['s4e_openlink'] = (block: Block, g) => `openLink(${input(block, g, 'Value', "''")});\n`;
+
   js.forBlock['wait_seconds'] = (block: Block) => `waitForSeconds(${Number(block.getFieldValue('SECONDS')) || 0});\n`;
   js.forBlock['pushto_console'] = (block: Block, g) => `alert(${input(block, g, 'Value', "''")});`;
   js.forBlock['pushto_webconsole'] = (block: Block, g) => `consolelog(${input(block, g, 'Value', "''")});\n`;
@@ -355,6 +468,12 @@ export const NOMIE_RESERVED_WORDS = [
   'highlightBlock',
   'httpRequest',
   'logValue',
+  'daysSince',
+  'lastValue',
+  'logNote',
+  'myLocation',
+  'openLink',
+  'streak',
   'forget',
   'recall',
   'remember',

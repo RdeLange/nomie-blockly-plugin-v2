@@ -28,6 +28,9 @@ const api = {
   createNote: () => undefined,
   alert: () => undefined,
   prompt: async () => null,
+  getLocation: async () => null,
+  openURL: () => undefined,
+  pickTracker: async () => null,
 } as NomieApi;
 
 // The code of the blocks as they are, without the migration

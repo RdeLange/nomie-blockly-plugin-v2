@@ -29,6 +29,9 @@ const fakeApi = (notes: NoteLike[] = [], trackerValues: number[] = []) => {
     createNote: (note, end) => created.push({ note, end }),
     alert: (title, message) => alerts.push(`${title}: ${message}`),
     prompt: async () => 'typed',
+    getLocation: async () => null,
+    openURL: () => undefined,
+    pickTracker: async () => null,
   };
   return { api, created, alerts };
 };

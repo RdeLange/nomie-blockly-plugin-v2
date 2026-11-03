@@ -16,7 +16,14 @@ export type Capabilities = {
   secrets: string[];
 };
 
-const READ_BLOCKS: Record<string, string> = { s4e_dayvalue: 'Tracker', s4e_periodvalue: 'Trackable', tracker: '' };
+const READ_BLOCKS: Record<string, string> = {
+  s4e_dayvalue: 'Tracker',
+  s4e_periodvalue: 'Trackable',
+  s4e_lastvalue: 'Tracker',
+  s4e_dayssince: 'Tracker',
+  s4e_streak: 'Tracker',
+  tracker: '',
+};
 
 const unique = (list: string[]) => [...new Set(list.filter(Boolean))];
 

@@ -23,6 +23,30 @@ export type TrackerInfo = {
   color: string;
 };
 
+// Where the device is: { lat, lng }, or null when Nomie could not locate it
+export type Location = { lat: number; lng: number };
+
+// How long the calls that Nomie may never answer may wait. Nomie sends no reply when locating fails or when a
+// picker is cancelled; the adapter then settles with null after these times.
+export const LOCATE_MS = 15_000;
+export const PICK_MS = 2 * 60_000;
+
+// Settles with the fallback after `ms`, whichever comes first
+const within = <T>(pending: Promise<T>, ms: number, fallback: T): Promise<T> =>
+  new Promise<T>((resolve) => {
+    const timer = setTimeout(() => resolve(fallback), ms);
+    pending.then(
+      (value) => {
+        clearTimeout(timer);
+        resolve(value);
+      },
+      () => {
+        clearTimeout(timer);
+        resolve(fallback);
+      }
+    );
+  });
+
 export interface NomieApi {
   // notes that match the term, from `date` back over `daysBack` days (the SDK's own search)
   searchNotes(term: string, date: Date, daysBack: number): Promise<NoteLike[]>;
@@ -33,6 +57,12 @@ export interface NomieApi {
   createNote(note: string, end: Date): void;
   alert(title: string, message: string): void;
   prompt(title: string, message: string): Promise<string | null>;
+  // the device's location, or null when it is not known within LOCATE_MS
+  getLocation(): Promise<Location | null>;
+  // opens a web page in a window inside Nomie (no reply)
+  openURL(url: string, title: string): void;
+  // Nomie's tracker picker: the tag picked (with its #), or null when cancelled or after PICK_MS
+  pickTracker(): Promise<string | null>;
 }
 
 // Adapts the SDK object (window.NomiePlugin instance) to NomieApi. The SDK wraps some replies, such as
@@ -65,6 +95,25 @@ export const createNomieApi = (plugin: any): NomieApi => ({
     const reply = await plugin.prompt(title, message, 'text');
     return reply && reply.value != null ? String(reply.value) : null;
   },
+  getLocation: () =>
+    within(
+      Promise.resolve(plugin.getLocation()).then((reply: { lat?: unknown; lng?: unknown } | null) =>
+        reply && typeof reply.lat === 'number' && typeof reply.lng === 'number' ? { lat: reply.lat, lng: reply.lng } : null
+      ),
+      LOCATE_MS,
+      null
+    ),
+  openURL: (url, title) => plugin.openURL(url, title),
+  pickTracker: () =>
+    within(
+      Promise.resolve(plugin.selectTrackables('tracker', false)).then((selected: Array<{ id?: unknown }> | null) => {
+        const first = selected?.[0];
+        // a tracker trackable's id is its tag with the #
+        return first && typeof first.id === 'string' && first.id.startsWith('#') ? first.id : null;
+      }),
+      PICK_MS,
+      null
+    ),
 });
 
 // The notes of one day ('YYYY-MM-DD', local time) that match the term. Nomie's search runs from the start of the day

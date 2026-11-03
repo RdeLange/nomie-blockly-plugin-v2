@@ -30,6 +30,9 @@ const nomieLike = (notes: NoteLike[]): NomieApi => ({
   createNote: () => undefined,
   alert: () => undefined,
   prompt: async () => null,
+  getLocation: async () => null,
+  openURL: () => undefined,
+  pickTracker: async () => null,
 });
 
 describe('the notes of one day (L3)', () => {

@@ -6,6 +6,7 @@ import { trackerChoices, trackerOptionsNow } from '../app/trackers.svelte';
 import { STORAGE_KEY } from '../app/state.svelte';
 import { scheduleIfDue, runFromNote } from '../app/actions';
 import { setupBlockly } from '../blockly/setup';
+import { setTrackerPicker } from '../blockly/nomie-blocks';
 
 declare const NomiePlugin: any;
 
@@ -15,7 +16,20 @@ let handle: NomieHandle | undefined;
 // the connection to Nomie, once the plugin has started (undefined when the page runs outside Nomie)
 export const nomie = (): NomieHandle | undefined => handle;
 
-const USES = ['createNote', 'searchNotes', 'getTrackable', 'getTrackableUsage', 'confirm', 'prompt', 'alert', 'onNote'];
+// the calls this plugin makes to Nomie; Nomie refuses any other (see api.ts for each one's payload)
+export const USES = [
+  'createNote',
+  'searchNotes',
+  'getTrackable',
+  'getTrackableUsage',
+  'confirm',
+  'prompt',
+  'alert',
+  'onNote',
+  'getLocation',
+  'openURL',
+  'selectTrackables',
+];
 
 // The dropdown lists the trackers of the last 30 days. Refreshed when the plugin starts and when a workspace opens.
 export const refreshTrackers = async (api: NomieApi) => {
@@ -59,6 +73,8 @@ export const startNomie = (): NomieHandle | undefined => {
   // itself again through the note trigger.
   const written = new Map<string, number>();
   const nomieApi = createNomieApi(plugin);
+  // the Tracker dropdown's "Pick from Nomie" opens Nomie's own picker
+  setTrackerPicker(() => nomieApi.pickTracker());
   const api: NomieApi = {
     ...nomieApi,
     createNote: (note, end) => {

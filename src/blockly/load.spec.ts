@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 import * as Blockly from 'blockly';
 import { javascriptGenerator } from 'blockly/javascript';
 import { setupBlockly, loadWorkspace, generateCode } from './setup';
-import { setTrackerOptions, currentTrackerOptions } from './nomie-blocks';
+import { setTrackerOptions, currentTrackerOptions, PICK_FROM_NOMIE } from './nomie-blocks';
 
 // a program: the script holds one Log Value block, which writes the headline to #news on today's date
 const PROGRAM = `<xml xmlns="https://developers.google.com/blockly/xml">
@@ -46,8 +46,9 @@ describe('a saved workspace loads with its trackers and its blocks', () => {
       loadWorkspace(open, PROGRAM);
       const options = (workspace: Blockly.Workspace) =>
         (workspace.newBlock('s4e_trackers').getField('Trackers') as Blockly.FieldDropdown).getOptions(false).map((o) => o[1]);
-      expect(options(open)).toEqual(['#coffee', '#news']);
-      expect(options(other)).toEqual(['#coffee']);
+      // the last option is the picker (phase 13); it is in every Tracker dropdown
+      expect(options(open)).toEqual(['#coffee', '#news', PICK_FROM_NOMIE]);
+      expect(options(other)).toEqual(['#coffee', PICK_FROM_NOMIE]);
     } finally {
       open.dispose();
       other.dispose();

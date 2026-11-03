@@ -26,6 +26,9 @@ const fakeApi = () => {
     createNote: () => undefined,
     alert: (_t, m) => alerts.push(m),
     prompt: async () => null,
+    getLocation: async () => null,
+    openURL: () => undefined,
+    pickTracker: async () => null,
   };
   return { api, alerts };
 };

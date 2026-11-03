@@ -25,6 +25,9 @@ const fakeApi = () => {
     createNote: (note, end) => created.push({ note, day: localDayKey(end) }),
     alert: () => undefined,
     prompt: async () => null,
+    getLocation: async () => null,
+    openURL: () => undefined,
+    pickTracker: async () => null,
   };
   return { api, created, usage, searches };
 };
