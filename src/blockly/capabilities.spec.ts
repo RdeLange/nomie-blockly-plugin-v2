@@ -20,6 +20,14 @@ describe('what a workspace does (C4)', () => {
     expect(capabilityText(caps)).toBe('Reads your notes (#mood) · Writes to #goodday');
   });
 
+  it('says when a widget shows HTML, and which hosts its images come from', () => {
+    const html = (template: string) =>
+      `<block type="s4e_dashboard"><field name="NAME">Mood</field><field name="EMOJI">x</field><statement name="CONTENT"><block type="s4e_whtml"><field name="HTML">${template}</field></block></statement></block>`;
+    const withImage = html('&lt;img src=&quot;https://images.example.com/a.png&quot;&gt;&lt;p&gt;hi&lt;/p&gt;');
+    expect(capabilityText(describeCapabilities(xml(withImage)))).toBe('Shows HTML on the widget, with images from images.example.com');
+    expect(capabilityText(describeCapabilities(xml(html('&lt;p&gt;hi&lt;/p&gt;'))))).toBe('Shows HTML on the widget');
+  });
+
   it('names the web hosts it calls, and says when an address is built while it runs', () => {
     const fixed = `<block type="s4e_httprequest"><value name="Value">${text('https://api.example.com/data?x=1')}</value></block>`;
     const built = `<block type="s4e_httprequest" y="100"><value name="Value"><block type="variables_get"><field name="VAR">url</field></block></value></block>`;

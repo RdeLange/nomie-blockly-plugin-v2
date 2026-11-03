@@ -5,6 +5,8 @@ import './messages';
 import 'blockly/blocks';
 import { javascriptGenerator } from 'blockly/javascript';
 import '@blockly/field-date';
+// the text box of the HTML widget (field_multilinetext): Blockly core has no multi-line field
+import { registerFieldMultilineInput } from '@blockly/field-multilineinput';
 import { defineObjectBlocks } from './object-blocks';
 import { defineAdvancedBlocks } from './advanced-blocks';
 import { defineCompatBlocks } from './compat-blocks';
@@ -27,6 +29,7 @@ export const setupBlockly = (trackers?: () => TrackerOption[]) => {
   if (trackers) setTrackerOptions(trackers);
   if (registered) return;
   registered = true;
+  registerFieldMultilineInput();
   defineNomieBlocks();
   defineWidgetBlocks();
   registerNomieGenerators(javascriptGenerator);

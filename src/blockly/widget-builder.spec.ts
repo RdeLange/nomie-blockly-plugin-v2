@@ -123,3 +123,41 @@ describe('the bar chart block', () => {
     expect(result.ok && result.widget?.components[0]).toEqual({ kind: 'bars', label: 'Mood bars', colour: '#34495E', points: [4, undefined, 6] });
   });
 });
+
+// HTML widget (phase 20): the text box holds the HTML, the parameters are set with blocks, and the run fills them in
+const TEXT = (text: string) => `<block type="text"><field name="TEXT">${text}</field></block>`;
+const PARAM = (name: string, value: string) =>
+  `<block type="s4e_wparam"><field name="NAME">${name}</field><value name="VALUE">${value}</value></block>`;
+const HTML = (template: string, params: string) =>
+  `<block type="s4e_whtml"><field name="HTML">${template}</field><statement name="PARAMS">${params}</statement></block>`;
+
+describe('the HTML widget', () => {
+  it('fills the placeholders with the parameters, and the value is a number as text', async () => {
+    const { result } = await runXml(
+      DASHBOARD(HTML('&lt;p&gt;Mood {{mood}}&lt;/p&gt;', PARAM('mood', NUMBER(6))))
+    );
+    expect(result.ok).toBe(true);
+    expect(result.ok && result.widget?.components).toEqual([{ kind: 'html', html: '<p>Mood 6</p>' }]);
+  });
+
+  it('a parameter is written as text, so it cannot add markup', async () => {
+    const { result } = await runXml(
+      DASHBOARD(HTML('&lt;span&gt;{{word}}&lt;/span&gt;', PARAM('word', TEXT('&lt;img src=x onerror=alert(1)&gt;'))))
+    );
+    const html = result.ok ? result.widget?.components[0] : undefined;
+    expect(html && html.kind === 'html' ? html.html : '').not.toContain('<img');
+    expect(html && html.kind === 'html' ? html.html : '').toContain('&lt;img');
+  });
+
+  it('the HTML in the text box is cleaned when it runs: no script, no link', async () => {
+    const { result } = await runXml(
+      DASHBOARD(HTML('&lt;a href=&quot;https://x.example&quot;&gt;link&lt;/a&gt;&lt;script&gt;bad()&lt;/script&gt;&lt;p style=&quot;color: red&quot;&gt;hi&lt;/p&gt;', ''))
+    );
+    const html = result.ok && result.widget?.components[0];
+    expect(html && html.kind === 'html' ? html.html : '').toBe('link<p style="color: red">hi</p>');
+  });
+
+  it('generated code for the HTML widget parses in the sandbox', () => {
+    expect(() => generateCode(xml(frame(DASHBOARD(HTML('&lt;p&gt;{{a}}&lt;/p&gt;', PARAM('a', NUMBER(1)))))))).not.toThrow();
+  });
+});

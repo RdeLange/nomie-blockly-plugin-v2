@@ -14,6 +14,9 @@ export type Capabilities = {
   dynamicRequests: boolean;
   // the secrets from Settings it asks for, by name (the values are never in a file)
   secrets: string[];
+  // a widget shows HTML, and the hosts its images come from (https only, see runtime/html-widget.ts)
+  showsHtml: boolean;
+  imageHosts: string[];
 };
 
 const READ_BLOCKS: Record<string, string> = {
@@ -30,7 +33,16 @@ const unique = (list: string[]) => [...new Set(list.filter(Boolean))];
 export const describeCapabilities = (workspaceBlocks: string): Capabilities => {
   setupBlockly();
   const workspace = new Blockly.Workspace();
-  const caps: Capabilities = { readsNotes: false, reads: [], writes: [], hosts: [], dynamicRequests: false, secrets: [] };
+  const caps: Capabilities = {
+    readsNotes: false,
+    reads: [],
+    writes: [],
+    hosts: [],
+    dynamicRequests: false,
+    secrets: [],
+    showsHtml: false,
+    imageHosts: [],
+  };
   try {
     readBlocksInto(workspace, workspaceBlocks);
     const trackerIn = (block: Blockly.Block, input: string) => {
@@ -44,6 +56,10 @@ export const describeCapabilities = (workspaceBlocks: string): Capabilities => {
       }
       if (block.type === 's4e_logvalue') caps.writes.push(trackerIn(block, 'Tracker'));
       if (block.type === 's4e_secret') caps.secrets.push(String(block.getFieldValue('NAME')));
+      if (block.type === 's4e_whtml') {
+        caps.showsHtml = true;
+        for (const m of String(block.getFieldValue('HTML')).matchAll(/src\s*=\s*["']?https:\/\/([^\/"'\s>]+)/gi)) caps.imageHosts.push(m[1]);
+      }
       if (block.type === 's4e_httprequest') {
         // the address is a text, or a text joined with other parts: the host is in the first text part
         let address = block.getInputTargetBlock('Value');
@@ -65,6 +81,7 @@ export const describeCapabilities = (workspaceBlocks: string): Capabilities => {
   caps.writes = unique(caps.writes).filter((t) => t !== '#none');
   caps.hosts = unique(caps.hosts);
   caps.secrets = unique(caps.secrets);
+  caps.imageHosts = unique(caps.imageHosts);
   return caps;
 };
 
@@ -76,5 +93,6 @@ export const capabilityText = (caps: Capabilities): string => {
   for (const host of caps.hosts) parts.push(`Calls ${host}`);
   if (caps.dynamicRequests) parts.push('Calls web addresses it builds while it runs');
   if (caps.secrets.length) parts.push(`Needs the secret${caps.secrets.length === 1 ? '' : 's'} ${caps.secrets.join(', ')}`);
+  if (caps.showsHtml) parts.push(caps.imageHosts.length ? `Shows HTML on the widget, with images from ${caps.imageHosts.join(', ')}` : 'Shows HTML on the widget');
   return parts.length ? parts.join(' · ') : 'Does not read or write notes, and does not use the network';
 };

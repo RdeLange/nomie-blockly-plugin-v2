@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@blockly/field-date": "^13.4.0",
+    "@blockly/field-multilineinput": "^13.4.0",
     "blockly": "^13.4.0",
     "js-interpreter": "6.0.2"
   },

@@ -421,6 +421,14 @@ body {
   width: 100%;
   height: 40px;
 }
+.wd-html {
+  display: block;
+  width: 100%;
+  height: 96px;
+  border: 0;
+  background: transparent;
+}
+
 .wd-footer {
   min-height: 32px;
   display: flex;

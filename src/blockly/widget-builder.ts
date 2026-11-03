@@ -6,7 +6,9 @@ import type { Block } from 'blockly';
 import { Order, type JavascriptGenerator } from 'blockly/javascript';
 import { CHART_COLOURS, CHART_MAX_DAYS, TREND_DAYS } from '../runtime/widget';
 
-export const WIDGET_BLOCKS = ['s4e_dashboard', 's4e_wvalue', 's4e_wtrend', 's4e_wchart', 's4e_wbars', 's4e_wfooter'];
+export const WIDGET_BLOCKS = [
+  's4e_dashboard', 's4e_wvalue', 's4e_wtrend', 's4e_wchart', 's4e_wbars', 's4e_wfooter', 's4e_whtml', 's4e_wparam',
+];
 const COLOUR_NAMES = ['Blue', 'Green', 'Purple', 'Orange', 'Pink', 'Slate'];
 const COLOUR_OPTIONS = CHART_COLOURS.map((colour, i) => [COLOUR_NAMES[i], colour]);
 
@@ -87,6 +89,33 @@ export const defineWidgetBlocks = () => {
       style: 'nomie_blocks',
     },
     {
+      // HTML of the widget, with {{name}} placeholders filled from the parameters below it
+      type: 's4e_whtml',
+      tooltip: 'Shows HTML on the widget. Use {{name}} where a parameter goes; a parameter is set with the parameter blocks inside. Example: <p>Mood {{mood}}</p> with the parameter mood set to the 7-day average.',
+      message0: 'show HTML %1\nparameters %2',
+      args0: [
+        { type: 'field_multilinetext', name: 'HTML', text: '<p>{{value}}</p>' },
+        { type: 'input_statement', name: 'PARAMS' },
+      ],
+      previousStatement: null,
+      nextStatement: null,
+      style: 'nomie_blocks',
+    },
+    {
+      // a parameter of the HTML: a name and any value, which is written as text
+      type: 's4e_wparam',
+      tooltip: 'Sets a parameter of the HTML widget: its name is used as {{name}} in the HTML. Example: parameter mood is the 7-day average of mood.',
+      message0: 'parameter %1 is %2',
+      args0: [
+        { type: 'field_input', name: 'NAME', text: 'value' },
+        { type: 'input_value', name: 'VALUE' },
+      ],
+      inputsInline: true,
+      previousStatement: null,
+      nextStatement: null,
+      style: 'nomie_blocks',
+    },
+    {
       type: 's4e_wfooter',
       tooltip: 'A line of text at the foot of the widget. Example: footer "updated every morning".',
       message0: 'footer %1',
@@ -125,6 +154,16 @@ export const registerWidgetGenerators = (js: JavascriptGenerator) => {
     );
   };
   js.forBlock['s4e_wfooter'] = (block: Block) => `widgetFooter(${quote(block.getFieldValue('TEXT'))});\n`;
+  js.forBlock['s4e_whtml'] = (block: Block, g) => {
+    // the parameter blocks are read here, not generated on their own: each one adds a name and its value
+    const params: string[] = [];
+    for (let p = block.getInputTargetBlock('PARAMS'); p; p = p.getNextBlock()) {
+      if (p.type === 's4e_wparam') params.push(`${quote(p.getFieldValue('NAME'))}: ${input(p, g, 'VALUE', "''")}`);
+    }
+    return `widgetAdd({kind: "html", html: ${quote(block.getFieldValue('HTML'))}, params: {${params.join(', ')}}});\n`;
+  };
+  // read by the HTML block above; on its own it adds no code
+  js.forBlock['s4e_wparam'] = () => '';
 };
 
 // The names the generated code calls, which a workspace variable must not hide (see nomie-blocks.ts)

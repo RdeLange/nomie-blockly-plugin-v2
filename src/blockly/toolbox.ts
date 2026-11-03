@@ -62,6 +62,8 @@ export const toolbox = (nomieName: string = NOMIE_CATEGORY): ToolboxDefinition =
           block('s4e_wchart'),
           block('s4e_wbars'),
           block('s4e_wfooter'),
+          block('s4e_whtml'),
+          block('s4e_wparam'),
           label('Memory and secrets'),
           block('s4e_remember'),
           block('s4e_recall'),

@@ -4,6 +4,7 @@
   // least 32 px. The fonts are small, as on the dashboard, and the widget takes the card colour Nomie sends.
   import type { WidgetDesign } from '../runtime/widget';
   import { barRects, linePaths } from './widget-chart';
+  import { htmlDocument } from '../runtime/html-widget';
   import { t } from './i18n.svelte';
 
   let { design, name, emoji, onRun }: { design: WidgetDesign; name: string; emoji: string; onRun: () => void } = $props();
@@ -34,6 +35,9 @@
             {/each}
           </svg>
         </div>
+      {:else if component.kind === 'html'}
+        <!-- no sandbox permissions: the page runs no script, and its policy allows only https images -->
+        <iframe class="wd-html" title={design.name || name} srcdoc={htmlDocument(component.html)} sandbox=""></iframe>
       {:else}
         {@const geometry = linePaths(component.points, W, H)}
         {@const colour = component.kind === 'chart' ? component.colour : 'var(--nb-accent, #5e7abc)'}

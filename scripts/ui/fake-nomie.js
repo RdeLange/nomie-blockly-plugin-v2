@@ -2,6 +2,8 @@
 // the dev server can run workspaces, save, and show dialogs as it would inside Nomie. Notes live in memory.
 // Dialogs are answered yes, and what they said is kept in window.__nomie.dialogs.
 (() => {
+  // a frame inside the page (the HTML widget's sandboxed frame) has no Nomie and no storage: nothing to stand in for
+  if (window.top !== window) return;
   const day = (offset) => {
     const d = new Date();
     d.setDate(d.getDate() + offset);
