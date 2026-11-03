@@ -43,9 +43,12 @@ browser checks in `scripts/ui/` listed in `.github/workflows/check.yml`.
 
 14. **Stray iCloud copies.** About 40 files named like `something 2.ts` in the working tree (not in git). They cause
     the 10 type-check errors on a local checkout. Delete them after checking; I have not deleted them.
-15. **The plan still names removed templates** (the Retrieve Temperature template in the phase 12 and 13 notes). The
+15. **Date-dependent tests.** Most specs use fixed calendar dates as data, which is fine. The widget chart tests counted
+    back from the current day and broke on 4 Nov 2026; they now count from today. Check any new spec that relies on
+    "today" before it lands.
+16. **The plan still names removed templates** (the Retrieve Temperature template in the phase 12 and 13 notes). The
     templates were replaced by the example library (phase 21). Update the plan text.
-16. **Publishing.** The plugin is published from `dailynomie/nomie-blockly-plugin-v2`: its workflow "Deploy Nomie
+17. **Publishing.** The plugin is published from `dailynomie/nomie-blockly-plugin-v2`: its workflow "Deploy Nomie
     Blockly v2 to GitHub Pages" checks out `RdeLange/nomie-blockly-plugin-v2` at `main`, builds it and deploys `dist/`.
     It runs on pushes to that repository's own `main` and on manual dispatch, not on pushes to the source repository.
     So after a push to `main` here, run the workflow:

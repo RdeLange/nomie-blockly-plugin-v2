@@ -15,6 +15,12 @@ const TRACKER = (tag: string) => `<block type="s4e_trackers"><field name="Tracke
 const DASHBOARD = (content: string, name = 'Mood', emoji = '😊') =>
   `<block type="s4e_dashboard"><field name="NAME">${name}</field><field name="EMOJI">${emoji}</field><statement name="CONTENT">${content}</statement></block>`;
 
+// the days of the chart are counted back from today, so the notes are placed relative to today too
+const dayKey = (daysAgo: number) => {
+  const d = new Date();
+  d.setDate(d.getDate() - daysAgo);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+};
 const moodOn = (day: string, value: number): NoteLike => {
   const at = parseDayKey(day);
   at.setHours(13);
@@ -71,7 +77,7 @@ describe('the widget builder', () => {
       DASHBOARD(
         `<block type="s4e_wchart"><value name="Tracker">${TRACKER('#mood')}</value><field name="DAYS">3</field><field name="COLOUR">#1E9E55</field><field name="LABEL">Mood</field></block>`
       ),
-      [moodOn('2026-11-01', 4), moodOn('2026-11-03', 6)]
+      [moodOn(dayKey(2), 4), moodOn(dayKey(0), 6)]
     );
     expect(result.ok && result.widget?.components[0]).toMatchObject({ kind: 'chart', label: 'Mood', colour: '#1E9E55' });
   });
@@ -118,7 +124,7 @@ describe('the bar chart block', () => {
       DASHBOARD(
         `<block type="s4e_wbars"><value name="Tracker">${TRACKER('#mood')}</value><field name="DAYS">3</field><field name="COLOUR">#34495E</field><field name="LABEL">Mood bars</field></block>`
       ),
-      [moodOn('2026-11-01', 4), moodOn('2026-11-03', 6)]
+      [moodOn(dayKey(2), 4), moodOn(dayKey(0), 6)]
     );
     expect(result.ok && result.widget?.components[0]).toEqual({ kind: 'bars', label: 'Mood bars', colour: '#34495E', points: [4, undefined, 6] });
   });
