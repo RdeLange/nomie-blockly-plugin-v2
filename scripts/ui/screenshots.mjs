@@ -1,6 +1,6 @@
 // Screenshots of the editor at desktop and phone size, for checking the look after a UI change.
 // Starts its own Vite dev server, opens the "Retrieve Data Example" template in the editor, and saves
-// screenshots/editor-desktop.png (1440x900) and screenshots/editor-phone.png (390x844).
+// screenshots/editor-desktop.png (1440x900), editor-laptop.png (1100x800) and editor-phone.png (390x844).
 // Usage: node scripts/ui/screenshots.mjs [name]   (name is an optional suffix, e.g. "phase5")
 import { mkdirSync } from 'node:fs';
 import { createServer } from 'vite';
@@ -9,6 +9,7 @@ import { chromium } from 'playwright';
 const suffix = process.argv[2] ? `-${process.argv[2]}` : '';
 const SIZES = [
   ['desktop', { width: 1440, height: 900 }],
+  ['laptop', { width: 1100, height: 800 }],
   ['phone', { width: 390, height: 844 }],
 ];
 

@@ -1,26 +1,24 @@
-/* Nomie's iOS look: the same colours as the app, with a dark mode that follows Nomie's theme. */
+/* The app's colours, mapped onto the notebook tokens (tokens.css), so the list and Settings match the editor:
+   cream background, white cards with a fine border, ink buttons. Dark mode follows Nomie's theme. */
 :root {
-  --ios-bg: #f2f2f7;
-  --ios-card: #ffffff;
-  --ios-label: #000000;
-  --ios-label2: #3c3c4399;
-  --ios-separator: #3c3c4429;
-  --ios-tint: #007aff;
-  --ios-danger: #ff3b30;
-  --ios-good: #34c759;
-  --radius: 14px;
-  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', Arial, sans-serif;
+  --ios-bg: var(--nb-canvas);
+  --ios-card: var(--nb-surface);
+  --ios-label: var(--nb-ink);
+  --ios-label2: var(--nb-muted);
+  --ios-separator: var(--nb-line);
+  --ios-tint: var(--nb-ink);
+  --ios-danger: #b91c1c;
+  --ios-good: #2b8a3e;
+  --radius: 12px;
+  font-family: var(--nb-font);
   color: var(--ios-label);
   background: var(--ios-bg);
 }
 
 :root.dark,
 .app.dark {
-  --ios-bg: #000000;
-  --ios-card: #1c1c1e;
-  --ios-label: #ffffff;
-  --ios-label2: #ebebf599;
-  --ios-separator: #54545899;
+  --ios-danger: #f87171;
+  --ios-good: #4ade80;
 }
 
 html,
@@ -37,6 +35,14 @@ body {
   color: var(--ios-label);
 }
 
+/* the editor fills the plugin's frame edge to edge */
+.app.editing {
+  padding: 0;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+}
+
 .header {
   display: flex;
   align-items: center;
@@ -46,8 +52,9 @@ body {
 }
 
 .title {
-  font-size: 34px;
-  font-weight: 700;
+  font-family: var(--nb-font-title);
+  font-size: 30px;
+  font-weight: 600;
   margin: 0;
 }
 
@@ -58,10 +65,10 @@ body {
 
 .card {
   background: var(--ios-card);
+  border: 1px solid var(--nb-line);
   border-radius: var(--radius);
   padding: 14px 16px;
   margin-bottom: 12px;
-  box-shadow: 0 1px 2px rgb(0 0 0 / 6%);
 }
 
 .row {
@@ -77,24 +84,26 @@ body {
 
 .button {
   appearance: none;
-  border: 0;
-  border-radius: 10px;
-  padding: 8px 14px;
-  font-size: 16px;
-  font-weight: 600;
+  border: 1px solid var(--ios-tint);
+  border-radius: 8px;
+  padding: 7px 13px;
+  font: 600 14px var(--nb-font);
   background: var(--ios-tint);
-  color: #fff;
+  color: var(--nb-canvas);
   cursor: pointer;
 }
 
 .button.plain {
   background: transparent;
+  border-color: transparent;
   color: var(--ios-tint);
-  padding: 8px 6px;
+  padding: 7px 8px;
+  font-weight: 500;
 }
 
 .button.danger {
   background: transparent;
+  border-color: transparent;
   color: var(--ios-danger);
 }
 
@@ -135,8 +144,8 @@ body {
 }
 
 .pill.on {
-  background: var(--ios-good);
-  color: #fff;
+  background: #e6eef6;
+  color: #0b4f8a;
 }
 
 .console {

@@ -384,6 +384,10 @@ depend on Google Fonts at runtime.
   "Pickers" (Tracker, Day, Period, Statistic, Date), "Frame" (Scheduler).
 - Search: `@blockly/toolbox-search` (13.4.0, peer `blockly ^13.2.0`, compatible). It adds a search category; style
   it as the first item of the rail with a search icon.
+  As built (phase 5): the plugin puts its text field inside the category row, which is about 50 px wide on a
+  76 px rail. `src/blockly/search.ts` does the search instead: the Search tile opens a field over the top of the
+  drawer, and the drawer lists the blocks whose text, type or category match every word typed. Blockly 13 closes
+  the drawer when focus moves to the field, so the editor fills the drawer itself while someone types.
 - Drawer background `--nb-surface`, a 1 px `--nb-line` border, and a soft shadow on the canvas side.
 
 ### Tests and checks for phase 5

@@ -1,0 +1,450 @@
+/* The editor's layout (docs/IMPLEMENTATION_PLAN.md, phase 6): it fills the plugin's frame, no page scroll.
+   Desktop: toolbar, then the canvas and a 320 px panel. Phone: the panel is a sheet over the canvas. */
+
+.editor {
+  height: 100vh;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: var(--nb-canvas);
+  color: var(--nb-ink);
+  font-family: var(--nb-font);
+}
+
+/* ---- toolbar ---- */
+.ed-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--nb-line);
+  background: var(--nb-canvas);
+  flex-shrink: 0;
+}
+
+.ed-title {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.ed-title h1 {
+  margin: 0;
+  font-family: var(--nb-font-title);
+  font-size: 21px;
+  font-weight: 600;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ed-status {
+  font-size: 12px;
+  color: var(--nb-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ed-sep {
+  width: 1px;
+  height: 28px;
+  background: var(--nb-line);
+}
+
+.nb-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 7px 13px;
+  border: 1px solid var(--nb-control);
+  border-radius: 8px;
+  background: var(--nb-surface);
+  color: var(--nb-ink);
+  font: 500 14px var(--nb-font);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.nb-btn.primary {
+  border-color: var(--nb-ink);
+  background: var(--nb-ink);
+  color: var(--nb-canvas);
+  font-weight: 600;
+}
+
+.nb-btn:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.nb-btn:focus-visible,
+.nb-icon:focus-visible,
+.ed-tabs button:focus-visible {
+  outline: 2px solid #f59e0b;
+  outline-offset: 2px;
+}
+
+.nb-icon {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--nb-ink);
+  cursor: pointer;
+}
+
+.nb-icon.on {
+  background: var(--nb-surface);
+  border-color: var(--nb-control);
+}
+
+/* ---- body: canvas and panel ---- */
+.ed-body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  position: relative;
+}
+
+.editor .blockly-frame {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  height: auto;
+  border: 0;
+  border-radius: 0;
+}
+
+.ed-panel {
+  width: 320px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  border-left: 1px solid var(--nb-line);
+  background: var(--nb-surface);
+}
+
+/* on a phone, the panel is a sheet over the canvas */
+.ed-panel.sheet {
+  position: absolute;
+  inset: 0;
+  width: auto;
+  z-index: 90;
+  border-left: 0;
+}
+
+.ed-tabs {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  padding: 8px 12px 0;
+  border-bottom: 1px solid var(--nb-line);
+  flex-shrink: 0;
+}
+
+.ed-tabs [role='tab'] {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 40px;
+  padding: 8px 12px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: none;
+  color: var(--nb-muted);
+  font: 500 14px var(--nb-font);
+  cursor: pointer;
+}
+
+.ed-tabs [role='tab'].active {
+  color: var(--nb-ink);
+  font-weight: 700;
+  border-bottom-color: var(--nb-ink);
+}
+
+.ed-close {
+  margin-left: auto;
+  align-self: center;
+}
+
+.ed-badge {
+  min-width: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: #b91c1c;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 18px;
+  text-align: center;
+}
+
+.ed-pane {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  font-size: 14px;
+}
+
+/* ---- details ---- */
+.ed-field-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+}
+
+.ed-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 13px;
+  color: var(--nb-muted);
+}
+
+.ed-field input,
+.ed-field textarea {
+  font: 400 14px var(--nb-font);
+  color: var(--nb-ink);
+  background: var(--nb-canvas);
+  border: 1px solid var(--nb-control);
+  border-radius: 8px;
+  padding: 8px 10px;
+  resize: vertical;
+}
+
+.ed-field input:focus,
+.ed-field textarea:focus {
+  outline: 2px solid var(--nb-ink);
+  outline-offset: -1px;
+}
+
+.ed-emoji {
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+}
+
+.ed-emoji-input {
+  width: 64px;
+}
+
+.ed-hint {
+  margin: -6px 0 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--nb-muted);
+}
+
+.ed-swatches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.ed-swatch {
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  border: 1px solid rgb(0 0 0 / 10%);
+  cursor: pointer;
+}
+
+.ed-swatch.selected {
+  box-shadow: 0 0 0 2px var(--nb-surface), 0 0 0 4px var(--nb-ink);
+}
+
+.ed-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-top: 12px;
+  border-top: 1px solid var(--nb-line);
+  color: var(--nb-muted);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.ed-summary strong {
+  color: var(--nb-ink);
+}
+
+/* ---- run ---- */
+.ed-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ed-heading {
+  font-size: 13px;
+}
+
+.ed-ok {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  color: #2b8a3e;
+}
+
+.ed-problems {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.ed-problem {
+  width: 100%;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 9px 10px;
+  border: 1px solid var(--nb-line);
+  border-radius: 8px;
+  background: #fffbeb;
+  color: #92400e;
+  font: 400 13px/1.4 var(--nb-font);
+  text-align: left;
+  cursor: pointer;
+}
+
+.ed-problem.error {
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+.ed-problem:disabled {
+  cursor: default;
+}
+
+.ed-problem em {
+  display: block;
+  margin-top: 2px;
+  font-style: normal;
+  color: var(--nb-muted);
+}
+
+.app.dark .ed-problem {
+  background: #3b2f12;
+  color: #fcd34d;
+}
+
+.app.dark .ed-problem.error {
+  background: #3f1d1d;
+  color: #fca5a5;
+}
+
+/* ---- console ---- */
+.ed-console {
+  flex: 1;
+  margin: 0;
+  padding: 12px;
+  border-radius: 8px;
+  background: #1c1917;
+  color: #e7e5e4;
+  font: 400 12.5px/1.6 var(--nb-font-mono);
+  white-space: pre-wrap;
+  overflow: auto;
+}
+
+/* ---- the floating run bar (phone, mockup 1) ---- */
+.run-bar {
+  position: absolute;
+  left: 84px;
+  right: 12px;
+  bottom: 12px;
+  z-index: 75;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px;
+  border-radius: 999px;
+  background: #111827;
+  box-shadow: 0 10px 30px rgb(15 23 42 / 25%);
+}
+
+.run-bar button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 40px;
+  border: 0;
+  border-radius: 999px;
+  font: 600 14px var(--nb-font);
+  cursor: pointer;
+}
+
+.run-go {
+  padding: 0 16px;
+  background: var(--nb-run);
+  color: var(--nb-run-ink);
+}
+
+.run-plain {
+  padding: 0 10px;
+  background: transparent;
+  color: #f9fafb;
+  font-weight: 500 !important;
+}
+
+.run-icon {
+  width: 40px;
+  justify-content: center;
+  background: transparent;
+  color: #f9fafb;
+}
+
+.run-bar button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+/* on a phone the canvas ends above the run bar, so Blockly puts its zoom controls and trash above it */
+.editor:not(.wide) .blockly-frame {
+  background: var(--nb-canvas);
+}
+
+.editor:not(.wide) .blockly-host {
+  bottom: 68px;
+}
+
+/* phone: a narrower rail (mockup 1) */
+.editor:not(.wide) .nomie-blockly .blocklyToolbox {
+  width: 68px;
+}
+
+.editor:not(.wide) .ed-toolbar {
+  padding: 8px 8px 8px 4px;
+  gap: 6px;
+}
+
+.editor:not(.wide) .ed-title h1 {
+  font-size: 18px;
+}
+
+.editor:not(.wide) .run-bar {
+  left: 76px;
+}

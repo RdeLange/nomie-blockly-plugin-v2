@@ -1,4 +1,7 @@
 <script lang="ts">
+  // The editor (mockup D1 with the right panel in tabs, as D4). Desktop: a toolbar, the rail and canvas, and a panel
+  // on the right with Details, Run and Console. Phone (under 900 px): the run buttons float at the bottom of the
+  // canvas (mockup 1), and the panel opens as a sheet over the canvas.
   import { onMount, onDestroy } from 'svelte';
   import * as Blockly from 'blockly';
   import { javascriptGenerator } from 'blockly/javascript';
@@ -6,20 +9,23 @@
   import { registerRail } from '../blockly/rail';
   import { attachSearch } from '../blockly/search';
   import '../blockly/notebook.css';
+  import './editor.css';
   import { toolbox } from '../blockly/toolbox';
   import { loadWorkspace } from '../blockly/setup';
   import { appState } from './state.svelte';
   import { ui } from './ui.svelte';
-  import { actionDeps, askConfirm, notify } from './dialogs';
+  import { actionDeps, askConfirm } from './dialogs';
   import { runNow, runRange } from './actions';
-  import { checkWorkspace } from '../blockly/compile';
+  import { checkWorkspace, type Problem } from '../blockly/compile';
   import type { RunResult } from '../runtime/run';
   import type { Workspace } from '../domain/workspace';
   import { newWorkspaceFromBlocks } from './editing';
+  import Icon from './Icon.svelte';
 
   let { id }: { id: string } = $props();
 
   const COLOURS = ['#E3F2FD', '#FDF0A4', '#C47ADA', '#EC9740', '#5E7ABC', '#34C759', '#FF3B30'];
+  const WIDE = '(min-width: 900px)';
 
   const start = appState.workspaces.find((w) => w.id === id);
   let draft = $state({
@@ -32,13 +38,29 @@
     jscode: start?.jscode ?? '',
   });
   let dirty = $state(false);
-  // the details (name, emoji, colour) can be folded away, so the canvas has the whole screen
-  let detailsOpen = $state(true);
-  let showConsole = $state(false);
   let running = $state(false);
   let consoleText = $state('');
-  let highlighted = $state<string | null>(null);
+
+  // layout: wide (desktop) or not (phone); the panel and its tab
+  let wide = $state(typeof window !== 'undefined' && window.matchMedia(WIDE).matches);
+  let panelOpen = $state(typeof window !== 'undefined' && window.matchMedia(WIDE).matches);
+  let tab = $state<'details' | 'run' | 'console'>('details');
+  let detailsPanel: HTMLElement | undefined = $state();
+
+  // what the blocks say, kept up to date as they change
+  let problems = $state<Array<Problem & { label: string }>>([]);
+  let daily = $state(start?.schedule === 'daily');
+  let reads = $state<string[]>([]);
+  let writes = $state<string[]>([]);
+
+  let frame: HTMLDivElement | undefined = $state();
   let host: HTMLDivElement | undefined = $state();
+  let workspace: Blockly.WorkspaceSvg | undefined;
+  let restoreTrackers: (() => void) | undefined;
+  let resizeObserver: ResizeObserver | undefined;
+  const stop = { stopped: false };
+  const scale = start?.workspacePosition?.scale ?? 0.8;
+
   // the block search (the Search tile on the rail)
   let searching = $state(false);
   let searchQuery = $state('');
@@ -57,14 +79,17 @@
       workspace?.getToolbox()?.getFlyout()?.hide();
     }
   };
-  let workspace: Blockly.WorkspaceSvg | undefined;
-  let restoreTrackers: (() => void) | undefined;
-  const stop = { stopped: false };
-
-  const scale = start?.workspacePosition?.scale ?? 0.8;
 
   onMount(() => {
-    if (!host) return;
+    if (!host || !frame) return;
+    const media = window.matchMedia(WIDE);
+    const onMedia = () => {
+      wide = media.matches;
+      // on a phone the panel is a sheet that starts closed
+      if (!wide) panelOpen = false;
+    };
+    media.addEventListener('change', onMedia);
+
     registerRail();
     const dark = ui.theme === 'dark';
     const palette = toolbox();
@@ -98,53 +123,78 @@
     });
     // the saved trackers stay in the dropdowns while the editor is open (see loadWorkspace)
     if (draft.xml) restoreTrackers = loadWorkspace(workspace, draft.xml);
-    showProblems();
+    readBlocks();
+    // a little room between the program and the edge of the canvas
+    workspace.scroll(workspace.scrollX + 32, workspace.scrollY + 24);
+    // Loading the blocks fires change events too, a moment later, ending with "finished loading"; those are not
+    // edits. (The old editor counted them, so a workspace looked unsaved as soon as it opened.) An empty workspace
+    // sends no such event, hence the timer.
+    let loaded = !draft.xml;
+    setTimeout(() => (loaded = true), 500);
     workspace.addChangeListener((event) => {
-      if (event.isUiEvent) return;
+      if (event.type === Blockly.Events.FINISHED_LOADING) {
+        loaded = true;
+        return;
+      }
+      if (event.isUiEvent || !loaded) return;
       draft.xml = Blockly.Xml.domToPrettyText(Blockly.Xml.workspaceToDom(workspace!));
       draft.jscode = javascriptGenerator.workspaceToCode(workspace!);
       dirty = true;
-      showProblems();
+      readBlocks();
     });
+    // Blockly draws into a fixed size: measure again whenever the canvas changes size (panel, window, phone turned)
+    resizeObserver = new ResizeObserver(() => workspace && Blockly.svgResize(workspace));
+    resizeObserver.observe(frame);
+    return () => media.removeEventListener('change', onMedia);
   });
 
-  // The pre-run check, shown on the blocks themselves: a warning icon with the message.
-  const showProblems = () => {
+  onDestroy(() => {
+    resizeObserver?.disconnect();
+    restoreTrackers?.();
+    workspace?.dispose();
+  });
+
+  // The pre-run check, on the blocks (a warning icon) and in the Run tab; the schedule and the trackers, for Details.
+  const readBlocks = () => {
     if (!workspace) return;
-    const problems = checkWorkspace(workspace);
+    const found = checkWorkspace(workspace);
     for (const block of workspace.getAllBlocks(false)) {
-      const text = problems.filter((p) => p.blockId === block.id).map((p) => p.message).join('\n');
+      const text = found.filter((p) => p.blockId === block.id).map((p) => p.message).join('\n');
       if (text) block.setWarningText(text);
       else if (block.hasIcon(Blockly.icons.IconType.WARNING)) block.setWarningText(null);
     }
+    problems = found.map((p) => ({ ...p, label: p.blockId ? (workspace!.getBlockById(p.blockId)?.toString(40) ?? '') : '' }));
+    daily = workspace.getBlocksByType('s4eblocklyframe', false).some((b) => b.isEnabled() && b.getFieldValue('NAME') === 'daily');
+    const tracker = (block: Blockly.Block, input: string) => block.getInputTargetBlock(input)?.getFieldValue('Trackers');
+    const unique = (list: Array<string | undefined>) => [...new Set(list.filter((t): t is string => Boolean(t) && t !== '#none'))];
+    writes = unique(workspace.getBlocksByType('s4e_logvalue', false).map((b) => tracker(b, 'Tracker')));
+    reads = unique([
+      ...workspace.getBlocksByType('s4e_dayvalue', false).map((b) => tracker(b, 'Tracker')),
+      ...workspace.getBlocksByType('s4e_periodvalue', false).map((b) => tracker(b, 'Trackable')),
+    ]);
+  };
+
+  const selectBlock = (blockId?: string) => {
+    if (!blockId || !workspace) return;
+    const block = workspace.getBlockById(blockId);
+    if (!block) return;
+    block.select();
+    workspace.centerOnBlock(block.id);
+    if (!wide) panelOpen = false;
   };
 
   // After a failed run, show the block it failed in
   const showFailedBlock = (result: RunResult) => {
-    if (result.ok || !result.blockId || !workspace) return;
-    const block = workspace.getBlockById(result.blockId);
-    if (!block) return;
-    block.select();
-    workspace.centerOnBlock(block.id);
+    if (!result.ok && result.blockId) selectBlock(result.blockId);
   };
-
-  onDestroy(() => {
-    restoreTrackers?.();
-    workspace?.dispose();
-  });
 
   const output = (text: string) => {
     consoleText = consoleText ? `${consoleText}\n${text}` : text;
   };
 
   const highlight = (blockId: string) => {
-    highlighted = blockId;
-    workspace?.highlightBlock(blockId);
+    workspace?.highlightBlock(blockId || null);
   };
-
-  // daily when the Scheduler block says Daily (read from the blocks, as the runs do)
-  const scheduleNow = (): 'daily' | 'none' =>
-    workspace?.getBlocksByType('s4eblocklyframe', false).some((b) => b.isEnabled() && b.getFieldValue('NAME') === 'daily') ? 'daily' : 'none';
 
   const save = async () => {
     const target = appState.workspaces.find((w) => w.id === id);
@@ -159,7 +209,7 @@
       workspaceBlocks: draft.xml,
       jscode: draft.jscode,
       workspacePosition: { scrollX: 0, scrollY: 0, scale: scaleNow },
-      schedule: scheduleNow(),
+      schedule: daily ? 'daily' : 'none',
     } satisfies Partial<Workspace>);
     // a failed save says so (see nomie/plugin.ts) and leaves the changes marked as unsaved
     const saved = await actionDeps()?.save();
@@ -184,104 +234,170 @@
     jscode: draft.jscode,
   });
 
-  const run = async () => {
+  // A run shows the Console tab, unless someone is typing in Details
+  const showConsole = () => {
+    if (detailsPanel?.contains(document.activeElement)) return;
+    tab = 'console';
+    if (wide) panelOpen = true;
+  };
+
+  const startRun = async (label: string, go: (deps: NonNullable<ReturnType<typeof actionDeps>>) => Promise<RunResult>) => {
     const deps = actionDeps();
     if (!deps || running) return;
-    showConsole = true;
+    showConsole();
     running = true;
     stop.stopped = false;
-    consoleText = 'Running…';
-    const result = await runNow(deps, draftWorkspace(), { output, highlight, stop });
+    consoleText = label;
+    const result = await go(deps);
     running = false;
-    highlight('');
-    highlighted = null;
     workspace?.highlightBlock(null);
     if (!result.ok && result.error !== 'stopped') output(`Stopped with an error: ${result.error}`);
     showFailedBlock(result);
   };
 
-  // A run over a range of days, for a daily workspace: the days the schedule would have run
-  const runForDays = async () => {
-    const deps = actionDeps();
-    if (!deps || running) return;
+  const run = () => startRun('Running…', (deps) => runNow(deps, draftWorkspace(), { output, highlight, stop }));
+
+  // A run for yesterday, as the schedule would run it
+  const runForYesterday = () => {
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
-    showConsole = true;
-    running = true;
-    stop.stopped = false;
-    consoleText = 'Running for yesterday…';
-    const result = await runRange(deps, draftWorkspace(), yesterday, yesterday, { output, highlight, stop });
-    running = false;
-    showFailedBlock(result);
-    workspace?.highlightBlock(null);
-  };
-
-  const toggleDetails = () => {
-    detailsOpen = !detailsOpen;
-    // the canvas changed size, so Blockly has to measure it again
-    queueMicrotask(() => workspace?.resize());
+    return startRun('Running for yesterday…', (deps) => runRange(deps, draftWorkspace(), yesterday, yesterday, { output, highlight, stop }));
   };
 
   const stopRun = () => {
     stop.stopped = true;
   };
+
+  const openPanel = (which: 'details' | 'run' | 'console') => {
+    if (panelOpen && tab === which && !wide) {
+      panelOpen = false;
+      return;
+    }
+    tab = which;
+    panelOpen = true;
+  };
+
+  const lastRun = $derived(start?.latestrun ? new Date(start.latestrun).toLocaleDateString() : 'never');
+  const status = $derived(
+    [daily ? 'Runs daily' : 'Not scheduled', `last run ${lastRun}`, running ? 'running…' : dirty ? 'unsaved changes' : 'saved'].join(' · ')
+  );
+  const errorCount = $derived(problems.filter((p) => p.level === 'error').length);
+  const TABS = [
+    ['details', 'Details'],
+    ['run', 'Run'],
+    ['console', 'Console'],
+  ] as const;
 </script>
 
-<div class="header">
-  <button class="button plain" onclick={back}>Back</button>
-  <h1 class="title" style="font-size: 22px">{draft.displayName || 'Workspace'}</h1>
-  <div class="row">
-    <button class="button" onclick={run} disabled={running}>Run</button>
-    <button class="button" onclick={runForDays} disabled={running}>Run for yesterday</button>
-    <button class="button plain" onclick={stopRun} disabled={!running}>Stop</button>
-    <button class="button plain" onclick={() => (showConsole = !showConsole)}>
-      {showConsole ? 'Hide console' : 'Console'}
+<div class="editor" class:wide>
+  <header class="ed-toolbar">
+    <button class="nb-icon" onclick={back} aria-label="Back to workspaces"><Icon name="back" size={20} /></button>
+    <div class="ed-title">
+      <h1>{draft.displayName || 'Workspace'}</h1>
+      <span class="ed-status">{status}</span>
+    </div>
+    {#if wide}
+      <button class="nb-btn primary" onclick={run} disabled={running}><Icon name="play" size={16} />Run</button>
+      <button class="nb-btn" onclick={runForYesterday} disabled={running}><Icon name="calendar" size={16} />Run for yesterday</button>
+      <button class="nb-btn" onclick={stopRun} disabled={!running}><Icon name="stop" size={16} />Stop</button>
+      <span class="ed-sep" aria-hidden="true"></span>
+    {/if}
+    <button class="nb-btn primary" onclick={save} disabled={!dirty}><Icon name="save" size={16} />Save</button>
+    <button class="nb-icon" class:on={panelOpen} onclick={() => (wide ? (panelOpen = !panelOpen) : openPanel('details'))} aria-label={panelOpen ? 'Hide the panel' : 'Show details'} aria-pressed={panelOpen}>
+      <Icon name="panel" size={20} />
     </button>
-    <button class="button" onclick={save} disabled={!dirty}>Save</button>
+  </header>
+
+  <div class="ed-body">
+    <div class="blockly-frame" bind:this={frame}>
+      <div bind:this={host} class="blockly-host nomie-blockly"></div>
+      {#if searching}
+        <label class="block-search">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6" /><path d="M20 20l-4.5-4.5" /></svg>
+          <input bind:this={searchField} bind:value={searchQuery} oninput={onSearch} onblur={onSearchBlur} onkeydown={onSearchKey} placeholder="Search all blocks" aria-label="Search all blocks" />
+        </label>
+      {/if}
+      {#if !wide}
+        <div class="run-bar">
+          <button class="run-go" onclick={run} disabled={running}><Icon name="play" size={16} />Run</button>
+          <button class="run-plain" onclick={runForYesterday} disabled={running}><Icon name="calendar" size={16} />Yesterday</button>
+          <span class="grow"></span>
+          <button class="run-icon" onclick={stopRun} disabled={!running} aria-label="Stop"><Icon name="stop" /></button>
+          <button class="run-icon" onclick={() => openPanel('console')} aria-label="Console"><Icon name="console" /></button>
+        </div>
+      {/if}
+    </div>
+
+    {#if panelOpen}
+      <aside class="ed-panel" class:sheet={!wide} aria-label="Workspace panel">
+        <div class="ed-tabs" role="tablist">
+          {#each TABS as [key, name] (key)}
+            <button role="tab" aria-selected={tab === key} class:active={tab === key} onclick={() => (tab = key)}>
+              {name}{#if key === 'run' && errorCount}<span class="ed-badge">{errorCount}</span>{/if}
+            </button>
+          {/each}
+          {#if !wide}
+            <button class="nb-icon ed-close" onclick={() => (panelOpen = false)} aria-label="Close the panel"><Icon name="close" /></button>
+          {/if}
+        </div>
+
+        {#if tab === 'details'}
+          <div class="ed-pane" role="tabpanel" bind:this={detailsPanel}>
+            <div class="ed-field-row">
+              <span class="ed-emoji" style="background: {draft.color}">{draft.emoji}</span>
+              <label class="ed-field grow">Name<input bind:value={draft.displayName} oninput={() => (dirty = true)} /></label>
+            </div>
+            <label class="ed-field">Emoji<input class="ed-emoji-input" bind:value={draft.emoji} oninput={() => (dirty = true)} /></label>
+            <label class="ed-field">Description<textarea rows="3" bind:value={draft.description} oninput={() => (dirty = true)}></textarea></label>
+            <label class="ed-field">Name used in notes<input bind:value={draft.name} oninput={() => (dirty = true)} /></label>
+            <p class="ed-hint">A note with “Run Blockly Workspace: {draft.name || 'name'}” runs this workspace.</p>
+            <div class="ed-field">
+              Colour
+              <div class="ed-swatches">
+                {#each COLOURS as colour (colour)}
+                  <button class="ed-swatch" class:selected={draft.color === colour} style="background: {colour}" aria-label="Colour {colour}" aria-pressed={draft.color === colour} onclick={() => { draft.color = colour; dirty = true; }}></button>
+                {/each}
+              </div>
+            </div>
+            <div class="ed-summary">
+              <strong>Schedule</strong>
+              <span>{daily ? 'Daily: runs for each day since its last run, up to yesterday.' : 'Not scheduled. Set the Scheduler block to Daily to run it every day.'}</span>
+              {#if reads.length}<span>Reads {reads.join(', ')}</span>{/if}
+              {#if writes.length}<span>Writes to {writes.join(', ')}</span>{/if}
+            </div>
+          </div>
+        {:else if tab === 'run'}
+          <div class="ed-pane" role="tabpanel">
+            <div class="ed-actions">
+              <button class="nb-btn primary" onclick={run} disabled={running}><Icon name="play" size={16} />Run now</button>
+              <button class="nb-btn" onclick={stopRun} disabled={!running}><Icon name="stop" size={16} />Stop</button>
+            </div>
+            <strong class="ed-heading">Before a run</strong>
+            {#if problems.length === 0}
+              <p class="ed-ok"><Icon name="check" size={16} />No problems found.</p>
+            {:else}
+              <ul class="ed-problems">
+                {#each problems as problem, i (i)}
+                  <li>
+                    <button class="ed-problem" class:error={problem.level === 'error'} onclick={() => selectBlock(problem.blockId)} disabled={!problem.blockId}>
+                      <Icon name={problem.level === 'error' ? 'error' : 'warning'} size={16} />
+                      <span>{problem.message}{#if problem.label}<em>{problem.label}</em>{/if}</span>
+                    </button>
+                  </li>
+                {/each}
+              </ul>
+            {/if}
+          </div>
+        {:else}
+          <div class="ed-pane ed-console-pane" role="tabpanel">
+            <div class="ed-actions">
+              <strong class="ed-heading grow">Output</strong>
+              <button class="nb-btn" onclick={() => (consoleText = '')} disabled={!consoleText || running}>Clear</button>
+            </div>
+            <pre class="ed-console" aria-live="polite">{consoleText || 'No output yet. Run the workspace to see what it shows.'}</pre>
+          </div>
+        {/if}
+      </aside>
+    {/if}
   </div>
 </div>
-
-<button class="button plain" style="padding: 4px 0; margin-bottom: 4px" onclick={toggleDetails} aria-expanded={detailsOpen}>
-  {detailsOpen ? '▾ Hide details' : '▸ Show details'}
-</button>
-
-{#if detailsOpen}
-<div class="card">
-  <div class="row">
-    <span class="emoji" style="background: {draft.color}">{draft.emoji}</span>
-    <input class="input grow" placeholder="Name" bind:value={draft.displayName} oninput={() => (dirty = true)} />
-  </div>
-  <div class="row" style="margin-top: 10px">
-    <input class="input" style="width: 70px" placeholder="🧱" bind:value={draft.emoji} oninput={() => (dirty = true)} />
-    <input class="input grow" placeholder="Description" bind:value={draft.description} oninput={() => (dirty = true)} />
-  </div>
-  <p class="muted" style="margin: 10px 0 6px">Note trigger: a note with "Run Blockly Workspace: {draft.name || 'name'}" runs this workspace.</p>
-  <input class="input" placeholder="Name used in notes" bind:value={draft.name} oninput={() => (dirty = true)} />
-  <div class="swatches" style="margin-top: 10px">
-    {#each COLOURS as colour}
-      <button
-        class="swatch"
-        class:selected={draft.color === colour}
-        style="background: {colour}"
-        aria-label="Colour {colour}"
-        onclick={() => { draft.color = colour; dirty = true; }}
-      ></button>
-    {/each}
-  </div>
-</div>
-
-{/if}
-
-<div class="blockly-frame" style="height: {detailsOpen ? '60vh' : '80vh'}">
-  <div bind:this={host} class="blockly-host nomie-blockly"></div>
-  {#if searching}
-    <label class="block-search">
-      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6" /><path d="M20 20l-4.5-4.5" /></svg>
-      <input bind:this={searchField} bind:value={searchQuery} oninput={onSearch} onblur={onSearchBlur} onkeydown={onSearchKey} placeholder="Search all blocks" aria-label="Search all blocks" />
-    </label>
-  {/if}
-</div>
-
-{#if showConsole}
-  <div class="console" style="margin-top: 12px">{consoleText || 'No output yet.'}</div>
-{/if}

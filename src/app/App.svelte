@@ -24,7 +24,7 @@
   };
 </script>
 
-<div class="app" class:dark={ui.theme === 'dark'}>
+<div class="app" class:dark={ui.theme === 'dark'} class:editing={ui.view === 'editor' && ui.mode !== 'widget'}>
   {#if !ui.ready}
     <p class="muted">Loading…</p>
   {:else if ui.mode === 'widget'}
