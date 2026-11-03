@@ -27,7 +27,8 @@ export type RunOptions = {
   timeouts?: Partial<HostTimeouts>;
 };
 
-export type RunResult = { ok: true; steps: number } | { ok: false; error: string };
+// blockId: the block that was running when the run failed (only known when the code highlights its blocks)
+export type RunResult = { ok: true; steps: number } | { ok: false; error: string; blockId?: string };
 
 // A workspace runs when it has a frame ("activated"). A scheduled run also needs a schedule that is not "none".
 export const canRun = (jscode: string, scheduled: boolean): boolean => {
@@ -40,17 +41,21 @@ export const runWorkspace = (options: RunOptions): Promise<RunResult> =>
     const output = options.output ?? (() => undefined);
     const maxSteps = options.maxSteps ?? MAX_STEPS;
     const maxRunMs = options.maxRunMs ?? MAX_RUN_MS;
+    let lastBlock = '';
     const context = {
       api: options.api,
       scheduled: options.scheduled,
       schedule: options.schedule,
       output,
-      highlight: options.highlight ?? (() => undefined),
+      highlight: (blockId: string) => {
+        lastBlock = blockId;
+        options.highlight?.(blockId);
+      },
       timeouts: options.timeouts,
     };
     const fail = (error: string) => {
       output(`Error: ${error}`);
-      resolve({ ok: false, error });
+      resolve(lastBlock ? { ok: false, error, blockId: lastBlock } : { ok: false, error });
     };
 
     let interpreter: any;

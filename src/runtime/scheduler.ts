@@ -9,6 +9,8 @@ export type ScheduledWorkspace = {
   displayName: string;
   jscode: string;
   latestrun?: string;
+  // whether it runs daily, read from its blocks; without it, the code is searched as before
+  daily?: boolean;
 };
 
 export type ScheduleOutcome = {
@@ -58,7 +60,7 @@ export const runSchedule = async (
 ): Promise<ScheduleOutcome[]> => {
   const outcomes: ScheduleOutcome[] = [];
   for (const workspace of workspaces) {
-    if (!isDailyWorkspace(workspace.jscode)) {
+    if (!(workspace.daily ?? isDailyWorkspace(workspace.jscode))) {
       outcomes.push({ id: workspace.id, displayName: workspace.displayName, result: 'skipped' });
       continue;
     }

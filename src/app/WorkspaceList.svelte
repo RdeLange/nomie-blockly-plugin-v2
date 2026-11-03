@@ -5,14 +5,18 @@
   import { runNow } from './actions';
   import { newWorkspaceFromBlocks, addWorkspaces } from './editing';
   import { parseWorkspaceFile, templateWorkspaces, type Workspace } from '../domain/workspace';
-  import { generateCode } from '../blockly/setup';
+  import { workspaceInfo } from '../blockly/compile';
 
   let adding = $state(false);
   let message = $state('');
   let fileInput: HTMLInputElement | undefined = $state();
 
   const dayText = (iso: string) => (iso ? new Date(iso).toLocaleDateString() : 'never');
-  const isDaily = (w: Workspace) => w.jscode.includes('var schedule = "daily"');
+  // read from the blocks, not from the stored code (see blockly/compile.ts)
+  const isDaily = (w: Workspace) => {
+    const info = workspaceInfo(w.workspaceBlocks);
+    return info.frame && info.schedule === 'daily';
+  };
 
   const edit = (id: string) => {
     ui.editingId = id;

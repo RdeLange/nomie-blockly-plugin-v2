@@ -1,8 +1,10 @@
 // What the screens can do: run a workspace, run the schedule, react to a note. They change the app state and save it.
 import type { NomieApi } from '../nomie/api';
 import type { Workspace } from '../domain/workspace';
-import { createRunQueue, runWorkspace, canRun, RUN_DEADLINE_MS, type RunResult } from '../runtime/run';
-import { isDailyWorkspace, runSchedule, type ScheduleOutcome } from '../runtime/scheduler';
+import { createRunQueue, runWorkspace, RUN_DEADLINE_MS, type RunResult } from '../runtime/run';
+import { runSchedule, type ScheduledWorkspace, type ScheduleOutcome } from '../runtime/scheduler';
+import type { ScheduleWindow } from '../runtime/host';
+import { compileWorkspace, hasErrors, workspaceInfo, type CompiledWorkspace } from '../blockly/compile';
 import { localDayKey, parseDayKey } from '../runtime/dates';
 import { appState } from './state.svelte';
 
@@ -26,40 +28,58 @@ export type RunHooks = {
   stop?: { stopped: boolean };
 };
 
-// A manual run: the workspace's code, shown as the run goes on. It waits for any run that is already going.
+// Writes the problems the pre-run check found to the run's output, with the block each one is about.
+const reportProblems = (compiled: CompiledWorkspace, hooks: RunHooks) => {
+  for (const problem of compiled.problems) {
+    const label = problem.blockId ? compiled.labels[problem.blockId] : undefined;
+    const where = label ? ` (block "${label}")` : '';
+    hooks.output?.(`${problem.level === 'error' ? 'Error' : 'Note'}: ${problem.message}${where}`);
+  }
+};
+
+const firstError = (compiled: CompiledWorkspace): RunResult => {
+  const problem = compiled.problems.find((p) => p.level === 'error');
+  return problem?.blockId
+    ? { ok: false, error: problem.message, blockId: problem.blockId }
+    : { ok: false, error: problem?.message ?? 'This workspace cannot run.' };
+};
+
+// After a failed run, say in which block it failed, when that is known.
+const reportBlock = (result: RunResult, labels: Record<string, string>, hooks: RunHooks): RunResult => {
+  if (!result.ok && result.blockId && labels[result.blockId]) {
+    hooks.output?.(`This happened in block "${labels[result.blockId]}".`);
+  }
+  return result;
+};
+
+const runCompiled = (deps: Deps, workspace: Workspace, hooks: RunHooks, scheduled: boolean, schedule: ScheduleWindow) => {
+  const compiled = compileWorkspace(workspace.workspaceBlocks, { highlight: Boolean(hooks.highlight) });
+  reportProblems(compiled, hooks);
+  if (hasErrors(compiled.problems)) return Promise.resolve(firstError(compiled));
+  return runWorkspace({
+    api: deps.api,
+    jscode: compiled.code,
+    scheduled,
+    schedule,
+    output: hooks.output,
+    highlight: hooks.highlight,
+    stop: hooks.stop,
+  }).then((result) => reportBlock(result, compiled.labels, hooks));
+};
+
+// A manual run of the workspace's blocks, shown as the run goes on. It waits for any run that is already going.
 export const runNow = (deps: Deps, workspace: Workspace, hooks: RunHooks = {}): Promise<RunResult> =>
-  queue(async () => {
-    if (!canRun(workspace.jscode, false)) {
-      hooks.output?.('This workspace has no frame. Add the "Scheduler" block to run it.');
-      return { ok: false, error: 'no frame' } as RunResult;
-    }
-    return runWorkspace({
-      api: deps.api,
-      jscode: workspace.jscode,
-      scheduled: false,
-      schedule: { active: false, start: new Date(), end: new Date() },
-      output: hooks.output,
-      highlight: hooks.highlight,
-      stop: hooks.stop,
-    });
-  }, failedRun);
+  queue(() => runCompiled(deps, workspace, hooks, false, { active: false, start: new Date(), end: new Date() }), failedRun);
 
 // A run over a range of days (the single iteration of v1). Dialogs stay quiet, as in a scheduled run.
 export const runRange = (deps: Deps, workspace: Workspace, start: Date, end: Date, hooks: RunHooks = {}) =>
-  queue(() =>
-    runWorkspace({
-      api: deps.api,
-      jscode: workspace.jscode,
-      scheduled: true,
-      schedule: {
+  queue(
+    () =>
+      runCompiled(deps, workspace, hooks, true, {
         active: true,
         start: new Date(start.getFullYear(), start.getMonth(), start.getDate(), 13),
         end: new Date(end.getFullYear(), end.getMonth(), end.getDate(), 13),
-      },
-      output: hooks.output,
-      highlight: hooks.highlight,
-      stop: hooks.stop,
-    }),
+      }),
     failedRun
   );
 
@@ -75,12 +95,27 @@ const describe = (outcome: ScheduleOutcome): string => {
 
 // Runs the daily workspaces. A workspace's last run moves on only when its run succeeded.
 export const scheduleNow = async (deps: Deps, now = new Date()): Promise<ScheduleOutcome[]> => {
-  const outcomes = await queue(
-    () => runSchedule(deps.api, appState.workspaces, now),
+  // the schedule runs the code of each workspace's blocks; a workspace whose blocks have errors does not run
+  const compiled = appState.workspaces.map((w) => ({ workspace: w, compiled: compileWorkspace(w.workspaceBlocks, { highlight: false }) }));
+  const broken: ScheduleOutcome[] = compiled
+    .filter(({ compiled: c }) => c.schedule === 'daily' && c.frame && hasErrors(c.problems))
+    .map(({ workspace: w, compiled: c }) => ({ id: w.id, displayName: w.displayName, result: firstError(c) }));
+  const runnable: ScheduledWorkspace[] = compiled
+    .filter(({ compiled: c }) => !hasErrors(c.problems))
+    .map(({ workspace: w, compiled: c }) => ({
+      id: w.id,
+      displayName: w.displayName,
+      jscode: c.code,
+      latestrun: w.latestrun,
+      daily: c.frame && c.schedule === 'daily',
+    }));
+  const ran = await queue(
+    () => runSchedule(deps.api, runnable, now),
     (error): ScheduleOutcome[] => [{ id: '', displayName: 'Schedule', result: { ok: false, error } }],
     // the schedule runs every workspace in one task, so each one gets a full run's time
-    RUN_DEADLINE_MS * Math.max(1, appState.workspaces.length)
+    RUN_DEADLINE_MS * Math.max(1, runnable.length)
   );
+  const outcomes = [...ran, ...broken];
   for (const outcome of outcomes) {
     if (outcome.result !== 'skipped' && outcome.result.ok) {
       const workspace = appState.workspaces.find((w) => w.id === outcome.id);
@@ -118,7 +153,8 @@ export const setScheduleStart = (deps: Deps, day: string) => {
   const start = parseDayKey(day);
   let count = 0;
   for (const workspace of appState.workspaces) {
-    if (!isDailyWorkspace(workspace.jscode)) continue;
+    const info = workspaceInfo(workspace.workspaceBlocks);
+    if (!info.frame || info.schedule !== 'daily') continue;
     workspace.latestrun = start.toISOString();
     count += 1;
   }

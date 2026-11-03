@@ -3,7 +3,14 @@
   import { ui } from './ui.svelte';
   import { actionDeps, askConfirm, notify } from './dialogs';
   import { scheduleNow, setScheduleStart } from './actions';
-  import { isDailyWorkspace, parseTypedDay, scheduleWindow } from '../runtime/scheduler';
+  import { parseTypedDay, scheduleWindow } from '../runtime/scheduler';
+  import { workspaceInfo } from '../blockly/compile';
+  import { withFreshCode } from './editing';
+
+  const isDaily = (blocks: string) => {
+    const info = workspaceInfo(blocks);
+    return info.frame && info.schedule === 'daily';
+  };
   import { localDayKey } from '../runtime/dates';
   import { parseWorkspaceFile, workspaceToFile, withNewId } from '../domain/workspace';
 
@@ -17,8 +24,8 @@
     appState.workspaces.map((w) => ({
       id: w.id,
       name: w.displayName,
-      daily: isDailyWorkspace(w.jscode),
-      window: isDailyWorkspace(w.jscode) ? scheduleWindow(w.latestrun, now) : undefined,
+      daily: isDaily(w.workspaceBlocks),
+      window: isDaily(w.workspaceBlocks) ? scheduleWindow(w.latestrun, now) : undefined,
     }))
   );
   const dailyCount = $derived(overview.filter((w) => w.daily).length);
@@ -68,7 +75,7 @@
     const replace = importMode === 'replace';
     const question = replace ? 'Replace your workspaces with this backup?' : 'Add the backup to your workspaces?';
     if (!(await askConfirm('Import', question))) return;
-    const imported = workspaces.map(withNewId);
+    const imported = workspaces.map((w) => withFreshCode(withNewId(w)));
     appState.workspaces = replace ? imported : [...appState.workspaces, ...imported];
     actionDeps()?.save();
     notify('Import', `${imported.length} workspace${imported.length === 1 ? '' : 's'} ${replace ? 'replaced' : 'added'}.`);

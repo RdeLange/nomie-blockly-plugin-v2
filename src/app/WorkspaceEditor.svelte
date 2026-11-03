@@ -9,6 +9,8 @@
   import { ui } from './ui.svelte';
   import { actionDeps, askConfirm, notify } from './dialogs';
   import { runNow, runRange } from './actions';
+  import { checkWorkspace } from '../blockly/compile';
+  import type { RunResult } from '../runtime/run';
   import type { Workspace } from '../domain/workspace';
   import { newWorkspaceFromBlocks } from './editing';
 
@@ -52,13 +54,35 @@
     });
     // the saved trackers stay in the dropdowns while the editor is open (see loadWorkspace)
     if (draft.xml) restoreTrackers = loadWorkspace(workspace, draft.xml);
+    showProblems();
     workspace.addChangeListener((event) => {
       if (event.isUiEvent) return;
       draft.xml = Blockly.Xml.domToPrettyText(Blockly.Xml.workspaceToDom(workspace!));
       draft.jscode = javascriptGenerator.workspaceToCode(workspace!);
       dirty = true;
+      showProblems();
     });
   });
+
+  // The pre-run check, shown on the blocks themselves: a warning icon with the message.
+  const showProblems = () => {
+    if (!workspace) return;
+    const problems = checkWorkspace(workspace);
+    for (const block of workspace.getAllBlocks(false)) {
+      const text = problems.filter((p) => p.blockId === block.id).map((p) => p.message).join('\n');
+      if (text) block.setWarningText(text);
+      else if (block.hasIcon(Blockly.icons.IconType.WARNING)) block.setWarningText(null);
+    }
+  };
+
+  // After a failed run, show the block it failed in
+  const showFailedBlock = (result: RunResult) => {
+    if (result.ok || !result.blockId || !workspace) return;
+    const block = workspace.getBlockById(result.blockId);
+    if (!block) return;
+    block.select();
+    workspace.centerOnBlock(block.id);
+  };
 
   onDestroy(() => {
     restoreTrackers?.();
@@ -74,6 +98,10 @@
     workspace?.highlightBlock(blockId);
   };
 
+  // daily when the Scheduler block says Daily (read from the blocks, as the runs do)
+  const scheduleNow = (): 'daily' | 'none' =>
+    workspace?.getBlocksByType('s4eblocklyframe', false).some((b) => b.isEnabled() && b.getFieldValue('NAME') === 'daily') ? 'daily' : 'none';
+
   const save = () => {
     const target = appState.workspaces.find((w) => w.id === id);
     if (!target) return;
@@ -87,7 +115,7 @@
       workspaceBlocks: draft.xml,
       jscode: draft.jscode,
       workspacePosition: { scrollX: 0, scrollY: 0, scale: scaleNow },
-      schedule: draft.jscode.includes('var schedule = "daily"') ? 'daily' : 'none',
+      schedule: scheduleNow(),
     } satisfies Partial<Workspace>);
     actionDeps()?.save();
     dirty = false;
@@ -124,6 +152,7 @@
     highlighted = null;
     workspace?.highlightBlock(null);
     if (!result.ok && result.error !== 'stopped') output(`Stopped with an error: ${result.error}`);
+    showFailedBlock(result);
   };
 
   // A run over a range of days, for a daily workspace: the days the schedule would have run
@@ -136,8 +165,9 @@
     running = true;
     stop.stopped = false;
     consoleText = 'Running for yesterday…';
-    await runRange(deps, draftWorkspace(), yesterday, yesterday, { output, highlight, stop });
+    const result = await runRange(deps, draftWorkspace(), yesterday, yesterday, { output, highlight, stop });
     running = false;
+    showFailedBlock(result);
     workspace?.highlightBlock(null);
   };
 

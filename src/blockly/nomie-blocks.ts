@@ -202,12 +202,20 @@ export const defineNomieBlocks = () => {
 };
 
 // The generator writes JavaScript for the interpreter. Each host function it calls is provided in runtime/host.ts.
+// Field values go into the code with JSON.stringify, so a quote in a tracker name cannot break the code; for the
+// values the blocks offer this gives the same text as v1. An empty input gets a default, so one empty socket does not
+// stop the whole program with a syntax error (the pre-run check in compile.ts still reports the ones that matter).
+const quote = (value: unknown) => JSON.stringify(String(value ?? ''));
+
 export const registerNomieGenerators = (js: JavascriptGenerator) => {
+  const input = (block: Block, g: JavascriptGenerator, name: string, fallback: string) =>
+    g.valueToCode(block, name, Order.ATOMIC) || fallback;
+
   js.forBlock['s4eblocklyframe'] = (block: Block, g) => {
-    const schedule = block.getFieldValue('NAME');
+    const schedule = block.getFieldValue('NAME') === 'daily' ? 'daily' : 'none';
     const script = g.statementToCode(block, 'script');
     let code = 's4eblocklyframe = "activated";\n';
-    code += `var schedule = "${schedule}";\n`;
+    code += `var schedule = ${quote(schedule)};\n`;
     code += 'if (schedule == "daily") {\n';
     code += 'var scheduler = scheduler_activated();\n';
     code += 'var schedulerstart = scheduler_start();\n';
@@ -220,45 +228,45 @@ export const registerNomieGenerators = (js: JavascriptGenerator) => {
     return code;
   };
 
-  js.forBlock['display'] = (block: Block, g) => `display(${g.valueToCode(block, 'Value', Order.ATOMIC)});`;
+  js.forBlock['display'] = (block: Block, g) => `display(${input(block, g, 'Value', "''")});`;
 
-  js.forBlock['s4e_daypicker'] = (block: Block) => [`getdate("${block.getFieldValue('Day')}",loop)`, Order.NONE];
-  js.forBlock['s4e_periodpicker'] = (block: Block) => [`"${block.getFieldValue('Period')}"`, Order.NONE];
-  js.forBlock['s4e_statspicker'] = (block: Block) => [`"${block.getFieldValue('Stats')}"`, Order.NONE];
-  js.forBlock['s4e_datepicker'] = (block: Block) => [`'${block.getFieldValue('Date')}'`, Order.NONE];
-  js.forBlock['s4e_trackers'] = (block: Block) => [`"${block.getFieldValue('Trackers')}"`, Order.NONE];
+  js.forBlock['s4e_daypicker'] = (block: Block) => [`getdate(${quote(block.getFieldValue('Day'))},loop)`, Order.NONE];
+  js.forBlock['s4e_periodpicker'] = (block: Block) => [quote(block.getFieldValue('Period')), Order.NONE];
+  js.forBlock['s4e_statspicker'] = (block: Block) => [quote(block.getFieldValue('Stats')), Order.NONE];
+  // single quotes, as v1 generated; the value is checked to be a day first, so it cannot hold a quote
+  js.forBlock['s4e_datepicker'] = (block: Block) => {
+    const value = String(block.getFieldValue('Date') ?? '');
+    return [/^\d{4}-\d{2}-\d{2}$/.test(value) ? `'${value}'` : '"today"', Order.NONE];
+  };
+  js.forBlock['s4e_trackers'] = (block: Block) => [quote(block.getFieldValue('Trackers')), Order.NONE];
 
   js.forBlock['s4e_dayvalue'] = (block: Block, g) => {
-    const tracker = g.valueToCode(block, 'Tracker', Order.ATOMIC);
-    const day = g.valueToCode(block, 'Day', Order.ATOMIC);
-    const stats = g.valueToCode(block, 'Statistics', Order.ATOMIC);
+    const tracker = input(block, g, 'Tracker', '""');
+    const day = input(block, g, 'Day', '"today"');
+    const stats = input(block, g, 'Statistics', '"sum"');
     return [`fetchDayValue(${tracker},${day},${stats})`, Order.NONE];
   };
 
   js.forBlock['s4e_periodvalue'] = (block: Block, g) => {
-    const tracker = g.valueToCode(block, 'Trackable', Order.ATOMIC);
-    const period = g.valueToCode(block, 'Period', Order.ATOMIC);
-    const stats = g.valueToCode(block, 'Statistics', Order.ATOMIC);
+    const tracker = input(block, g, 'Trackable', '""');
+    const period = input(block, g, 'Period', '"LAST7DAYS"');
+    const stats = input(block, g, 'Statistics', '"sum"');
     return [`fetchPeriodValue(${tracker},${period},${stats})`, Order.NONE];
   };
 
   js.forBlock['s4e_logvalue'] = (block: Block, g) => {
-    const value = g.valueToCode(block, 'Value', Order.ATOMIC);
-    const tracker = g.valueToCode(block, 'Tracker', Order.ATOMIC);
-    const date = g.valueToCode(block, 'Date', Order.ATOMIC);
+    const value = input(block, g, 'Value', "''");
+    const tracker = input(block, g, 'Tracker', '""');
+    const date = input(block, g, 'Date', '"today"');
     return `logValue(${value},${tracker},${date});\n`;
   };
 
-  js.forBlock['s4e_httprequest'] = (block: Block, g) => [
-    `httpRequest(${g.valueToCode(block, 'Value', Order.ATOMIC)})`,
-    Order.NONE,
-  ];
+  js.forBlock['s4e_httprequest'] = (block: Block, g) => [`httpRequest(${input(block, g, 'Value', "''")})`, Order.NONE];
 
-  js.forBlock['wait_seconds'] = (block: Block) => `waitForSeconds(${Number(block.getFieldValue('SECONDS'))});\n`;
-  js.forBlock['pushto_console'] = (block: Block, g) => `alert(${g.valueToCode(block, 'Value', Order.ATOMIC)});`;
-  js.forBlock['pushto_webconsole'] = (block: Block, g) =>
-    `consolelog(${g.valueToCode(block, 'Value', Order.ATOMIC)});\n`;
-  js.forBlock['tracker'] = (block: Block) => [`getPromise("${block.getFieldValue('NAME')}")`, Order.NONE];
+  js.forBlock['wait_seconds'] = (block: Block) => `waitForSeconds(${Number(block.getFieldValue('SECONDS')) || 0});\n`;
+  js.forBlock['pushto_console'] = (block: Block, g) => `alert(${input(block, g, 'Value', "''")});`;
+  js.forBlock['pushto_webconsole'] = (block: Block, g) => `consolelog(${input(block, g, 'Value', "''")});\n`;
+  js.forBlock['tracker'] = (block: Block) => [`getPromise(${quote(block.getFieldValue('NAME'))})`, Order.NONE];
 };
 
 // Every name the generated code calls. The generator must not let a workspace variable hide one of them.
