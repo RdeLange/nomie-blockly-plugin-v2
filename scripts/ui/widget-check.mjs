@@ -26,14 +26,16 @@ try {
   await page.getByRole('button', { name: 'Add', exact: true }).click();
   await page.locator('.row', { hasText: '7-day mood on the widget' }).getByRole('button', { name: 'Add' }).first().click();
   await page.locator('.card', { hasText: '7-day mood on the widget' }).getByRole('button', { name: 'Run', exact: true }).click();
-  await page.waitForFunction(async () => {
-    const { appState } = await import('/src/app/state.svelte.ts');
-    return Object.keys(appState.widget).length > 0;
-  }, null, { timeout: 30000 });
-  const saved = await page.evaluate(async () => {
-    const { appState } = await import('/src/app/state.svelte.ts');
-    return Object.values(appState.widget)[0];
+  // the run saves its value with the stored state: read it there (the app's own state is read in the page too)
+  const storedWidget = () => page.evaluate(() => {
+    const store = JSON.parse(window.localStorage.getItem('fake-nomie-store') ?? '{}');
+    return Object.values(store.blockly?.widget ?? {})[0];
   });
+  await page.waitForFunction(() => {
+    const store = JSON.parse(window.localStorage.getItem('fake-nomie-store') ?? '{}');
+    return Object.keys(store.blockly?.widget ?? {}).length > 0;
+  }, null, { timeout: 30000 });
+  const saved = await storedWidget();
   check('the run keeps its value for the widget', saved.label === '7-day mood' && saved.value.length > 0);
 
   // the widget opens (its own frame): it shows the value as a tile
