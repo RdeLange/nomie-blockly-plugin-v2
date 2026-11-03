@@ -3,7 +3,7 @@ import { createNomieApi, type NomieApi, type TrackerInfo } from './api';
 import { appState } from '../app/state.svelte';
 import { ui } from '../app/ui.svelte';
 import { trackerChoices } from '../app/trackers.svelte';
-import { setLanguage } from '../app/i18n.svelte';
+import { applyUserPrefs, onPrefsChanged } from '../app/prefs';
 import { STORAGE_KEY, readState } from '../app/state.svelte';
 import { compileStale, scheduleIfDue, runFromNote, runFromNotes } from '../app/actions';
 import { rememberWritten, wasWrittenHere } from '../app/written-notes';
@@ -50,10 +50,7 @@ export const refreshTrackers = async (api: NomieApi) => {
     .sort((a, b) => a[0].localeCompare(b[0])) as Array<[string, string]>;
 };
 
-const applyTheme = (plugin: any) => {
-  const theme = plugin?.prefs?.theme;
-  ui.theme = theme === 'dark' ? 'dark' : 'light';
-};
+
 
 export const startNomie = (): NomieHandle | undefined => {
   if (typeof NomiePlugin === 'undefined') {
@@ -70,6 +67,8 @@ export const startNomie = (): NomieHandle | undefined => {
     addToMoreMenu: true,
     addToWidgets: true,
   });
+  // Nomie tells the plugin when the theme, the colours or the language change while it is open
+  window.addEventListener('message', onPrefsChanged);
   const nomieApi = createNomieApi(plugin);
   // the Tracker dropdown's "Pick from Nomie" opens Nomie's own picker
   setTrackerPicker(() => nomieApi.pickTracker());
@@ -98,11 +97,9 @@ export const startNomie = (): NomieHandle | undefined => {
   let timer: ReturnType<typeof setInterval> | undefined;
 
   plugin.onRegistered(async () => {
-    applyTheme(plugin);
+    applyUserPrefs(plugin.prefs);
     await plugin.storage.init();
     appState.load(plugin.storage.getItem(STORAGE_KEY));
-    // the language of the Nomie user: the plugin's own text, and Blockly's (see blockly/messages.ts)
-    setLanguage(plugin.prefs?.language);
     ui.ready = true;
     // a workspace from before the stored code was kept is compiled once, and stored (see compiler.ts)
     void compileStale(deps);
@@ -111,7 +108,7 @@ export const startNomie = (): NomieHandle | undefined => {
     if (launched) void scheduleIfDue(deps);
   });
   plugin.onUIOpened(() => {
-    applyTheme(plugin);
+    applyUserPrefs(plugin.prefs);
     ui.mode = 'modal';
     void refreshTrackers(api);
   });
@@ -123,7 +120,7 @@ export const startNomie = (): NomieHandle | undefined => {
   };
   let widgetTimer: ReturnType<typeof setInterval> | undefined;
   plugin.onWidget(() => {
-    applyTheme(plugin);
+    applyUserPrefs(plugin.prefs);
     ui.mode = 'widget';
     void reloadWidget();
     if (widgetTimer) clearInterval(widgetTimer);

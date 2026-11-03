@@ -69,7 +69,8 @@ const componentStyles = (c: typeof LIGHT): Blockly.Theme.ComponentStyle => ({
   cursorColour: '#F59E0B',
 });
 
-const fontStyle = { family: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif", weight: '500', size: 11 };
+// DailyNomie 7's font (--ios-font), as the rest of the plugin
+const fontStyle = { family: "-apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif", weight: '500', size: 11 };
 
 export const notebookTheme = Blockly.Theme.defineTheme('nomie-notebook', {
   name: 'nomie-notebook',

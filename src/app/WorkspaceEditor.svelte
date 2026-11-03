@@ -120,6 +120,11 @@
     media.addEventListener('change', onMedia);
 
     registerRail();
+  // the Blockly canvas follows the theme of the app, also when it changes while the editor is open
+  $effect(() => {
+    const dark = ui.theme === 'dark';
+    workspace?.setTheme(dark ? notebookDarkTheme : notebookTheme);
+  });
     const dark = ui.theme === 'dark';
     const palette = toolbox();
     workspace = Blockly.inject(host, {

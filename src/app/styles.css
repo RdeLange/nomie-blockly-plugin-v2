@@ -149,7 +149,7 @@ body {
 }
 
 .console {
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-family: var(--nb-font-mono);
   font-size: 13px;
   white-space: pre-wrap;
   max-height: 180px;

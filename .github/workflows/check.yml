@@ -55,6 +55,7 @@ jobs:
       - run: node scripts/ui/lean-start-check.mjs
       - run: node scripts/ui/safety-check.mjs
       - run: node scripts/ui/language-check.mjs
+      - run: node scripts/ui/prefs-check.mjs
       - name: Upload screenshots
         if: always()
         uses: actions/upload-artifact@v4
