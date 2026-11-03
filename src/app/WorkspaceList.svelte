@@ -11,10 +11,12 @@
     return at !== undefined && Date.now() - at < PAUSE_MS;
   };
   import { newWorkspaceFromBlocks, addWorkspaces, importSummary } from './editing';
-  import { copyOfWorkspace, parseWorkspaceFile, templateWorkspaces, workspaceToFile, type Workspace } from '../domain/workspace';
+  import { copyOfWorkspace, exampleWorkspaces, parseWorkspaceFile, templateWorkspaces, workspaceToFile, type Workspace } from '../domain/workspace';
   import { healthOf } from './health';
   import { downloadText } from './download';
 
+  // the example library: built once, from examples.json (see domain/example-library.ts)
+  const examples = exampleWorkspaces();
   let adding = $state(false);
   let message = $state('');
   let fileInput: HTMLInputElement | undefined = $state();
@@ -80,7 +82,7 @@
 
   const addTemplate = async (template: Workspace) => {
     await addWorkspaces([template]);
-    message = `Added "${template.displayName}".`;
+    message = tf('Added "{name}".', { name: template.displayName });
   };
 
   const addNew = async () => {
@@ -121,6 +123,18 @@
           <br /><span class="muted">{template.description}</span>
         </span>
         <button class="button plain" onclick={() => addTemplate(template)}>{t('Add')}</button>
+      </div>
+    {/each}
+    <p class="muted" style="margin-top: 14px">{t('Examples')}</p>
+    <p class="muted">{t('Each example is a short tutorial. Add one, open it, and read its Detailed tab.')}</p>
+    {#each examples as example (example.name)}
+      <div class="row" style="margin-top: 8px">
+        <span class="emoji" style="background: {example.color}">{example.emoji}</span>
+        <span class="grow">
+          {example.displayName}
+          <br /><span class="muted">{example.description}</span>
+        </span>
+        <button class="button plain" onclick={() => addTemplate(example)}>{t('Add')}</button>
       </div>
     {/each}
   </div>

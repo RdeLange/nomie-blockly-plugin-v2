@@ -1,5 +1,6 @@
 // A workspace is one Blockly program. The shape is the same as in v1, so .wsp files and backups move between versions.
 import templates from './templates.json';
+import examples from './examples.json';
 import { readMemory, type Memory } from '../runtime/memory';
 
 export type Workspace = {
@@ -122,6 +123,12 @@ export const readBackupMemory = (text: string): Array<Memory | undefined> => {
 export const templateWorkspaces = (): Workspace[] =>
   (templates as Array<Record<string, unknown>>).map((template) =>
     normaliseWorkspace({ ...template, id: newId(), latestrun: '' })
+  );
+
+// The example library (examples.json, built from example-library.ts): each example as a workspace to add
+export const exampleWorkspaces = (): Workspace[] =>
+  (examples as Array<Record<string, unknown>>).map((example) =>
+    normaliseWorkspace({ ...example, id: newId(), latestrun: '' })
   );
 
 // Saves new blocks for a workspace. When they differ, the blocks being replaced become the previous version, with the

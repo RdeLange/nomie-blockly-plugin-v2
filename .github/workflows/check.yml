@@ -56,6 +56,7 @@ jobs:
       - run: node scripts/ui/widget-preview-check.mjs
       - run: node scripts/ui/html-widget-check.mjs
       - run: node scripts/ui/detailed-description-check.mjs
+      - run: node scripts/ui/examples-check.mjs
       - run: node scripts/ui/lean-start-check.mjs
       - run: node scripts/ui/safety-check.mjs
       - run: node scripts/ui/language-check.mjs

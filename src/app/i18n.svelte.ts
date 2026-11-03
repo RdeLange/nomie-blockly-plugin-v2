@@ -146,6 +146,9 @@ const NL: Record<string, string> = {
   'Ran for {label} on {when}': 'Gedraaid voor {label} op {when}',
   'Failed on {when}: {error}': 'Mislukt op {when}: {error}',
   stopped: 'gestopt',
+  Examples: 'Voorbeelden',
+  'Each example is a short tutorial. Add one, open it, and read its Detailed tab.': 'Elk voorbeeld is een korte les. Voeg er een toe, open hem en lees het tabblad Uitgebreid.',
+  'Added "{name}".': '"{name}" toegevoegd.',
 };
 
 // German: DailyNomie 7's words where it has them (Speichern, Exportieren, Duplizieren, Löschen, Bearbeiten, Zurück)
@@ -287,6 +290,9 @@ const DE: Record<string, string> = {
   'Ran for {label} on {when}': 'Gelaufen für {label} am {when}',
   'Failed on {when}: {error}': 'Fehlgeschlagen am {when}: {error}',
   stopped: 'gestoppt',
+  Examples: 'Beispiele',
+  'Each example is a short tutorial. Add one, open it, and read its Detailed tab.': 'Jedes Beispiel ist eine kurze Anleitung. Füge eins hinzu, öffne es und lies den Reiter Ausführlich.',
+  'Added "{name}".': '"{name}" hinzugefügt.',
 };
 
 // Italian: DailyNomie 7's words where it has them (Salva, Esporta, Duplica, Elimina, Modifica, Indietro)
@@ -428,6 +434,9 @@ const IT: Record<string, string> = {
   'Ran for {label} on {when}': 'Eseguito per {label} il {when}',
   'Failed on {when}: {error}': 'Non riuscito il {when}: {error}',
   stopped: 'fermato',
+  Examples: 'Esempi',
+  'Each example is a short tutorial. Add one, open it, and read its Detailed tab.': 'Ogni esempio è una breve guida. Aggiungine uno, aprilo e leggi la scheda Approfondita.',
+  'Added "{name}".': '"{name}" aggiunto.',
 };
 
 // The translations by language. English has none: the text is its own translation.
