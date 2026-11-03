@@ -16,12 +16,14 @@
     if (!ui.ready) ui.ready = true;
   });
 
-  // the widget: how many workspaces there are, and a button for each daily one
+  // the widget: a run button for each workspace, and the value a workspace last showed (see the widget view)
   const runFromWidget = (id: string) => {
     const deps = actionDeps();
     const workspace = appState.workspaces.find((w) => w.id === id);
     if (deps && workspace) void runNow(deps, workspace);
   };
+  const updatedText = (at: string) =>
+    new Date(at).toLocaleString(undefined, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
 </script>
 
 <div class="app" class:dark={ui.theme === 'dark'} class:editing={ui.view === 'editor' && ui.mode !== 'widget'}>
@@ -33,7 +35,16 @@
         <span class="grow"><strong>Blockly</strong></span>
         <span class="muted">{appState.workspaces.length} workspaces</span>
       </div>
-      {#each appState.workspaces.slice(0, 4) as workspace (workspace.id)}
+      {#each appState.workspaces.filter((w) => appState.widget[w.id]) as workspace (workspace.id)}
+        {@const shown = appState.widget[workspace.id]}
+        <div class="widget-tile">
+          <span class="widget-label">{shown.label}</span>
+          <span class="widget-value">{shown.value}</span>
+          <span class="widget-time">updated {updatedText(shown.at)}</span>
+          <button class="button" onclick={() => runFromWidget(workspace.id)}>Run</button>
+        </div>
+      {/each}
+      {#each appState.workspaces.filter((w) => !appState.widget[w.id]).slice(0, 4) as workspace (workspace.id)}
         <div class="row" style="margin-top: 10px">
           <span class="emoji" style="background: {workspace.color}">{workspace.emoji}</span>
           <span class="grow">{workspace.displayName}</span>

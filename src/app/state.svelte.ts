@@ -2,6 +2,7 @@
 import type { Workspace } from '../domain/workspace';
 import { normaliseWorkspace } from '../domain/workspace';
 import { readMemoryMap, type Memory } from '../runtime/memory';
+import { readWidgetMap, type WidgetValue } from '../runtime/widget';
 
 // One day of the last scheduled run of a workspace, as the Run tab shows it
 export type DayRecord = { day: string; ok: boolean; error?: string; output: string[] };
@@ -18,6 +19,8 @@ export type StoredState = {
   memory: Record<string, Memory>;
   // the secrets from Settings, by name (new in v2; v1 ignores it)
   secrets: Record<string, string>;
+  // per workspace id: the value it last showed on the Nomie widget (new in v2; v1 ignores it)
+  widget: Record<string, WidgetValue>;
 };
 
 export const STORAGE_KEY = 'blockly';
@@ -69,6 +72,7 @@ export const readState = (raw: unknown): StoredState => {
     scheduledays: readScheduleDays(data.scheduledays),
     memory: readMemoryMap(data.memory),
     secrets: readSecrets(data.secrets),
+    widget: readWidgetMap(data.widget),
   };
 };
 
@@ -81,6 +85,7 @@ class AppState {
   // when a workspace was paused for running too often from notes (not saved: the pause is short)
   notePauses = $state<Record<string, number>>({});
   secrets = $state<Record<string, string>>({});
+  widget = $state<Record<string, WidgetValue>>({});
   loaded = $state(false);
 
   load(stored: unknown) {
@@ -91,6 +96,7 @@ class AppState {
     this.scheduleDays = state.scheduledays;
     this.memory = state.memory;
     this.secrets = state.secrets;
+    this.widget = state.widget;
     this.loaded = true;
   }
 
@@ -102,6 +108,7 @@ class AppState {
       scheduledays: $state.snapshot(this.scheduleDays),
       memory: $state.snapshot(this.memory),
       secrets: $state.snapshot(this.secrets),
+      widget: $state.snapshot(this.widget),
     };
   }
 }

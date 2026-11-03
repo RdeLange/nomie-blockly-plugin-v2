@@ -255,6 +255,19 @@ export const defineNomieBlocks = () => {
       nextStatement: null,
       style: 'nomie_blocks',
     },
+    // A value on the Nomie widget, under the label (phase 15): the widget shows the last value a run set
+    {
+      type: 's4e_widget',
+      message0: 'show on widget %1 as %2',
+      args0: [
+        { type: 'input_value', name: 'Value' },
+        { type: 'field_input', name: 'LABEL', text: 'label' },
+      ],
+      inputsInline: true,
+      previousStatement: null,
+      nextStatement: null,
+      style: 'nomie_blocks',
+    },
     // A workspace has a Scheduler block (it runs on days) or a When-note block (it runs when a note with the tracker
     // is saved). The block is a hat: it has no connection above it.
     {
@@ -500,6 +513,8 @@ export const registerNomieGenerators = (js: JavascriptGenerator) => {
   js.forBlock['s4e_notetext'] = () => ['noteText()', Order.NONE];
   js.forBlock['s4e_noteday'] = () => ['noteDay()', Order.NONE];
   js.forBlock['s4e_openlink'] = (block: Block, g) => `openLink(${input(block, g, 'Value', "''")});\n`;
+  js.forBlock['s4e_widget'] = (block: Block, g) =>
+    `setWidget(${quote(block.getFieldValue('LABEL'))}, ${input(block, g, 'Value', "''")});\n`;
 
   js.forBlock['wait_seconds'] = (block: Block) => `waitForSeconds(${Number(block.getFieldValue('SECONDS')) || 0});\n`;
   js.forBlock['pushto_console'] = (block: Block, g) => `alert(${input(block, g, 'Value', "''")});`;
@@ -521,6 +536,7 @@ export const NOMIE_RESERVED_WORDS = [
   'logValue',
   'daysSince',
   'noteDay',
+  'setWidget',
   'noteText',
   'noteValue',
   'triggerStart',

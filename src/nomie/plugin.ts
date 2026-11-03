@@ -3,7 +3,7 @@ import { createNomieApi, type NomieApi, type TrackerInfo } from './api';
 import { appState } from '../app/state.svelte';
 import { ui } from '../app/ui.svelte';
 import { trackerChoices, trackerOptionsNow } from '../app/trackers.svelte';
-import { STORAGE_KEY } from '../app/state.svelte';
+import { STORAGE_KEY, readState } from '../app/state.svelte';
 import { scheduleIfDue, runFromNote, runFromNotes } from '../app/actions';
 import { rememberWritten, wasWrittenHere } from '../app/written-notes';
 import { setupBlockly } from '../blockly/setup';
@@ -112,9 +112,19 @@ export const startNomie = (): NomieHandle | undefined => {
     ui.mode = 'modal';
     void refreshTrackers(api);
   });
+  // The widget is its own frame, so it reads the stored values again when it opens, and every 5 minutes after that:
+  // the schedule and the note runs happen in other frames (phase 15).
+  const reloadWidget = async () => {
+    await plugin.storage.init();
+    appState.widget = readState(plugin.storage.getItem(STORAGE_KEY)).widget;
+  };
+  let widgetTimer: ReturnType<typeof setInterval> | undefined;
   plugin.onWidget(() => {
     applyTheme(plugin);
     ui.mode = 'widget';
+    void reloadWidget();
+    if (widgetTimer) clearInterval(widgetTimer);
+    widgetTimer = setInterval(() => void reloadWidget(), 5 * 60 * 1000);
   });
   plugin.onLaunch(() => {
     launched = true;

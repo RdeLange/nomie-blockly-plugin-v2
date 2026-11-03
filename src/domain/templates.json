@@ -66,5 +66,23 @@
     },
     "jscode": "var WeatherData, Temperature;\n\n\nhighlightBlock('2gL!0USa-$;~A}l9%ObA');\ns4eblocklyframe = \"activated\";\nvar schedule = \"none\";\nif (schedule == \"daily\") {\nvar scheduler = scheduler_activated();\nvar schedulerstart = scheduler_start();\nvar schedulerend = scheduler_end();\n}\nelse {var scheduler = false;\nvar schedulerstart = new Date();\nvar schedulerend = new Date();}\nvar loop = new Date(schedulerstart);\nwhile(loop <= schedulerend){\n  highlightBlock('D,_9OcF,J0fd3mO*n:XW');\n  WeatherData = (httpRequest((['https://api.openweathermap.org/data/2.5/weather?q=Amsterdam&APPID=',secret(\"OPENWEATHER_KEY\"),'&lang=fr&units=metric'].join(''))));\n  highlightBlock('RN/on=49vX][VL*xb.I=');\n  Temperature = (((JSON.parse(WeatherData))['main'])['temp']);\n  highlightBlock('+d5L=OvH|3R3^QZ0.81s');\n  consolelog(Temperature);\n  highlightBlock('6jAJsn^y)9B./h6|2j{7');\n  display((String('The temperature in Amsterdam is ' + String(Temperature)) + ' degrees'));var newDate = loop.setDate(loop.getDate() + 1);\nloop = new Date(newDate);}\n",
     "schedule": "none"
+  },
+  {
+    "name": "Mood widget",
+    "displayName": "7-day mood on the widget",
+    "description": "Shows your average mood of the last 7 days on the Nomie widget, with a Run button.",
+    "color": "#FDF0A4",
+    "emoji": "📊",
+    "active": true,
+    "block": "",
+    "workspaceBlocks": "<xml xmlns=\"https://developers.google.com/blockly/xml\"><block type=\"s4eblocklyframe\" id=\"widgetframe\" x=\"20\" y=\"20\"><field name=\"NAME\">none</field><statement name=\"script\"><block type=\"s4e_widget\" id=\"widgetshow\"><field name=\"LABEL\">7-day mood</field><value name=\"Value\"><block type=\"s4e_periodvalue\" id=\"widgetperiod\"><value name=\"Trackable\"><block type=\"s4e_trackers\" id=\"widgettracker\"><field name=\"Trackers\">#mood</field></block></value><value name=\"Period\"><block type=\"s4e_periodpicker\" id=\"widgetperiodpicker\"><field name=\"Period\">LAST7DAYS</field></block></value><value name=\"Statistics\"><block type=\"s4e_statspicker\" id=\"widgetstats\"><field name=\"Stats\">avg</field></block></value></block></value></block></statement></block></xml>",
+    "workspacePosition": {
+      "scrollX": 0,
+      "scrollY": 0,
+      "scale": 0.8
+    },
+    "jscode": "highlightBlock('widgetframe');\ns4eblocklyframe = \"activated\";\nvar schedule = \"none\";\nif (schedule == \"daily\") {\nvar scheduler = scheduler_activated();\nvar schedulerstart = scheduler_start();\nvar schedulerend = scheduler_end();\n}\nelse {var scheduler = false;\nvar schedulerstart = new Date();\nvar schedulerend = new Date();}\nvar loop = new Date(schedulerstart);\nwhile(loop <= schedulerend){\n  highlightBlock('widgetshow');\n  setWidget(\"7-day mood\", (fetchPeriodValue((\"#mood\"),(\"LAST7DAYS\"),(\"avg\"))));\nvar newDate = loop.setDate(loop.getDate() + 1);\nloop = new Date(newDate);}\n",
+    "latestrun": "",
+    "schedule": "none"
   }
 ]

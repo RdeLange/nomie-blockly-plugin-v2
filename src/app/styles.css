@@ -225,3 +225,37 @@ body {
     padding: 12px;
   }
 }
+
+/* a value a workspace shows on the Nomie widget (phase 15): the label, the value large, when it was set */
+.widget-tile {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 2px 12px;
+  align-items: center;
+  margin-top: 12px;
+  padding: 12px;
+  border-radius: 12px;
+  background: var(--nb-canvas, #fffdf8);
+  border: 1px solid var(--nb-line, #e7e5e4);
+}
+.widget-label {
+  grid-column: 1;
+  font-size: 13px;
+  color: var(--nb-muted, #57534e);
+}
+.widget-value {
+  grid-column: 1;
+  font-family: var(--nb-font-title, Georgia, serif);
+  font-size: 30px;
+  line-height: 1.1;
+  color: var(--nb-ink, #1c1917);
+}
+.widget-time {
+  grid-column: 1;
+  font-size: 12px;
+  color: var(--nb-muted, #57534e);
+}
+.widget-tile .button {
+  grid-column: 2;
+  grid-row: 1 / span 3;
+}

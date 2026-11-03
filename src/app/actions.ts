@@ -7,6 +7,7 @@ import type { ScheduleWindow } from '../runtime/host';
 import type { Memory } from '../runtime/memory';
 import { noteTags, triggerFromNote, triggerFromText, type NoteWithElements, type TriggerNote } from '../runtime/note-trigger';
 import { wasWrittenHere } from './written-notes';
+import type { WidgetLabelValue } from '../runtime/widget';
 import { compileWorkspace, hasErrors, workspaceInfo, type CompiledWorkspace } from '../blockly/compile';
 import { addDays, localDayKey, parseDayKey } from '../runtime/dates';
 import { appState, type DayRecord } from './state.svelte';
@@ -67,6 +68,12 @@ const keepMemory = (deps: Deps, id: string, memory: Memory) => {
   void deps.save();
 };
 
+// The value a workspace shows on the widget, with the time it was set (phase 15)
+const keepWidget = (deps: Deps, id: string, shown: WidgetLabelValue) => {
+  appState.widget[id] = { ...shown, at: new Date().toISOString() };
+  void deps.save();
+};
+
 // The secret names Settings has: a workspace that uses another one gets a warning before the run
 const knownSecrets = () => Object.keys(appState.secrets);
 
@@ -90,6 +97,7 @@ const runCompiled = (deps: Deps, workspace: Workspace, hooks: RunHooks, schedule
   }).then((result) => {
     // a run that ended well keeps what it remembered; a failed or test run keeps nothing
     if (result.ok && result.memory && !hooks.test) keepMemory(deps, workspace.id, result.memory);
+    if (result.ok && result.widget && !hooks.test) keepWidget(deps, workspace.id, result.widget);
     return reportBlock(result, compiled.labels, hooks);
   });
 };
@@ -120,6 +128,7 @@ export const runDays = (deps: Deps, workspace: Workspace, from: string, to: stri
       // each day starts from what the day before remembered
       const before = appState.memory[workspace.id] ?? {};
       let memory: Memory = { ...before };
+      let widgetShown: WidgetLabelValue | undefined;
       for (const [i, key] of keys.entries()) {
         hooks.onDay?.(key, i + 1, keys.length);
         hooks.output?.(`— ${key} —`);
@@ -143,6 +152,7 @@ export const runDays = (deps: Deps, workspace: Workspace, from: string, to: stri
           secrets: { ...appState.secrets },
         });
         if (result.ok && result.memory) memory = result.memory;
+        if (result.ok && result.widget) widgetShown = result.widget;
         reportBlock(result, compiled.labels, hooks);
         days.push({ day: key, result, output: shown.filter((t) => !t.startsWith('<< ')) });
         if (!result.ok) break;
@@ -150,6 +160,7 @@ export const runDays = (deps: Deps, workspace: Workspace, from: string, to: stri
       // the values are kept once the whole range has run well, and never by a test run
       const allWell = days.length > 0 && days.every((d) => d.result.ok);
       if (allWell && !hooks.test && JSON.stringify(memory) !== JSON.stringify(before)) keepMemory(deps, workspace.id, memory);
+      if (allWell && !hooks.test && widgetShown) keepWidget(deps, workspace.id, widgetShown);
       return days;
     },
     (error): DayOutcome[] => [{ day: keys[0], result: { ok: false, error }, output: [] }],
@@ -201,11 +212,12 @@ export const scheduleNow = async (deps: Deps, now = new Date()): Promise<Schedul
       memory: appState.memory[w.id],
     }));
   // after each day that ran well: the day it starts from next, and what the day remembered
-  const progress = (id: string, nextDay: string, memory: Memory) => {
+  const progress = (id: string, nextDay: string, memory: Memory, shown?: WidgetLabelValue) => {
     const workspace = appState.workspaces.find((w) => w.id === id);
     if (!workspace) return;
     workspace.latestrun = parseDayKey(nextDay).toISOString();
     keepMemory(deps, id, memory);
+    if (shown) keepWidget(deps, id, shown);
   };
   const ran = await queue(
     () => runSchedule(deps.api, runnable, now, undefined, progress, { ...appState.secrets }),

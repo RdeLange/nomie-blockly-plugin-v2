@@ -20,6 +20,7 @@ import { localDayKey, resolveDay } from './dates';
 import { formatValue } from './format';
 import { memoryProblem, type Memory } from './memory';
 import type { TriggerNote } from './note-trigger';
+import type { WidgetLabelValue } from './widget';
 import { parseDayKey } from './dates';
 
 export type ScheduleWindow = { active: boolean; start: Date; end: Date };
@@ -57,6 +58,8 @@ export type HostContext = {
   redact?: (text: string) => string;
   // the note that started this run (a When-note workspace), if any
   note?: TriggerNote;
+  // the value the run shows on the widget; setWidget sets it, and the run reads it back (see run.ts)
+  widget?: { value?: WidgetLabelValue };
 };
 
 // `window.prompt` is what the Text prompt block generates. It is provided here, so workspaces saved with it still run.
@@ -144,6 +147,11 @@ export const installHost = (interpreter: any, scope: any, ctx: HostContext) => {
     else ctx.api.alert('Message', formatValue(value));
   });
   asyncFn('prompt', (text) => ctx.api.prompt('Message', formatValue(text)), 1, timeouts.prompt);
+
+  // A value on the Nomie widget (phase 15). The last call of a run is the one the widget shows.
+  native('setWidget', (label, value) => {
+    if (ctx.widget) ctx.widget.value = { label: String(label ?? ''), value: formatValue(value) };
+  });
 
   // The note blocks (phase 14): the note that started the run. Outside a note run they give null.
   native('noteText', () => ctx.note?.text ?? null);

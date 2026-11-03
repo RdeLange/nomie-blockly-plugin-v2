@@ -55,6 +55,7 @@ export const toolbox = (nomieName: string = NOMIE_CATEGORY): ToolboxDefinition =
           block('s4e_lognote'),
           block('s4e_mylocation'),
           block('s4e_openlink'),
+          block('s4e_widget'),
           label('Memory and secrets'),
           block('s4e_remember'),
           block('s4e_recall'),
