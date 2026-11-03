@@ -1,5 +1,7 @@
 // The palette, in the same categories as v1. The Nomie category is named after the plugin's own category.
-import type { ToolboxDefinition } from 'blockly/core/utils/toolbox';
+import type * as Blockly from 'blockly';
+
+type ToolboxDefinition = Blockly.utils.toolbox.ToolboxDefinition;
 
 const block = (type: string) => ({ kind: 'block', type });
 const xmlBlock = (blockxml: string) => ({ kind: 'block', blockxml });

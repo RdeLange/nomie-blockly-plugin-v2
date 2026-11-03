@@ -1,4 +1,4 @@
-import { chromium } from '/Users/ronalddelange/Library/Mobile Documents/com~apple~CloudDocs/DailyNomie/Development/dailynomie7/node_modules/playwright/index.mjs'
+import { chromium } from 'playwright'
 const browser = await chromium.launch()
 const page = await browser.newPage({ viewport: { width: 1100, height: 800 } })
 const errors = []; page.on('pageerror', (e) => errors.push(e.message))
@@ -7,6 +7,6 @@ await page.getByRole('button', { name: 'Add', exact: true }).click(); await page
 await page.getByRole('button', { name: 'Add' }).nth(1).click(); await page.waitForTimeout(300)
 await page.getByRole('button', { name: 'Edit' }).first().click(); await page.waitForTimeout(1500)
 console.log('canvas height', await page.locator('.blockly-host').evaluate((e) => Math.round(e.getBoundingClientRect().height)))
-await page.screenshot({ path: 'header.png' })
+await page.screenshot({ path: 'screenshots/header.png' })
 console.log('errors', errors)
 await browser.close()

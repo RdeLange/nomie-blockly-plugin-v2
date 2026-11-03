@@ -1,4 +1,4 @@
-import { chromium } from '/Users/ronalddelange/Library/Mobile Documents/com~apple~CloudDocs/DailyNomie/Development/dailynomie7/node_modules/playwright/index.mjs'
+import { chromium } from 'playwright'
 const browser = await chromium.launch()
 const page = await browser.newPage({ viewport: { width: 390, height: 844 } })
 const errors = []; page.on('pageerror', (e) => errors.push(e.message))
@@ -10,6 +10,6 @@ const h = () => page.locator('.blockly-host').evaluate((e) => Math.round(e.getBo
 console.log('open height', await h())
 await page.getByRole('button', { name: /Hide details/ }).click(); await page.waitForTimeout(800)
 console.log('collapsed height', await h(), 'card visible', await page.locator('input[placeholder="Name"]').isVisible())
-await page.screenshot({ path: 'collapsed.png' })
+await page.screenshot({ path: 'screenshots/collapsed.png' })
 console.log('errors', errors)
 await browser.close()

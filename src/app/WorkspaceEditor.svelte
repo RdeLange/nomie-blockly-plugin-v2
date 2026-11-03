@@ -5,11 +5,12 @@
   import darkTheme from '@blockly/theme-dark';
   import { toolbox } from '../blockly/toolbox';
   import { loadWorkspace } from '../blockly/setup';
-    import { appState } from './state.svelte';
+  import { appState } from './state.svelte';
   import { ui } from './ui.svelte';
   import { actionDeps, askConfirm, notify } from './dialogs';
   import { runNow, runRange } from './actions';
   import type { Workspace } from '../domain/workspace';
+  import { newWorkspaceFromBlocks } from './editing';
 
   let { id }: { id: string } = $props();
 
@@ -98,6 +99,18 @@
     ui.editingId = null;
   };
 
+  // The workspace as it is in the editor now, saved or not: what Run and Run for yesterday run
+  const draftWorkspace = (): Workspace => ({
+    ...(start ?? newWorkspaceFromBlocks()),
+    displayName: draft.displayName,
+    name: draft.name,
+    description: draft.description,
+    emoji: draft.emoji,
+    color: draft.color,
+    workspaceBlocks: draft.xml,
+    jscode: draft.jscode,
+  });
+
   const run = async () => {
     const deps = actionDeps();
     if (!deps || running) return;
@@ -105,7 +118,7 @@
     running = true;
     stop.stopped = false;
     consoleText = 'Running…';
-    const result = await runNow(deps, { ...draft } as Workspace, { output, highlight, stop });
+    const result = await runNow(deps, draftWorkspace(), { output, highlight, stop });
     running = false;
     highlight('');
     highlighted = null;
@@ -123,7 +136,7 @@
     running = true;
     stop.stopped = false;
     consoleText = 'Running for yesterday…';
-    await runRange(deps, { ...draft } as Workspace, yesterday, yesterday, { output, highlight, stop });
+    await runRange(deps, draftWorkspace(), yesterday, yesterday, { output, highlight, stop });
     running = false;
     workspace?.highlightBlock(null);
   };

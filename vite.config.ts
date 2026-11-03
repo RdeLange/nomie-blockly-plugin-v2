@@ -9,6 +9,8 @@ export default defineConfig({
   },
   // the plugin is served from a folder on GitHub Pages, so every path is relative
   base: './',
+  // the UI check scripts in scripts/ui expect this port
+  server: { port: 5010 },
   build: {
     outDir: 'dist',
     emptyOutDir: true,
