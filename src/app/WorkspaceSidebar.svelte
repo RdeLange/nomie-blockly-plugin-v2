@@ -14,7 +14,7 @@
 
   // Leaving the open workspace: unsaved changes are asked about first
   const mayLeave = async (): Promise<boolean> =>
-    !ui.editorDirty || (await askConfirm('Leave without saving?', 'Your changes are not saved yet.'));
+    !ui.editorDirty || (await askConfirm(t('Leave without saving?'), t('Your changes are not saved yet.')));
 
   const open = async (id: string) => {
     if (id === ui.editingId || !(await mayLeave())) return;
@@ -30,7 +30,7 @@
   };
 </script>
 
-<aside class="ws-side" aria-label="Workspaces">
+<aside class="ws-side" aria-label={t('Workspaces')}>
   <div class="ws-side-head">
     <input class="input" type="search" placeholder={t('Search')} aria-label={t('Search')} bind:value={query} />
     <button class="button" onclick={addNew}>{t('Add')}</button>

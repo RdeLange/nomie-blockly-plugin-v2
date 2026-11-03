@@ -536,6 +536,8 @@ First, because it guards everything after it.
 
 Done when: a pull request shows both jobs green, and a deliberately broken test makes the first job fail.
 
+*Checked (3 Nov 2026):* a deliberately broken test makes `npm test` exit with code 1 (checked locally, then removed).
+
 ---
 
 ## Phase 11 – Test mode: run without writing notes
@@ -621,6 +623,9 @@ streak across a gap; days since with no note in 60 days; location timeout return
 does not call `openURL`; every new block parses in the sandbox (the palette test covers this once they are in the
 toolbox).
 
+*Decision (3 Nov 2026):* the "Retrieve Temperature" template keeps its city. "My location" is in the Nomie palette and
+not in the template, so the template's code and its v1 equality test stay as they were.
+
 ---
 
 ## Phase 14 – Note triggers: run when a note is saved
@@ -686,6 +691,10 @@ of Blockly (about 1 MB) only to run code it could have kept.
 Tests: a stale `compiledFrom` (blocks changed, or a new generator version) recompiles; a v1 state without
 `compiledFrom` recompiles once and stores it; an imported workspace is compiled on import.
 
+*Measured (3 Nov 2026), the first JavaScript file, before and after this phase (the commits before and at it):* 1,042,723 bytes
+(293,970 gzip) before, 200,975 bytes (64,004 gzip) after. Blockly is in a separate chunk of 809,971 bytes, loaded only for
+the editor and the compiler.
+
 ---
 
 ## Phase 17 – The list, export and safety nets
@@ -729,6 +738,11 @@ blocks and marks the editor unsaved; the card shows a failure from `scheduleDays
 Tests: the v1 equality tests pass unchanged; every Nomie block has a tooltip; with language `nl`, the toolbar and a
 standard block show Dutch text (Playwright with `fake-nomie.js` sending `language: 'nl'`).
 
+*Checked (3 Nov 2026):* every text the screens and dialogs ask for is translated in Dutch, German and Italian
+(`src/app/i18n.spec.ts` fails when one is missing), and `scripts/ui/language-check.mjs` checks the list, Settings, the
+editor tabs and a standard block in each language. *Still English:* the texts of the Nomie blocks themselves
+(e.g. "show message", "Statistics") and their tooltips; those are not translated yet.
+
 ---
 
 ## Phase 19 – Workspaces beside the editor, and a better rail on a phone
@@ -742,6 +756,10 @@ standard block show Dutch text (Playwright with `fake-nomie.js` sending `languag
   can already offer a full-screen toggle for its canvas (hide the panel and the toolbar title).
 
 Checks: screenshots at 1440 × 900, 1100 × 800 and 390 × 844; switching workspaces with and without unsaved changes.
+
+*Checked (3 Nov 2026):* `scripts/ui/layout-check.mjs` covers the 280 px list from 1200 px, no list at 1100 px, eleven
+phone tiles, a long press, and the unsaved-changes prompt. *Not done:* the full-screen toggle for the canvas, and Focus
+mode, which needs Nomie to collapse its own sidebar.
 
 ---
 

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { t } from './i18n.svelte';
+  import { t, tf } from './i18n.svelte';
   import { onMount } from 'svelte';
   import { appState } from './state.svelte';
   import { ui } from './ui.svelte';
@@ -46,7 +46,7 @@
     const deps = actionDeps();
     if (!deps) return;
     const count = setScheduleStart(deps, day);
-    notify('Scheduler', `The next run starts from ${day} for ${count} workspace${count === 1 ? '' : 's'}.`);
+    notify(t('Scheduler'), count === 1 ? tf('The next run starts from {day} for 1 workspace.', { day }) : tf('The next run starts from {day} for {count} workspaces.', { day, count: String(count) }));
   };
   let fileInput: HTMLInputElement | undefined = $state();
 
@@ -75,7 +75,7 @@
   };
 
   const removeSecret = async (name: string) => {
-    if (!(await askConfirm('Remove the secret?', `${name} is removed. Workspaces that use it will say so before they run.`))) return;
+    if (!(await askConfirm(t('Remove the secret?'), tf('{name} is removed. Workspaces that use it will say so before they run.', { name })))) return;
     delete appState.secrets[name];
     void actionDeps()?.save();
   };
@@ -84,7 +84,7 @@
     const deps = actionDeps();
     if (!deps) return;
     const outcomes = await scheduleNow(deps);
-    notify('Scheduler', outcomes.length ? 'The schedule has run.' : 'No workspace is scheduled.');
+    notify(t('Scheduler'), outcomes.length ? t('The schedule has run.') : t('No workspace is scheduled.'));
   };
 
   const exportBackup = () => {
@@ -109,13 +109,13 @@
       workspaces = parseWorkspaceFile(text);
       memories = readBackupMemory(text);
     } catch (error) {
-      notify('Import failed', (error as Error).message);
+      notify(t('Import failed'), (error as Error).message);
       return;
     }
     const replace = importMode === 'replace';
-    const question = replace ? 'Replace your workspaces with this backup?' : 'Add the backup to your workspaces?';
+    const question = replace ? t('Replace your workspaces with this backup?') : t('Add the backup to your workspaces?');
     // a backup can come from someone else: say what its workspaces do before adding them
-    if (!(await askConfirm('Import', `${question}\n\nOnly import workspaces you trust.\n\n${await importSummary(workspaces)}`))) return;
+    if (!(await askConfirm(t('Import'), `${question}\n\n${t('Only import workspaces you trust.')}\n\n${await importSummary(workspaces)}`))) return;
     // each workspace is compiled from its blocks; a backup's workspaces start in test mode, until each one has had a
     // real run in the editor
     const compiled = await Promise.all(workspaces.map((w) => refreshCompiled(withNewId(w))));
@@ -127,7 +127,7 @@
       if (memories[i]) appState.memory[w.id] = memories[i] as Record<string, unknown>;
     });
     actionDeps()?.save();
-    notify('Import', `${imported.length} workspace${imported.length === 1 ? '' : 's'} ${replace ? 'replaced' : 'added'}.`);
+    notify(t('Import'), imported.length === 1 ? (replace ? t('Replaced 1 workspace.') : t('Added 1 workspace.')) : tf(replace ? 'Replaced {count} workspaces.' : 'Added {count} workspaces.', { count: String(imported.length) }));
   };
 
   const pick = (mode: 'add' | 'replace') => {
@@ -145,11 +145,11 @@
 <div class="card">
   <p><strong>{t('Scheduler')}</strong></p>
   <p class="muted">Last run: {appState.lastCentralSchedule ? new Date(appState.lastCentralSchedule).toLocaleString() : 'never'}</p>
-  <p class="muted">Daily workspaces run for the days since their last run, up to yesterday.</p>
-  <p class="muted">Next run starts from</p>
+  <p class="muted">{t('Daily workspaces run for the days since their last run, up to yesterday.')}</p>
+  <p class="muted">{t('Next run starts from')}</p>
   <div class="row">
     <input class="input grow" inputmode="numeric" placeholder="YYYY-MM-DD" bind:value={startText} />
-    <button class="button" onclick={applyStart}>Set</button>
+    <button class="button" onclick={applyStart}>{t('Set')}</button>
   </div>
   {#if startError}
     <p class="muted" style="color: var(--ios-danger)">{startError}</p>
@@ -163,10 +163,10 @@
       </span>
     </div>
   {:else}
-    <p class="muted">No workspace has a daily schedule. Set one with the Scheduler block in the editor.</p>
+    <p class="muted">{t('No workspace has a daily schedule. Set one with the Scheduler block in the editor.')}</p>
   {/each}
   <div class="row" style="margin-top: 12px">
-    <button class="button" onclick={runSchedule}>Run the schedule now</button>
+    <button class="button" onclick={runSchedule}>{t('Run the schedule now')}</button>
   </div>
   {#if appState.centralLog}
     <div class="console" style="margin-top: 12px">{appState.centralLog}</div>
@@ -175,20 +175,20 @@
 
 <div class="card">
   <p><strong>{t('Secrets')}</strong></p>
-  <p class="muted">A workspace uses a secret by name, such as an API key, so the key is not in its blocks. Secrets stay on this device: they are never in a backup or a shared workspace.</p>
+  <p class="muted">{t('A workspace uses a secret by name, such as an API key, so the key is not in its blocks. Secrets stay on this device: they are never in a backup or a shared workspace.')}</p>
   {#each secretNames as name (name)}
     <div class="row" style="margin-top: 6px">
       <span class="grow">{name}</span>
       <span class="muted">••••</span>
-      <button class="button plain" onclick={() => { secretName = name; secretValue = ''; secretError = ''; }}>Change</button>
-      <button class="button plain" onclick={() => removeSecret(name)}>Remove</button>
+      <button class="button plain" onclick={() => { secretName = name; secretValue = ''; secretError = ''; }}>{t('Change')}</button>
+      <button class="button plain" onclick={() => removeSecret(name)}>{t('Remove')}</button>
     </div>
   {:else}
-    <p class="muted">No secrets yet.</p>
+    <p class="muted">{t('No secrets yet.')}</p>
   {/each}
   <div class="row" style="margin-top: 12px">
-    <input class="input" style="flex: 0 0 200px" placeholder="NAME" aria-label="Secret name" bind:value={secretName} />
-    <input class="input" style="flex: 1 1 auto; min-width: 160px" type="password" placeholder="value" aria-label="Secret value" autocomplete="off" bind:value={secretValue} />
+    <input class="input" style="flex: 0 0 200px" placeholder={t('Name')} aria-label={t('Secret name')} bind:value={secretName} />
+    <input class="input" style="flex: 1 1 auto; min-width: 160px" type="password" placeholder={t('value')} aria-label={t('Secret value')} autocomplete="off" bind:value={secretValue} />
     <button class="button" onclick={saveSecret}>{t('Save')}</button>
   </div>
   {#if secretError}
@@ -198,12 +198,12 @@
 
 <div class="card">
   <p><strong>{t('Backup')}</strong></p>
-  <p class="muted">A backup is a file with all your workspaces. Nomie Blockly v1 backups import here too.</p>
-  <label class="row muted"><input type="checkbox" bind:checked={includeMemory} /> Include remembered values</label>
+  <p class="muted">{t('A backup is a file with all your workspaces. Nomie Blockly v1 backups import here too.')}</p>
+  <label class="row muted"><input type="checkbox" bind:checked={includeMemory} /> {t('Include remembered values')}</label>
   <div class="row">
     <button class="button" onclick={exportBackup}>{t('Export')}</button>
-    <button class="button plain" onclick={() => pick('add')}>Import and add</button>
-    <button class="button danger" onclick={() => pick('replace')}>Import and replace</button>
+    <button class="button plain" onclick={() => pick('add')}>{t('Import and add')}</button>
+    <button class="button danger" onclick={() => pick('replace')}>{t('Import and replace')}</button>
     <input bind:this={fileInput} type="file" accept=".json,.wsp,application/json" onchange={importBackup} hidden />
   </div>
 </div>

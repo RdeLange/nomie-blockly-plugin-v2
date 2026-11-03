@@ -16,11 +16,12 @@ const check = (label, ok) => {
   if (!ok) process.exitCode = 1;
 };
 
-// the words each language shows: the list's Add, the card's Edit, the editor's Save and Run, and Blockly's repeat block
+// the words each language shows: the list's Add, the card's Edit, the editor's Save, Run and Detailed tabs, the
+// Settings screen's Import and add, and Blockly's repeat block
 const LANGS = [
-  { code: 'nl', add: 'Toevoegen', edit: 'Bewerken', save: 'Opslaan', run: 'Uitvoeren', repeat: 'keer herhalen' },
-  { code: 'de', add: 'Hinzufügen', edit: 'Bearbeiten', save: 'Speichern', run: 'Ausführen', repeat: 'wiederhole' },
-  { code: 'it', add: 'Aggiungi', edit: 'Modifica', save: 'Salva', run: 'Esegui', repeat: 'ripeti' },
+  { code: 'nl', add: 'Toevoegen', edit: 'Bewerken', save: 'Opslaan', run: 'Uitvoeren', detailed: 'Uitgebreid', settings: 'Instellingen', importAdd: 'Importeren en toevoegen', repeat: 'keer herhalen' },
+  { code: 'de', add: 'Hinzufügen', edit: 'Bearbeiten', save: 'Speichern', run: 'Ausführen', detailed: 'Ausführlich', settings: 'Einstellungen', importAdd: 'Importieren und hinzufügen', repeat: 'wiederhole' },
+  { code: 'it', add: 'Aggiungi', edit: 'Modifica', save: 'Salva', run: 'Esegui', detailed: 'Approfondita', settings: 'Impostazioni', importAdd: 'Importa e aggiungi', repeat: 'ripeti' },
 ];
 
 try {
@@ -34,6 +35,10 @@ try {
     await page.goto(url);
 
     check(`${lang.code}: the list is translated`, (await page.getByRole('button', { name: lang.add, exact: true }).count()) === 1);
+    // the Settings screen: its import buttons
+    await page.getByRole('button', { name: lang.settings, exact: true }).click();
+    check(`${lang.code}: the Settings screen is translated`, (await page.getByRole('button', { name: lang.importAdd, exact: true }).count()) === 1);
+    await page.goto(url);
     await page.getByRole('button', { name: lang.add, exact: true }).click();
     await page.locator('.row', { hasText: 'Retrieve Data Example' }).getByRole('button', { name: lang.add }).first().click();
     await page.locator('.card', { hasText: 'Retrieve Data Example' }).filter({ has: page.getByRole('button', { name: lang.edit }) }).first().getByRole('button', { name: lang.edit }).click();
@@ -41,6 +46,7 @@ try {
 
     check(`${lang.code}: the editor toolbar is translated`, (await page.getByRole('button', { name: lang.save, exact: true }).count()) === 1);
     check(`${lang.code}: the editor tabs are translated`, (await page.getByRole('tab', { name: lang.run }).count()) === 1);
+    check(`${lang.code}: the Detailed tab is translated`, (await page.getByRole('tab', { name: lang.detailed }).count()) === 1);
 
     // a standard block: the repeat block's text in the Loops drawer (Blockly's own table, in this language)
     await page.locator('.blocklyToolboxCategory', { hasText: 'Loops' }).click();

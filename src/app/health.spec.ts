@@ -1,6 +1,7 @@
 // The health line on a card (phase 17): the last scheduled run, or the last note run, and whether it failed.
 import { describe, expect, it } from 'vitest';
 import { healthOf } from './health';
+import { setLanguage } from './i18n.svelte';
 
 const daily = { id: 'w', schedule: 'daily' };
 const notes = { id: 'n', schedule: 'none' };
@@ -29,5 +30,13 @@ describe('the health of a workspace', () => {
 
   it('a workspace that has not run has no health', () => {
     expect(healthOf(daily, undefined, undefined)).toBeUndefined();
+  });
+
+  it('the health line is in the language of the Nomie user', () => {
+    setLanguage('nl');
+    const days = [{ day: '2 Nov', ok: true }] as never;
+    expect(healthOf(daily, days, undefined)?.text).toBe('Gedraaid op 2 Nov');
+    setLanguage('en');
+    expect(healthOf(daily, days, undefined)?.text).toBe('Ran 2 Nov');
   });
 });

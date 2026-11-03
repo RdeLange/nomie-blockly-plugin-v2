@@ -118,8 +118,8 @@
       <h1 class="title">{t('About')}</h1>
     </div>
     <div class="card">
-      <p>Nomie Blockly builds small automations from blocks. A workspace can read your notes, count trackers, fetch a web page, and write values into your notes.</p>
-      <p class="muted">The Scheduler block runs a workspace every day, for the days since its last run, up to yesterday.</p>
+      <p>{t('Nomie Blockly builds small automations from blocks. A workspace can read your notes, count trackers, fetch a web page, and write values into your notes.')}</p>
+      <p class="muted">{t('The Scheduler block runs a workspace every day, for the days since its last run, up to yesterday.')}</p>
     </div>
   {/if}
 </div>

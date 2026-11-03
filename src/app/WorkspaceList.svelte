@@ -34,13 +34,13 @@
     const lines: string[] = [];
     const result = await runNow(deps, workspace, { output: (text) => lines.push(text) });
     // a successful run is quiet, as in the editor: the list shows its last run. A failure still says why.
-    if (!result.ok) notify(workspace.displayName, lines.join('\n') || 'Stopped.');
+    if (!result.ok) notify(workspace.displayName, lines.join('\n') || t('Stopped.'));
   };
 
-  const info = (workspace: Workspace) => notify(workspace.displayName, workspace.description || 'No description yet.');
+  const info = (workspace: Workspace) => notify(workspace.displayName, workspace.description || t('No description yet.'));
 
   const remove = async (workspace: Workspace) => {
-    if (!(await askConfirm('Delete workspace?', `Delete "${workspace.displayName}"? This cannot be undone.`))) return;
+    if (!(await askConfirm(t('Delete workspace?'), tf('Delete "{name}"? This cannot be undone.', { name: workspace.displayName })))) return;
     appState.workspaces = appState.workspaces.filter((w) => w.id !== workspace.id);
     actionDeps()?.save();
   };
@@ -54,7 +54,7 @@
       const workspaces = parseWorkspaceFile(await file.text());
       // a shared workspace is code from someone else: say what it does before adding it
       const count = `${workspaces.length} workspace${workspaces.length === 1 ? '' : 's'}`;
-      if (!(await askConfirm(`Add ${count}?`, `Only add workspaces you trust.\n\n${await importSummary(workspaces)}`))) return;
+      if (!(await askConfirm(tf('Add {count}?', { count: String(count) }), `${t('Only add workspaces you trust.')}\n\n${await importSummary(workspaces)}`))) return;
       await addWorkspaces(workspaces);
       message = `Added ${workspaces.length} workspace${workspaces.length === 1 ? '' : 's'}.`;
       adding = false;
@@ -106,10 +106,10 @@
 
 {#if adding}
   <div class="card">
-    <p class="muted">Add a workspace</p>
+    <p class="muted">{t('Add a workspace')}</p>
     <div class="row">
-      <button class="button" onclick={addNew}>New workspace</button>
-      <button class="button" onclick={() => fileInput?.click()}>Import a .wsp file</button>
+      <button class="button" onclick={addNew}>{t('New workspace')}</button>
+      <button class="button" onclick={() => fileInput?.click()}>{t('Import a .wsp file')}</button>
       <input bind:this={fileInput} type="file" accept=".wsp,.json,application/json" onchange={addFromFile} hidden />
     </div>
     <p class="muted" style="margin-top: 14px">{t('Templates')}</p>
@@ -147,7 +147,7 @@
           <span class="muted">{t('Last run')}: {dayText(workspace.latestrun)}</span>
         </div>
         {#if pausedByNotes(workspace)}
-          <div class="muted" style="margin-top: 6px">Paused: it ran more than 5 times a minute from notes. It starts again shortly.</div>
+          <div class="muted" style="margin-top: 6px">{t('Paused: it ran more than 5 times a minute from notes. It starts again shortly.')}</div>
         {/if}
       </div>
     </div>

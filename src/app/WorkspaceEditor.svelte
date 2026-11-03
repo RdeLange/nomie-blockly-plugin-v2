@@ -332,7 +332,7 @@
   };
 
   const back = async () => {
-    if (dirty && !(await askConfirm('Leave without saving?', 'Your changes are not saved yet.'))) return;
+    if (dirty && !(await askConfirm(t('Leave without saving?'), t('Your changes are not saved yet.')))) return;
     ui.view = 'list';
     ui.editingId = null;
   };
@@ -353,7 +353,7 @@
   // the values this workspace remembers between runs (Details lists them)
   const remembered = $derived(Object.entries(appState.memory[id] ?? {}));
   const forgetAll = async () => {
-    if (!(await askConfirm('Forget all?', 'The values this workspace remembers are deleted. Its next run starts from nothing.'))) return;
+    if (!(await askConfirm(t('Forget all?'), t('The values this workspace remembers are deleted. Its next run starts from nothing.')))) return;
     delete appState.memory[id];
     void actionDeps()?.save();
   };
@@ -419,7 +419,7 @@
   const tryNote = () =>
     startRun(`Trying with ${tryText}…`, (deps) => tryWithNote(deps, draftWorkspace(), tryText, { output, highlight, stop, onProgress }));
 
-  const runForYesterday = () => runOverDays(yesterdayKey(), yesterdayKey(), 'Running for yesterday…');
+  const runForYesterday = () => runOverDays(yesterdayKey(), yesterdayKey(), t('Running for yesterday…'));
   const runTheseDays = () => runOverDays(daysFrom, daysTo, `Running ${daysFrom} to ${daysTo}…`);
 
   // a day of a run, opened in the Console tab
@@ -488,13 +488,13 @@
 
 <div class="editor" class:wide>
   <header class="ed-toolbar">
-    <button class="nb-icon" onclick={back} aria-label="Back to workspaces"><Icon name="back" size={20} /></button>
+    <button class="nb-icon" onclick={back} aria-label={t('Back to workspaces')}><Icon name="back" size={20} /></button>
     <div class="ed-title">
       <h1>{draft.displayName || 'Workspace'}</h1>
       <span class="ed-status">{status}</span>
     </div>
     {#if wide}
-      <label class="ed-switch" title="A test run writes no notes">
+      <label class="ed-switch" title={t('A test run writes no notes')}>
         <input type="checkbox" role="switch" bind:checked={testRun} disabled={running} />
         {t('Test run')}
       </label>
@@ -515,7 +515,7 @@
       {#if searching}
         <label class="block-search">
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6" /><path d="M20 20l-4.5-4.5" /></svg>
-          <input bind:this={searchField} bind:value={searchQuery} oninput={onSearch} onblur={onSearchBlur} onkeydown={onSearchKey} placeholder="Search all blocks" aria-label="Search all blocks" />
+          <input bind:this={searchField} bind:value={searchQuery} oninput={onSearch} onblur={onSearchBlur} onkeydown={onSearchKey} placeholder={t('Search all blocks')} aria-label={t('Search all blocks')} />
         </label>
       {/if}
       {#if running}
@@ -527,20 +527,20 @@
       {#if !wide}
         <div class="run-bar">
           <button class="run-go" onclick={run} disabled={running}><Icon name="play" size={16} />{t('Run')}</button>
-          <button class="run-plain" onclick={runForYesterday} disabled={running}><Icon name="calendar" size={16} />Yesterday</button>
-          <label class="run-test"><input type="checkbox" role="switch" bind:checked={testRun} disabled={running} />Test</label>
+          <button class="run-plain" onclick={runForYesterday} disabled={running}><Icon name="calendar" size={16} />{t('Yesterday')}</button>
+          <label class="run-test"><input type="checkbox" role="switch" bind:checked={testRun} disabled={running} />{t('Test')}</label>
           <span class="grow"></span>
-          <button class="run-icon" onclick={stopRun} disabled={!running} aria-label="Stop"><Icon name="stop" /></button>
+          <button class="run-icon" onclick={stopRun} disabled={!running} aria-label={t('Stop')}><Icon name="stop" /></button>
           {#if hasWidgetBlock}
             <button class="run-icon" onclick={openPreview} aria-label={t('Preview')}><Icon name="preview" /></button>
           {/if}
-          <button class="run-icon" onclick={() => openPanel('console')} aria-label="Console"><Icon name="console" /></button>
+          <button class="run-icon" onclick={() => openPanel('console')} aria-label={t('Console')}><Icon name="console" /></button>
         </div>
       {/if}
     </div>
 
     {#if panelOpen}
-      <aside class="ed-panel" class:sheet={!wide} aria-label="Workspace panel">
+      <aside class="ed-panel" class:sheet={!wide} aria-label={t('Workspace panel')}>
         <div class="ed-tabs" role="tablist">
           {#each tabs as [key, name] (key)}
             <button role="tab" aria-selected={tab === key} class:active={tab === key} onclick={() => selectTab(key)}>
@@ -548,7 +548,7 @@
             </button>
           {/each}
           {#if !wide}
-            <button class="nb-icon ed-close" onclick={() => (panelOpen = false)} aria-label="Close the panel"><Icon name="close" /></button>
+            <button class="nb-icon ed-close" onclick={() => (panelOpen = false)} aria-label={t('Close the panel')}><Icon name="close" /></button>
           {/if}
         </div>
 
@@ -560,13 +560,13 @@
             </div>
             <label class="ed-field">{t('Emoji')}<input class="ed-emoji-input" bind:value={draft.emoji} oninput={() => (dirty = true)} /></label>
             <label class="ed-field">{t('Description')}<textarea rows="3" bind:value={draft.description} oninput={() => (dirty = true)}></textarea></label>
-            <label class="ed-field">Name used in notes<input bind:value={draft.name} oninput={() => (dirty = true)} /></label>
+            <label class="ed-field">{t('Name used in notes')}<input bind:value={draft.name} oninput={() => (dirty = true)} /></label>
             <p class="ed-hint">A note with “Run Blockly Workspace: {draft.name || 'name'}” runs this workspace.</p>
             <div class="ed-field">
               Colour
               <div class="ed-swatches">
                 {#each COLOURS as colour (colour)}
-                  <button class="ed-swatch" class:selected={draft.color === colour} style="background: {colour}" aria-label="Colour {colour}" aria-pressed={draft.color === colour} onclick={() => { draft.color = colour; dirty = true; }}></button>
+                  <button class="ed-swatch" class:selected={draft.color === colour} style="background: {colour}" aria-label={tf('Colour {colour}', { colour })} aria-pressed={draft.color === colour} onclick={() => { draft.color = colour; dirty = true; }}></button>
                 {/each}
               </div>
             </div>
@@ -582,19 +582,19 @@
               {#if previousVersion}
                 <button class="nb-btn" onclick={restorePrevious}>Restore the version of {previousWhen || 'before the first save'}</button>
               {:else}
-                <span>No earlier version yet. The blocks from before the next save are kept here.</span>
+                <span>{t('No earlier version yet. The blocks from before the next save are kept here.')}</span>
               {/if}
-              <button class="nb-btn" onclick={exportThis}>Export this workspace</button>
+              <button class="nb-btn" onclick={exportThis}>{t('Export this workspace')}</button>
             </div>
             <div class="ed-summary">
-              <strong>Remembered values</strong>
+              <strong>{t('Remembered values')}</strong>
               {#if remembered.length}
                 {#each remembered as [name, value] (name)}
                   <span><code>{name}</code> {JSON.stringify(value)}</span>
                 {/each}
-                <button class="nb-btn" onclick={forgetAll}>Forget all</button>
+                <button class="nb-btn" onclick={forgetAll}>{t('Forget all')}</button>
               {:else}
-                <span>Nothing yet. Remember blocks keep a value for the next run.</span>
+                <span>{t('Nothing yet. Remember blocks keep a value for the next run.')}</span>
               {/if}
             </div>
           </div>
@@ -609,22 +609,22 @@
               Test run (no notes are written)
             </label>
             {#if testRun && start?.untested}
-              <p class="ed-hint">This workspace came from a file or backup. Its first real run turns test mode off.</p>
+              <p class="ed-hint">{t('This workspace came from a file or backup. Its first real run turns test mode off.')}</p>
             {/if}
             <div class="ed-actions">
-              <button class="nb-btn primary" onclick={run} disabled={running}><Icon name="play" size={16} />Run now</button>
+              <button class="nb-btn primary" onclick={run} disabled={running}><Icon name="play" size={16} />{t('Run now')}</button>
               <button class="nb-btn" onclick={stopRun} disabled={!running}><Icon name="stop" size={16} />{t('Stop')}</button>
             </div>
-            <strong class="ed-heading">Try with a note</strong>
+            <strong class="ed-heading">{t('Try with a note')}</strong>
             <div class="ed-days-form">
-              <label class="ed-field grow">Note<input bind:value={tryText} placeholder="#mood(2) #run" /></label>
+              <label class="ed-field grow">{t('Note')}<input bind:value={tryText} placeholder="#mood(2) #run" /></label>
               <button class="nb-btn" onclick={tryNote} disabled={running || !tryText.trim()}><Icon name="play" size={16} />{t('Try')}</button>
             </div>
-            <p class="ed-hint">Runs the workspace as if this note was saved today. It is a test run: no notes are written.</p>
+            <p class="ed-hint">{t('Runs the workspace as if this note was saved today. It is a test run: no notes are written.')}</p>
 
-            <strong class="ed-heading">Before a run</strong>
+            <strong class="ed-heading">{t('Before a run')}</strong>
             {#if problems.length === 0}
-              <p class="ed-ok"><Icon name="check" size={16} />No problems found.</p>
+              <p class="ed-ok"><Icon name="check" size={16} />{t('No problems found.')}</p>
             {:else}
               <ul class="ed-problems">
                 {#each problems as problem, i (i)}
@@ -638,7 +638,7 @@
               </ul>
             {/if}
 
-            <strong class="ed-heading">Run for days</strong>
+            <strong class="ed-heading">{t('Run for days')}</strong>
             <div class="ed-days-form">
               <label class="ed-field">{t('From')}<input type="date" bind:value={daysFrom} max={daysTo} /></label>
               <label class="ed-field">{t('To')}<input type="date" bind:value={daysTo} min={daysFrom} /></label>
@@ -652,7 +652,7 @@
 
             <strong class="ed-heading">{ranDays ? 'This run, per day' : 'Last schedule, per day'}</strong>
             {#if dayRows.length === 0 && !nextWindow}
-              <p class="ed-hint">No days have run yet.</p>
+              <p class="ed-hint">{t('No days have run yet.')}</p>
             {/if}
             <ul class="ed-days">
               {#each dayRows as row (row.day)}
@@ -670,7 +670,7 @@
                 <li class="ed-day next">
                   <span class="ed-day-date">{localDayKey(nextWindow.start)}</span>
                   <span class="ed-day-text">
-                    <span class="ed-day-status">next</span>
+                    <span class="ed-day-status">{t('next')}</span>
                     <span class="ed-day-line">
                       {nextWindow.end < nextWindow.start ? 'runs tomorrow' : `the next schedule runs ${localDayKey(nextWindow.start)} to ${localDayKey(nextWindow.end)}`}
                     </span>
