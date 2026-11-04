@@ -55,6 +55,8 @@ try {
   check('a widget of its own shows its workspace only', (await page.locator('.wd').count()) === 1);
   check('the widget shows the value of its workspace', (await page.locator('.wd .wd-label').first().textContent()) === '7-day average');
   check('the widget draws its trend line', (await page.locator('.wd svg').count()) === 1);
+  // DailyNomie draws the card and its corners; inside its frame the widget must not round its own (see styles.css)
+  check('the widget has no corners of its own inside the dashboard', (await page.locator('.wd').first().evaluate((el) => getComputedStyle(el).borderRadius)) === '0px');
   await page.screenshot({ path: 'screenshots/dashboard-widget.png' });
 
   // a workspace without a value yet: its widget says so, and offers Run

@@ -454,3 +454,7 @@ body {
   min-height: 0;
   background: transparent;
 }
+/* inside DailyNomie's dashboard the frame draws the card and its corners; the widget does not round its own */
+.app.widget .wd {
+  border-radius: 0;
+}
