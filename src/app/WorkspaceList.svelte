@@ -140,16 +140,8 @@
   };
 </script>
 
-<div class="header">
-  <h1 class="title">Blockly</h1>
-  <div class="row">
-    <button class="button plain" onclick={() => (ui.view = 'settings')}>{t('Settings')}</button>
-    {#if !ui.phone}
-      <button class="button plain" onclick={() => (ui.view = 'info')}>{t('About')}</button>
-    {/if}
-  </div>
-</div>
-
+<!-- the tabs and the links share one row: the plugin sits inside DailyNomie, whose header already says Blockly -->
+<div class="tabs-row">
 {#if !ui.phone}
 <div class="segments" role="tablist">
   <button role="tab" aria-selected={tab === 'workspaces'} class:on={tab === 'workspaces'} onclick={() => (tab = 'workspaces')}>
@@ -163,6 +155,13 @@
   </button>
 </div>
 {/if}
+  <div class="row links">
+    <button class="button plain" onclick={() => (ui.view = 'settings')}>{t('Settings')}</button>
+    {#if !ui.phone}
+      <button class="button plain" onclick={() => (ui.view = 'info')}>{t('About')}</button>
+    {/if}
+  </div>
+</div>
 
 {#if notice}
   <div class="notice" role="status">
@@ -307,6 +306,23 @@
     background: var(--ios-card);
     color: var(--ios-label);
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+  }
+
+  .tabs-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  .tabs-row .segments {
+    flex: 1 1 auto;
+    min-width: 0;
+    margin: 0;
+  }
+  .tabs-row .links {
+    flex: 0 0 auto;
+    margin-left: auto;
+    gap: 12px;
   }
 
   .lead {
