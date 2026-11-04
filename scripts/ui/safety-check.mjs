@@ -1,6 +1,7 @@
 // The safety nets (phase 17): a failed run shows on its card and opens the Run tab, a workspace is duplicated and
 // exported (without its history), and an earlier version is restored in the editor, unsaved. Runs against fake-nomie.js.
 import { mkdirSync, readFileSync } from 'node:fs';
+import { addExample } from './add-example.mjs';
 import { createServer } from 'vite';
 import { chromium } from 'playwright';
 
@@ -25,8 +26,8 @@ try {
   await page.goto(url);
 
   // a template, copied: two cards, the copy named "(copy)"
-  await page.getByRole('button', { name: 'Add', exact: true }).click();
-  await page.locator('.row', { hasText: 'Example: Yesterday in one number' }).getByRole('button', { name: 'Add' }).first().click();
+  await addExample(page, 'Example: Yesterday in one number');
+  await page.goto(url);
   await page.locator('.card', { hasText: 'Example: Yesterday in one number' }).getByRole('button', { name: 'Duplicate' }).click();
   await page.waitForFunction(() => document.querySelectorAll('.card').length >= 2 && (document.body.textContent ?? '').includes('(copy)'), null, { timeout: 15000 });
   check('a duplicate is a second card named "(copy)"', (await page.locator('.card', { hasText: 'Example: Yesterday in one number (copy)' }).count()) === 1);

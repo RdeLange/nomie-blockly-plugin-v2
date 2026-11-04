@@ -28,14 +28,14 @@ try {
   const page = await context.newPage();
   page.on('pageerror', (e) => { if (e.message !== 'Failed to fetch') errors.push(e.message); });
   await page.goto(url);
-  await page.getByRole('button', { name: 'Add', exact: true }).waitFor({ timeout: 15000 });
+  await page.getByRole('button', { name: 'Add', exact: true }).first().waitFor({ timeout: 15000 });
 
   // Nomie changes to dark, German, with its dark colours
   await page.evaluate((message) => window.postMessage({ action: 'prefsChanged', data: { user: message } }, '*'), prefs('dark', DARK, 'de'));
   await page.waitForFunction(() => document.querySelector('.app')?.classList.contains('dark'), null, { timeout: 5000 });
   check('the app turns dark when the theme changes in Nomie', await page.locator('.app.dark').count() === 1);
   check('the app takes the colours Nomie sends', (await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--nb-canvas').trim())) === '#000000');
-  check('the screens follow the language Nomie sends', (await page.getByRole('button', { name: 'Hinzufügen', exact: true }).count()) === 1);
+  check('the screens follow the language Nomie sends', (await page.getByRole('button', { name: 'Hinzufügen', exact: true }).count()) >= 1);
   await page.screenshot({ path: 'screenshots/prefs-dark-de.png' });
 
   // and back to light, Italian
@@ -43,7 +43,7 @@ try {
   await page.waitForFunction(() => !document.querySelector('.app')?.classList.contains('dark'), null, { timeout: 5000 });
   check('the app goes back to light', (await page.locator('.app.dark').count()) === 0);
   check('the colours follow the light palette', (await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--nb-canvas').trim())) === '#F2F2F7');
-  check('the screens follow the new language', (await page.getByRole('button', { name: 'Aggiungi', exact: true }).count()) === 1);
+  check('the screens follow the new language', (await page.getByRole('button', { name: 'Aggiungi', exact: true }).count()) >= 1);
   await page.close();
 } finally {
   await browser.close();

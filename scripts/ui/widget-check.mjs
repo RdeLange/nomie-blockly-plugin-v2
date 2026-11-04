@@ -1,6 +1,7 @@
 // The Nomie widget (phase 15): a workspace that set a value shows as a tile with its label, the value and when it was
 // set, with a Run button. Runs against fake-nomie.js, in the widget's own frame size.
 import { mkdirSync, readFileSync } from 'node:fs';
+import { addExample } from './add-example.mjs';
 import { createServer } from 'vite';
 import { chromium } from 'playwright';
 
@@ -23,8 +24,8 @@ try {
   await page.goto(url);
 
   // add the widget template and run it from its card: it sets the value on the widget
-  await page.getByRole('button', { name: 'Add', exact: true }).click();
-  await page.locator('.row', { hasText: 'Example: Dashboard widget with a value' }).getByRole('button', { name: 'Add' }).first().click();
+  await addExample(page, 'Example: Dashboard widget with a value');
+  await page.goto(url);
   await page.locator('.card', { hasText: 'Example: Dashboard widget with a value' }).getByRole('button', { name: 'Run', exact: true }).click();
   // the run saves its value with the stored state: read it there (the app's own state is read in the page too)
   const storedWidget = () => page.evaluate(() => {

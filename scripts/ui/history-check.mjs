@@ -33,9 +33,10 @@ const openEditor = async (viewport) => {
   await page.addInitScript({ content: readFileSync('scripts/ui/fake-nomie.js', 'utf8') });
   await page.route(/nomie-plugin\.js/, (route) => route.fulfill({ body: '', contentType: 'text/javascript' }));
   await page.goto(url);
-  await page.getByRole('button', { name: 'Add', exact: true }).click();
-  await page.locator('.row', { hasText: 'Example: Yesterday in one number' }).getByRole('button', { name: 'Add' }).first().click();
-  await page.locator('.card', { hasText: 'Example: Yesterday in one number' }).getByRole('button', { name: 'Edit' }).first().click();
+  // the Examples tab: add the example, then open it from the notice it leaves
+  await page.getByRole('tab', { name: /^Examples/ }).click();
+  await page.locator('.example', { hasText: 'Example: Yesterday in one number' }).getByRole('button', { name: 'Add', exact: true }).click();
+  await page.locator('.notice').getByRole('button', { name: 'Open', exact: true }).click();
   await page.waitForTimeout(1200);
   return page;
 };

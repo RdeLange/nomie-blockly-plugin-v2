@@ -1,6 +1,7 @@
 // Runs in the browser with a stand-in for Nomie (fake-nomie.js): Run for days in the Run tab, the status of a run on
 // the canvas, Stop inside an endless loop, and the console. Screenshots go to screenshots/.
 import { mkdirSync, readFileSync } from 'node:fs';
+import { addExample } from './add-example.mjs';
 import { createServer } from 'vite';
 import { chromium } from 'playwright';
 
@@ -22,9 +23,7 @@ try {
   // the real SDK script is not needed: the stand-in is already there
   await page.route(/nomie-plugin\.js/, (route) => route.fulfill({ body: '', contentType: 'text/javascript' }));
   await page.goto(url);
-  await page.getByRole('button', { name: 'Add', exact: true }).click();
-  await page.locator('.row', { hasText: 'Example: Yesterday in one number' }).getByRole('button', { name: 'Add' }).first().click();
-  await page.getByRole('button', { name: 'Edit' }).first().click();
+  await addExample(page, 'Example: Yesterday in one number');
   await page.waitForTimeout(1200);
 
   // Run for days: three days, each shown with its result

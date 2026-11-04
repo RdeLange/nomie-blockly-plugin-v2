@@ -153,12 +153,17 @@
   flex-shrink: 0;
 }
 
+/* the tabs share the panel's width, so the four labels fit in 320px in every language */
 .ed-tabs [role='tab'] {
   display: inline-flex;
+  flex: 1 1 0;
+  min-width: 0;
+  justify-content: center;
+  white-space: nowrap;
   align-items: center;
   gap: 6px;
   min-height: 40px;
-  padding: 8px 12px;
+  padding: 8px 6px;
   border: 0;
   border-bottom: 2px solid transparent;
   background: none;
@@ -631,6 +636,13 @@
 .ed-preview {
   width: 300px;
   max-width: 100%;
+}
+
+/* the widget preview sits at the end of the Run tab, below the run and its days */
+.ed-widget-preview {
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid var(--nb-line);
 }
 .ed-problem-text {
   color: var(--nb-danger, #c0392b);

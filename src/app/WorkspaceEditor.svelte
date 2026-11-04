@@ -72,8 +72,8 @@
   // layout: wide (desktop) or not (phone); the panel and its tab
   let wide = $state(typeof window !== 'undefined' && window.matchMedia(WIDE).matches);
   let panelOpen = $state(typeof window !== 'undefined' && window.matchMedia(WIDE).matches);
-  let tab = $state<'details' | 'detailed' | 'run' | 'console' | 'preview'>(ui.startTab ?? 'details');
-  // the canvas has a dashboard widget: the Preview tab and the phone's preview button are there (phase 20)
+  let tab = $state<'details' | 'detailed' | 'run' | 'console'>(ui.startTab === 'preview' ? 'run' : (ui.startTab ?? 'details'));
+  // the canvas has a dashboard widget: the widget preview (in the Run tab) and the phone's preview button are there
   let hasWidgetBlock = $state(false);
   // the widget as the dashboard shows it, from a test run of the blocks (see previewWidget)
   let preview = $state<{ design?: WidgetDesign; error?: string } | undefined>(undefined);
@@ -432,7 +432,7 @@
     stop.stopped = true;
   };
 
-  const openPanel = (which: 'details' | 'detailed' | 'run' | 'console' | 'preview') => {
+  const openPanel = (which: 'details' | 'detailed' | 'run' | 'console') => {
     if (panelOpen && tab === which && !wide) {
       panelOpen = false;
       return;
@@ -460,8 +460,8 @@
     ['run', 'Run'],
     ['console', 'Console'],
   ];
-  // the Preview tab is there only when a widget block is on the canvas, after Console
-  const tabs = $derived(hasWidgetBlock ? [...TABS, ['preview', 'Preview']] : TABS);
+  // four tabs fit the 320px panel in every language. The widget preview is a test run, so it lives in the Run tab.
+  const tabs = TABS;
   // the widget as it will look: a test run of the blocks, so nothing is written and nothing is kept
   const refreshPreview = async () => {
     const deps = actionDeps();
@@ -474,16 +474,13 @@
   };
   const selectTab = (key: string) => {
     tab = key as typeof tab;
-    if (key === 'preview') void refreshPreview();
   };
+  // the phone's preview button opens the Run tab, where the widget preview is (the panel stays open)
   const openPreview = () => {
-    openPanel('preview');
+    tab = 'run';
+    panelOpen = true;
     void refreshPreview();
   };
-  // a workspace that loses its widget block has no preview to show
-  $effect(() => {
-    if (!hasWidgetBlock && tab === 'preview') tab = 'details';
-  });
 </script>
 
 <div class="editor" class:wide>
@@ -678,20 +675,22 @@
                 </li>
               {/if}
             </ul>
-          </div>
-        {:else if tab === 'preview'}
-          <div class="ed-pane" role="tabpanel">
-            <div class="ed-actions">
-              <strong class="ed-heading grow">{t('Preview')}</strong>
-              <button class="nb-btn" onclick={refreshPreview} disabled={running}>{t('Refresh preview')}</button>
-            </div>
-            <p class="ed-hint">{t('As it will look on the dashboard. A preview is a test run: no notes are written.')}</p>
-            {#if preview?.design}
-              <div class="ed-preview">
-                <WidgetDesignView design={preview.design} name={draft.displayName} emoji={draft.emoji} onRun={run} />
+            {#if hasWidgetBlock}
+              <!-- the widget as the dashboard shows it: a test run, so the preview sits under the run, not in a tab -->
+              <div class="ed-widget-preview">
+                <div class="ed-actions">
+                  <strong class="ed-heading grow">{t('Preview')}</strong>
+                  <button class="nb-btn" onclick={refreshPreview} disabled={running}>{preview ? t('Refresh preview') : t('Show preview')}</button>
+                </div>
+                <p class="ed-hint">{t('As it will look on the dashboard. A preview is a test run: no notes are written.')}</p>
+                {#if preview?.design}
+                  <div class="ed-preview">
+                    <WidgetDesignView design={preview.design} name={draft.displayName} emoji={draft.emoji} onRun={run} />
+                  </div>
+                {:else if preview?.error}
+                  <p class="ed-problem-text">{preview.error}</p>
+                {/if}
               </div>
-            {:else if preview?.error}
-              <p class="ed-problem-text">{preview.error}</p>
             {/if}
           </div>
         {:else}

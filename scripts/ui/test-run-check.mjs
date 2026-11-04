@@ -1,6 +1,7 @@
 // A workspace from a backup starts in test mode: its runs write no notes, the Run tab says so, and its first real run
 // turns test mode off. Runs against fake-nomie.js (window.__nomie.created holds the notes it was given).
 import { mkdirSync, readFileSync } from 'node:fs';
+import { addExample } from './add-example.mjs';
 import { createServer } from 'vite';
 import { chromium } from 'playwright';
 
@@ -25,8 +26,7 @@ const openFromBackup = async (viewport) => {
   await page.addInitScript({ content: readFileSync('scripts/ui/fake-nomie.js', 'utf8') });
   await page.route(/nomie-plugin\.js/, (route) => route.fulfill({ body: '', contentType: 'text/javascript' }));
   await page.goto(url);
-  await page.getByRole('button', { name: 'Add', exact: true }).click();
-  await page.locator('.row', { hasText: 'Example: Yesterday in one number' }).getByRole('button', { name: 'Add' }).first().click();
+  await addExample(page, 'Example: Yesterday in one number');
   // adding saves the workspace: wait for the save, then mark the saved workspaces as from a backup, and launch again
   await page.waitForFunction(() => (window.localStorage.getItem('fake-nomie-store') ?? '').includes('Example: Yesterday in one number'), null, { timeout: 15000 });
   await page.evaluate(() => {

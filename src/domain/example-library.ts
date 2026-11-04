@@ -1,7 +1,11 @@
 // The example library: workspaces that show what each part of the plugin does, one area at a time. Each example is a
-// small tutorial: its blocks, in the order they are built, and a detailed description that walks through them. The
-// library is built into examples.json (scripts/build-examples.ts), with the code of each workspace.
+// tutorial for the user: its blocks, in the order they are built here, and a step-by-step text in the tutorials of
+// example-tutorials.ts (the Detailed tab). The library is built into examples.json (see examples-build.ts).
 import { block, get, message, number, schedule, set, show, text, tracker, whenNote, join, type Block } from './example-xml';
+
+// the four steps of the library, from one block to a small program (see the Add screen)
+export type ExampleLevel = 'easy' | 'moderate' | 'complex' | 'expert';
+export const EXAMPLE_LEVELS: ExampleLevel[] = ['easy', 'moderate', 'complex', 'expert'];
 
 export type Example = {
   // the workspace's name: unique, with no spaces (the note "Run Blockly Workspace: name" uses it)
@@ -10,8 +14,7 @@ export type Example = {
   emoji: string;
   // one line on the card in the list
   description: string;
-  // the tutorial, shown in the editor's Detailed tab: what the example builds, step by step, and what to try
-  detailedDescription: string;
+  level: ExampleLevel;
   blocks: Block[];
   variables?: string[];
   // the example needs something a test run cannot give it (a secret, the network, a location or a prompt)
@@ -35,14 +38,40 @@ const list = (...items: Block[]) => {
 const dashboard = (name: string, emoji: string, content: Block[]) =>
   block('s4e_dashboard', { fields: { NAME: name, EMOJI: emoji }, statements: { CONTENT: content } });
 
+const recall = (name: string, fallback: Block) => block('s4e_recall', { fields: { NAME: name }, values: { DEFAULT: fallback } });
+const remember = (name: string, value: Block) => block('s4e_remember', { fields: { NAME: name }, values: { VALUE: value } });
+// a procedure call, with the names of its arguments as the definition has them
+const callReturn = (name: string, argNames: string[], args: Block[]) => {
+  const values: Record<string, Block> = {};
+  args.forEach((arg, i) => (values[`ARG${i}`] = arg));
+  return block('procedures_callreturn', {
+    mutation: `<mutation name="${name}">${argNames.map((a) => `<arg name="${a}"></arg>`).join('')}</mutation>`,
+    values,
+  });
+};
+const callNoReturn = (name: string, argNames: string[], args: Block[]) => {
+  const values: Record<string, Block> = {};
+  args.forEach((arg, i) => (values[`ARG${i}`] = arg));
+  return block('procedures_callnoreturn', {
+    mutation: `<mutation name="${name}">${argNames.map((a) => `<arg name="${a}"></arg>`).join('')}</mutation>`,
+    values,
+  });
+};
+// one ledger entry: an object with an item and a cost
+const entry = (item: string, cost: number) =>
+  block('object_create', {
+    mutation: '<mutation num_fields="2"><field name="item"></field><field name="cost"></field></mutation>',
+    fields: { field1: 'item', field2: 'cost' },
+    values: { field_input1: text(item), field_input2: number(cost) },
+  });
+
 export const EXAMPLES: Example[] = [
   {
     name: 'example-hello',
+    level: 'easy',
     displayName: 'Example: Hello, console',
     emoji: '👋',
     description: 'The first workspace: lines in the console, and a notice from Nomie.',
-    detailedDescription:
-      'In this first example you build the smallest useful workspace: one line of text in the console. Start in the Nomie section of the drawer and drop the Scheduler block on the canvas. Its script is the part that runs, so put the next block inside it. Next, add the console block and plug a text block into its Value. Type a greeting in the text. Then add a second console line, and a message block that shows the same text as a notice. Press Run: the console shows each line in order, and the message appears as a notice from Nomie. Try changing the text and run again.',
     blocks: [
       schedule('none', [
         show(text('Hello from the console')),
@@ -53,11 +82,10 @@ export const EXAMPLES: Example[] = [
   },
   {
     name: 'example-yesterday-mood',
+    level: 'easy',
     displayName: 'Example: Yesterday in one number',
     emoji: '🗓️',
     description: 'Reads one tracker for one day and shows the average.',
-    detailedDescription:
-      'This example reads your notes. It asks for the average mood of yesterday and shows the answer with a sentence around it. Begin with the Scheduler block. Inside it, add a show message block. Into the message, join two parts with a join block: a text that starts the sentence, and a day value block. The day value block takes three inputs: the tracker (#mood, from the tracker block), the day (yesterday, from the day picker) and the statistic (average, from the statistics picker). Run it in test mode first. The sentence shows the value your notes hold; without notes it shows a zero.',
     blocks: [
       schedule('none', [
         message(join(text('Your average mood yesterday was '), dayValue('#mood', 'yesterday', 'avg'))),
@@ -66,11 +94,10 @@ export const EXAMPLES: Example[] = [
   },
   {
     name: 'example-mood-period',
+    level: 'easy',
     displayName: 'Example: Mood over a period',
     emoji: '📈',
     description: 'A period value, rounded and shown as a sentence.',
-    detailedDescription:
-      'Here you read a longer period. Add the period value block, which works like the day value block but covers a range: pick Last 30 days in the period picker, and the average statistic. Wrap the period value in a round block, so the answer has no decimals. Show it with a message and a text in front. This is the pattern for weekly and monthly summaries: change the period and the statistic, and the same blocks answer a different question.',
     blocks: [
       schedule('none', [
         message(
@@ -84,11 +111,10 @@ export const EXAMPLES: Example[] = [
   },
   {
     name: 'example-log-value',
+    level: 'easy',
     displayName: 'Example: Log a value each day',
     emoji: '✍️',
     description: 'Writes a note with a tracker value, for the day of the run.',
-    detailedDescription:
-      'This example writes to your notes, so it is best tried in test mode first: in test mode it only says what it would write. Put the log value block inside a daily Scheduler block, so it writes one note for each day of a scheduled run. Give it the tracker #goodday, a value of 1, and the day picker set to today. Try the test run: the console shows the line "Would log" with the day. Once you are happy, turn test mode off and run it for real.',
     blocks: [
       schedule('daily', [
         block('s4e_logvalue', {
@@ -99,11 +125,10 @@ export const EXAMPLES: Example[] = [
   },
   {
     name: 'example-wait',
+    level: 'easy',
     displayName: 'Example: Wait between lines',
     emoji: '⏳',
     description: 'Waits a second between two console lines.',
-    detailedDescription:
-      'A workspace can pause. Build two console lines with a wait block between them: first the console line, then the wait block set to 1 second, then the second line. The run stops for the wait, and the console shows the first line before the second. Use waits sparingly: every second counts towards the time a run may take.',
     blocks: [
       schedule('none', [
         show(text('First line')),
@@ -114,11 +139,10 @@ export const EXAMPLES: Example[] = [
   },
   {
     name: 'example-pickers',
+    level: 'easy',
     displayName: 'Example: The pickers',
     emoji: '🎛️',
     description: 'Tracker, day, period, statistic and date pickers in one place.',
-    detailedDescription:
-      'The pickers are the small blocks that choose a value: a tracker, a day, a period, a statistic and a date. In this example each picker is put into a show message, so you can see what it chooses. Build the message from join blocks, one for each picker. Change the picked value in the dropdown and run again to see the text change. Every block that reads or writes notes takes its tracker, day or period from these pickers.',
     blocks: [
       schedule('none', [
         message(
@@ -140,11 +164,10 @@ export const EXAMPLES: Example[] = [
   },
   {
     name: 'example-history',
+    level: 'moderate',
     displayName: 'Example: Last value and days since',
     emoji: '🕰️',
     description: 'The last logged value, and how many days ago it was logged.',
-    detailedDescription:
-      'The history blocks look back through your notes. The last value block finds the latest note with a tracker within a number of days, and the days since block counts the days from that note to today. Build them in a daily Scheduler block: a message with the last mood (looking back 14 days), and a second line with the days since #mood was logged. Both answers come from the same notes, so they agree with each other.',
     blocks: [
       schedule('daily', [
         message(
@@ -160,11 +183,10 @@ export const EXAMPLES: Example[] = [
   },
   {
     name: 'example-streak',
+    level: 'moderate',
     displayName: 'Example: A streak',
     emoji: '🔥',
     description: 'Counts the days in a row with a tracker, and congratulates you.',
-    detailedDescription:
-      'A streak counts the days in a row that a tracker was logged, up to the day of the run. Build an if block: when the streak is at least 3, show a congratulation message, otherwise show a short encouragement. The condition is a compare block, with the streak block on the left and the number 3 on the right. Try it with different trackers, and read the tooltip on the streak block: it counts at most 60 days.',
     blocks: [
       schedule('daily', [
         block('controls_if', {
@@ -180,11 +202,10 @@ export const EXAMPLES: Example[] = [
   },
   {
     name: 'example-write-note',
+    level: 'easy',
     displayName: 'Example: Write a note',
     emoji: '📝',
     description: 'Writes a free-text note on a day of your choice.',
-    detailedDescription:
-      'The log note block writes a free-text note, which can hold trackers, people and context as a Nomie note does. Build it inside a Scheduler block with the text "Reviewed the week #review" and the day picker on yesterday. Use test mode first: it shows the note it would write. This is the block to use for a weekly summary or a reminder that appears in your timeline.',
     blocks: [
       schedule('none', [
         block('s4e_lognote', { values: { Text: text('Reviewed the week #review'), Date: day('yesterday') } }),
@@ -193,31 +214,28 @@ export const EXAMPLES: Example[] = [
   },
   {
     name: 'example-location',
+    level: 'moderate',
     displayName: 'Example: Where am I',
     emoji: '📍',
     description: 'Shows the location Nomie reports, if you allow it.',
-    detailedDescription:
-      'The my location block asks Nomie for your position, and it gives a latitude and a longitude, or nothing when the position is not known. Build it into a message, with a text in front. Nomie asks for permission the first time. Run it in test mode first, and see the position appear. If nothing appears, the position was not available, which is why every use of my location should have a fallback.',
     live: 'location',
     blocks: [schedule('none', [message(join(text('Your location: '), block('s4e_mylocation')))])],
   },
   {
     name: 'example-open-link',
+    level: 'easy',
     displayName: 'Example: Open a link',
     emoji: '🔗',
     description: 'Opens a web page in Nomie when you run it by hand.',
-    detailedDescription:
-      'The open link block opens a web page in a window inside Nomie. Build it with a text block holding the address. In a manual run the page opens; in a scheduled run the block only writes "Would open" to the output, so a schedule never opens a window. Use this for a page you check every day, such as a dashboard of your own.',
     live: 'network',
     blocks: [schedule('none', [block('s4e_openlink', { values: { Value: text('https://example.com') } })])],
   },
   {
     name: 'example-fetch-page',
+    level: 'moderate',
     displayName: 'Example: Fetch a web page',
     emoji: '🌐',
     description: 'Fetches a web page and shows the start of its answer.',
-    detailedDescription:
-      'The fetch block calls a web address and gives the answer as text. Build it with a text block holding the address, and show the answer in the console. Most services answer with JSON; the object blocks in the Objects example show how to read one. Only addresses you trust should be called, because a workspace that is shared with you runs them too.',
     live: 'network',
     blocks: [
       schedule('none', [show(block('s4e_httprequest', { values: { Value: text('https://example.com') } }))]),
@@ -225,11 +243,10 @@ export const EXAMPLES: Example[] = [
   },
   {
     name: 'example-widget-value',
+    level: 'easy',
     displayName: 'Example: Dashboard widget with a value',
     emoji: '🧩',
     description: 'A widget on the dashboard with a value, a trend and a footer.',
-    detailedDescription:
-      'A dashboard widget is built from the widget blocks, in order. Start with the dashboard block: it has a name and an emoji for the header. Inside it, show a value with the period value block, a trend of #mood over 14 days, and a footer line at the bottom. Run it once so the widget is kept, then look at the dashboard in Nomie. The Preview tab in the editor shows the widget as the dashboard will show it.',
     blocks: [
       schedule('daily', [
         dashboard('Mood', '😊', [
@@ -245,11 +262,10 @@ export const EXAMPLES: Example[] = [
   },
   {
     name: 'example-widget-charts',
+    level: 'moderate',
     displayName: 'Example: Widget charts',
     emoji: '📊',
     description: 'A line chart and a bar chart on one widget.',
-    detailedDescription:
-      'A chart shows a tracker day by day. The line chart joins the days with a line, and a day without a note is a gap. The bar chart gives one bar for each day. Build both inside one dashboard block: a line chart of #mood over 30 days in blue, and a bar chart of the last 7 days in green. Each chart has its own label. Compare them in the Preview tab: they draw the same notes, in two ways.',
     blocks: [
       schedule('daily', [
         dashboard('Mood charts', '📈', [
@@ -267,11 +283,10 @@ export const EXAMPLES: Example[] = [
   },
   {
     name: 'example-widget-html',
+    level: 'moderate',
     displayName: 'Example: Widget with HTML',
     emoji: '🎨',
     description: 'A widget with your own HTML, filled with values from the blocks.',
-    detailedDescription:
-      'The HTML block shows your own HTML on a widget. Write the HTML in the text box, and put a placeholder such as {{mood}} where a value goes. Then add a parameter block for each placeholder: its name is the placeholder name, and its value is any block, here the average mood. The HTML is cleaned before it is shown: scripts and links are removed, and images must come from https. Change the HTML, run, and look at the Preview tab.',
     blocks: [
       schedule('daily', [
         dashboard('Mood HTML', '🎨', [
@@ -292,11 +307,10 @@ export const EXAMPLES: Example[] = [
   },
   {
     name: 'example-remember',
+    level: 'moderate',
     displayName: 'Example: Remember between runs',
     emoji: '🧠',
     description: 'Keeps a count from one run to the next.',
-    detailedDescription:
-      'A workspace forgets everything between runs, unless it remembers a value. In this example you count how many times it has run. Remember takes a name and a value. Recall takes a name and a default for the first run. Build it in order: recall the count (default 0), add 1 with an arithmetic block, remember the result under the same name, and show it. Run it three times: the count goes 1, 2, 3. On the third run an if block forgets the value with the forget block, so the next run starts again from 0.',
     blocks: [
       schedule('daily', [
         block('s4e_remember', {
@@ -320,21 +334,19 @@ export const EXAMPLES: Example[] = [
   },
   {
     name: 'example-secret',
+    level: 'easy',
     displayName: 'Example: Keep a key in Settings',
     emoji: '🔑',
     description: 'Uses a secret from Settings, so the key is not in the blocks.',
-    detailedDescription:
-      'A workspace often needs a key. Instead of writing the key into a text block, where every shared file would carry it, use the secret block with the name of the key. Add the key in Settings under the same name. The run shows the secret as four dots, so it never appears in the output. If the secret is missing, the run stops and tells you which one to add. This example needs a key named EXAMPLE_KEY; a test run only checks that the block is set up.',
     live: 'secret',
     blocks: [schedule('none', [show(join(text('The key is '), block('s4e_secret', { fields: { NAME: 'EXAMPLE_KEY' } })))])],
   },
   {
     name: 'example-when-note',
+    level: 'moderate',
     displayName: 'Example: When a note is saved',
     emoji: '⚡',
     description: 'Runs when a note with a tracker is saved, and reads that note.',
-    detailedDescription:
-      'Instead of a schedule, a When-note block runs the workspace when a note with its tracker is saved. Build it with the tracker #run. Inside it, read the note: the note value block gives the value of #mood in the note, the note text block gives the text, and the note day block gives the day. Show them in one message. Log a note with #run and #mood(4) to see them. Outside a note run these blocks give nothing, which the pre-run check tells you.',
     blocks: [
       whenNote('#run', [
         message(
@@ -352,11 +364,10 @@ export const EXAMPLES: Example[] = [
   },
   {
     name: 'example-loop-days',
+    level: 'moderate',
     displayName: 'Example: Count with a loop',
     emoji: '🔁',
     description: 'Repeats a block a number of times, and counts with a for loop.',
-    detailedDescription:
-      'A loop repeats its blocks. The repeat block runs its inside a set number of times: here three. The for block counts with a variable: it starts at 1, stops at 5, and steps by 1, and the variable i holds the current number. Build a for loop with a message that joins "Step " and i. The console shows five lines. Loops are how a workspace covers many days or many notes at once.',
     variables: ['i'],
     blocks: [
       schedule('none', [
@@ -374,11 +385,10 @@ export const EXAMPLES: Example[] = [
   },
   {
     name: 'example-while-break',
+    level: 'moderate',
     displayName: 'Example: While and break',
     emoji: '🛑',
     description: 'Repeats while a condition holds, and stops early with break.',
-    detailedDescription:
-      'A while loop repeats as long as its condition is true, and a break stops the loop early. Build a counter: set the variable n to 0. Then a while loop with the condition n < 10, and inside it an if block: when n is 4, break out of the loop; otherwise, show n and add 1 to n. The console shows the numbers 0 to 3, then the loop stops. Be careful to change the variable inside the loop, or the loop never ends; the run also stops after a very large number of steps.',
     variables: ['n'],
     blocks: [
       schedule('none', [
@@ -402,11 +412,10 @@ export const EXAMPLES: Example[] = [
   },
   {
     name: 'example-list-loop',
+    level: 'moderate',
     displayName: 'Example: Go through a list',
     emoji: '📋',
     description: 'Goes through each item of a list in turn.',
-    detailedDescription:
-      'A for-each block takes each item of a list in turn. Build a list of three days with a create list block, then a for-each block over the list, with the variable item. Inside, show the item. The console shows the three items in order. Lists are the way to hold several values, such as the moods of the last week, before the workspace works on them.',
     variables: ['item'],
     blocks: [
       schedule('none', [
@@ -420,11 +429,10 @@ export const EXAMPLES: Example[] = [
   },
   {
     name: 'example-decide',
+    level: 'moderate',
     displayName: 'Example: Decide with logic',
     emoji: '⚖️',
     description: 'If, and, or, not, true and false, in one decision.',
-    detailedDescription:
-      'Logic blocks give a true or false answer, and an if block acts on it. Build a condition from two compare blocks joined with an and block, and negate the result with the not block. The if block shows a message when it is true, and an else branch shows another when it is not. Change the numbers in the compare blocks and run again to see both branches. The ternary block picks one of two values in a single line, as the last line shows.',
     blocks: [
       schedule('none', [
         block('controls_if', {
@@ -458,11 +466,10 @@ export const EXAMPLES: Example[] = [
   },
   {
     name: 'example-numbers',
+    level: 'easy',
     displayName: 'Example: Numbers',
     emoji: '🔢',
     description: 'Arithmetic, powers, trigonometry, constants and number checks.',
-    detailedDescription:
-      'The math blocks work on numbers. This example builds a small calculator: an arithmetic block adds and multiplies, a single-number block takes a square root, a trig block gives a sine, and the constant pi comes from its block. A number property block checks whether a number is even, and a modulo block gives the remainder. Show each result on its own line, and read the labels in the console to match each line to its block.',
     blocks: [
       schedule('none', [
         show(arithmetic(number(6), 'MULTIPLY', arithmetic(number(2), 'ADD', number(3)))),
@@ -477,11 +484,10 @@ export const EXAMPLES: Example[] = [
   },
   {
     name: 'example-random-average',
+    level: 'moderate',
     displayName: 'Example: Random, rounding and averages',
     emoji: '🎲',
     description: 'Random numbers, rounding, an average of a list, and a change.',
-    detailedDescription:
-      'This example covers the blocks that round, pick at random and summarise a list. A random integer block picks a whole number between two limits, and a random fraction block picks a number between 0 and 1. A round block with the ROUNDUP option rounds up. An average block works on a list, and a constrain block keeps a value between a low and a high limit. Run it several times: the random values change, the rest stays the same.',
     blocks: [
       schedule('none', [
         show(block('math_random_int', { values: { FROM: number(1), TO: number(6) } })),
@@ -494,11 +500,10 @@ export const EXAMPLES: Example[] = [
   },
   {
     name: 'example-text-tools',
+    level: 'easy',
     displayName: 'Example: Text tools',
     emoji: '🔤',
     description: 'Length, case, trimming, search and cutting text.',
-    detailedDescription:
-      'Text blocks change and inspect words. This example shows the length of a text, changes its case, trims spaces at both ends, finds the position of a word, takes one letter, and cuts out a part. Each result goes to the console on its own line. Build them one after another, and compare each block with the line it produces.',
     blocks: [
       schedule('none', [
         show(block('text_length', { values: { VALUE: text('Nomie') } })),
@@ -523,11 +528,10 @@ export const EXAMPLES: Example[] = [
   },
   {
     name: 'example-lists',
+    level: 'moderate',
     displayName: 'Example: Lists',
     emoji: '📃',
     description: 'Create, read, change, search, split and sort lists.',
-    detailedDescription:
-      'A list holds several values in order. This example builds one list, then uses the list blocks on it: the length, a check for an empty list, the position of an item, the item at a position, and a change of an item. A split block cuts a text into a list, and a sort block orders the numbers. Each step shows its result in the console, so you can follow what the list looks like at each point.',
     blocks: [
       schedule('none', [
         show(block('lists_length', { values: { VALUE: list(text('a'), text('b'), text('c')) } })),
@@ -561,11 +565,10 @@ export const EXAMPLES: Example[] = [
   },
   {
     name: 'example-functions',
+    level: 'complex',
     displayName: 'Example: Functions with values',
     emoji: '🧮',
     description: 'Defines a function with a parameter and a result, and calls it.',
-    detailedDescription:
-      'A function is a set of blocks with a name that you can call again. This one takes a number and returns its double. Build the definition first: a function block with the name double, a parameter named n, and a return block that gives n times 2. Inside it, an if-return block comes first: when n is below 0 it returns 0 straight away, so the rest is skipped. Then call it with the number 21 in a show block. The console shows 42. Define a function once and call it wherever you need it.',
     blocks: [
       block('procedures_defreturn', {
         fields: { NAME: 'double' },
@@ -603,11 +606,10 @@ export const EXAMPLES: Example[] = [
   },
   {
     name: 'example-objects',
+    level: 'complex',
     displayName: 'Example: Objects and JSON',
     emoji: '🧾',
     description: 'Build an object, read and change its fields, and read JSON.',
-    detailedDescription:
-      'An object holds named fields, like a small record. Build one with the create object block: two fields, temp and mood. Read a field with the get block and change one with the set block. The JSON blocks go the other way: the from-JSON block reads a text of JSON into an object, and the value-from-key block takes one value out of it. Show each result in the console. Web services answer with JSON, so this is the pattern to read their answers.',
     blocks: [
       schedule('none', [
         show(
@@ -637,11 +639,10 @@ export const EXAMPLES: Example[] = [
   },
   {
     name: 'example-try-catch',
+    level: 'complex',
     displayName: 'Example: Try and catch',
     emoji: '🛟',
     description: 'Catches a problem, shows a friendly message, and always finishes.',
-    detailedDescription:
-      'Some steps can fail, for example when a text is not valid JSON. A try block runs its blocks; if one fails, the catch block runs and gets the error. The finally block runs in both cases. Build a try block with a from-JSON block that reads a broken text. In the catch block, show "Could not read the data" with the error. The run goes on after the catch, so a single problem does not stop the whole workspace.',
     blocks: [
       schedule('none', [
         block('bi_try_catch', {
@@ -658,11 +659,10 @@ export const EXAMPLES: Example[] = [
   },
   {
     name: 'example-ask',
+    level: 'moderate',
     displayName: 'Example: Ask a question',
     emoji: '❓',
     description: 'Asks you for a word when you run it by hand, and uses the answer.',
-    detailedDescription:
-      'A text prompt block asks you a question when you run the workspace by hand, and gives the answer as text. Build it into a message: "Your answer was " followed by the prompt block, with the question "What is your mood word?". In a scheduled run the question is not asked. Use a prompt for a choice you make each time, and a tracker for everything you want to keep.',
     live: 'prompt',
     blocks: [
       schedule('none', [
@@ -677,11 +677,10 @@ export const EXAMPLES: Example[] = [
   },
   {
     name: 'example-keyword-statistics',
+    level: 'complex',
     displayName: 'Example: Keyword over a period',
     emoji: '🔎',
     description: 'Counts the notes that mention a word over the last 30 days, and sums their values.',
-    detailedDescription:
-      'Not every value is a tracker. A period value block can also take a word, and then it looks for that word in your notes over the period. In this example you search for the word exercise over the last 30 days, and ask for the sum. Build the period value block with a text block in its Trackable input, a period picker set to Last 30 days, and a statistics picker set to sum. Put the result in a message with a sentence in front. Change the word to anything you write about in your notes, and run again: the same blocks answer a different question.',
     blocks: [
       schedule('none', [
         message(
@@ -698,11 +697,10 @@ export const EXAMPLES: Example[] = [
   },
   {
     name: 'example-web-service',
+    level: 'complex',
     displayName: 'Example: Read a web service',
     emoji: '🌡️',
     description: 'Calls a weather service with your key, and reads the temperature from its answer.',
-    detailedDescription:
-      'This example joins several parts in one flow. First the key: it is a secret, added in Settings under the name OPENWEATHER_KEY, so it is not written in the blocks. Next the request: a fetch block with a join of the address, the secret and the options. The answer is text in JSON, so it is read in two steps: the value from the key main gives an object, and the value from the key temp in that object is the temperature. The answer is kept in two variables, WeatherData and Temperature, and shown in a message. Without the secret, the run stops and names the secret to add.',
     variables: ['WeatherData', 'Temperature'],
     live: 'secret',
     blocks: [
@@ -734,6 +732,233 @@ export const EXAMPLES: Example[] = [
           })
         ),
         message(join(text('It is '), get('Temperature'), text(' degrees in Amsterdam.'))),
+      ]),
+    ],
+  },
+  // The expert examples are small programs: functions that call each other, lists of records, loops and state kept
+  // between runs. None needs a secret, so each one runs in the tests, with an empty Nomie.
+  {
+    name: 'example-expert-mood-analyst',
+    level: 'expert',
+    displayName: 'Example: Mood analyst',
+    emoji: '🧪',
+    description: 'Works out the mean, the best and worst day of a list of moods, and a verdict for each day.',
+    variables: ['moods', 'mean', 'best', 'worst', 'lowDays', 'day'],
+    blocks: [
+      block('procedures_defreturn', {
+        fields: { NAME: 'verdict' },
+        mutation: '<mutation><arg name="score"></arg></mutation>',
+        statements: {
+          STACK: [
+            block('procedures_ifreturn', {
+              mutation: '<mutation value="1"></mutation>',
+              values: { CONDITION: compare(get('score'), 'GTE', number(7)), VALUE: text('good') },
+            }),
+            block('procedures_ifreturn', {
+              mutation: '<mutation value="1"></mutation>',
+              values: { CONDITION: compare(get('score'), 'GTE', number(5)), VALUE: text('okay') },
+            }),
+          ],
+        },
+        values: { RETURN: text('low') },
+        at: { x: 20, y: 20 },
+      }),
+      block('procedures_defreturn', {
+        fields: { NAME: 'meanOf' },
+        mutation: '<mutation><arg name="values"></arg></mutation>',
+        values: { RETURN: block('math_on_list', { fields: { OP: 'AVERAGE' }, values: { LIST: get('values') } }) },
+        at: { x: 20, y: 200 },
+      }),
+      schedule('none', [
+        set('moods', block('lists_split', { fields: { MODE: 'SPLIT' }, values: { INPUT: text('6,7,4,8,5,9,7'), DELIM: text(',') } })),
+        set('mean', callReturn('meanOf', ['values'], [get('moods')])),
+        set('best', block('math_on_list', { fields: { OP: 'MAX' }, values: { LIST: get('moods') } })),
+        set('worst', block('math_on_list', { fields: { OP: 'MIN' }, values: { LIST: get('moods') } })),
+        set('lowDays', number(0)),
+        block('controls_forEach', {
+          variables: { VAR: 'day' },
+          values: { LIST: get('moods') },
+          statements: {
+            DO: [
+              block('controls_if', {
+                values: { IF0: compare(callReturn('verdict', ['score'], [get('day')]), 'EQ', text('low')) },
+                statements: { DO0: [block('math_change', { variables: { VAR: 'lowDays' }, values: { DELTA: number(1) } })] },
+              }),
+            ],
+          },
+        }),
+        message(
+          join(
+            text('Mean '),
+            get('mean'),
+            text(', best '),
+            get('best'),
+            text(', worst '),
+            get('worst'),
+            text(', low days '),
+            get('lowDays')
+          )
+        ),
+        show(join(text('Verdict for the mean: '), callReturn('verdict', ['score'], [get('mean')]))),
+      ], { x: 20, y: 380 }),
+    ],
+  },
+  {
+    name: 'example-expert-habit-engine',
+    level: 'expert',
+    displayName: 'Example: Habit engine',
+    emoji: '🔥',
+    description: 'Counts a streak across runs, celebrates a milestone, and shows the streak on a widget.',
+    blocks: [
+      schedule('daily', [
+        block('controls_if', {
+          mutation: '<mutation else="1"></mutation>',
+          values: { IF0: compare(dayValue('#habit', 'yesterday', 'sum'), 'GT', number(0)) },
+          statements: {
+            DO0: [remember('streak', arithmetic(recall('streak', number(0)), 'ADD', number(1)))],
+            ELSE: [remember('streak', number(0))],
+          },
+        }),
+        block('controls_if', {
+          values: { IF0: compare(recall('streak', number(0)), 'EQ', number(7)) },
+          statements: { DO0: [message(text('A week in a row!'))] },
+        }),
+        block('controls_if', {
+          values: { IF0: compare(recall('streak', number(0)), 'GT', recall('best', number(0))) },
+          statements: {
+            DO0: [
+              remember('best', recall('streak', number(0))),
+              message(join(text('New record: '), recall('streak', number(0)), text(' days in a row'))),
+            ],
+          },
+        }),
+        dashboard('Habit', '🔥', [
+          block('s4e_wvalue', { values: { Value: recall('best', number(0)) }, fields: { LABEL: 'Best streak' } }),
+          block('s4e_wvalue', { values: { Value: recall('streak', number(0)) }, fields: { LABEL: 'Days in a row' } }),
+          block('s4e_wtrend', { values: { Tracker: tracker('#habit') }, fields: { LABEL: 'Last 14 days' } }),
+          block('s4e_wfooter', { fields: { TEXT: 'Counted every morning' } }),
+        ]),
+      ]),
+    ],
+  },
+  {
+    name: 'example-expert-budget-ledger',
+    level: 'expert',
+    displayName: 'Example: Budget ledger',
+    emoji: '💶',
+    description: 'A ledger of entries as objects, added up with a function, with a try and catch for bad data.',
+    variables: ['ledger', 'entry', 'spent', 'budget', 'error'],
+    blocks: [
+      block('procedures_defreturn', {
+        fields: { NAME: 'costOf' },
+        mutation: '<mutation><arg name="entry"></arg></mutation>',
+        values: { RETURN: block('object_get', { fields: { NAME: 'cost' }, values: { OBJECT: get('entry') } }) },
+        at: { x: 20, y: 20 },
+      }),
+      schedule('daily', [
+        set('budget', number(20)),
+        set('spent', number(0)),
+        set('ledger', list(entry('coffee', 3), entry('lunch', 9), entry('books', 12))),
+        block('controls_forEach', {
+          variables: { VAR: 'entry' },
+          values: { LIST: get('ledger') },
+          statements: {
+            DO: [
+              block('math_change', {
+                variables: { VAR: 'spent' },
+                values: { DELTA: callReturn('costOf', ['entry'], [get('entry')]) },
+              }),
+              show(
+                join(
+                  block('object_get', { fields: { NAME: 'item' }, values: { OBJECT: get('entry') } }),
+                  text(': '),
+                  callReturn('costOf', ['entry'], [get('entry')])
+                )
+              ),
+            ],
+          },
+        }),
+        block('controls_if', {
+          values: { IF0: compare(get('spent'), 'GT', get('budget')) },
+          statements: {
+            DO0: [message(join(text('Over budget by '), arithmetic(get('spent'), 'MINUS', get('budget'))))],
+          },
+        }),
+        block('bi_try_catch', {
+          statements: {
+            try: [show(block('object_from_json', { values: { JSON: text('{not json') } }))],
+            catch: [message(join(text('Could not read the data: '), get('error')))],
+            finally: [show(text('Done either way'))],
+          },
+          fields: { parameter: 'error' },
+        }),
+        dashboard('Budget', '💶', [
+          block('s4e_wvalue', { values: { Value: get('spent') }, fields: { LABEL: 'Spent this week' } }),
+          block('s4e_whtml', {
+            fields: { HTML: '<p>Spent <b>{{spent}}</b> of {{budget}}</p>' },
+            statements: {
+              PARAMS: [
+                block('s4e_wparam', { fields: { NAME: 'spent' }, values: { VALUE: get('spent') } }),
+                block('s4e_wparam', { fields: { NAME: 'budget' }, values: { VALUE: get('budget') } }),
+              ],
+            },
+          }),
+        ]),
+      ]),
+    ],
+  },
+  {
+    name: 'example-expert-command-interpreter',
+    level: 'expert',
+    displayName: 'Example: Command interpreter',
+    emoji: '🕹️',
+    description: 'Reads a list of commands, runs each one through a function, and keeps the counter between runs.',
+    variables: ['commands', 'command', 'counter'],
+    blocks: [
+      block('procedures_defnoreturn', {
+        fields: { NAME: 'runCommand' },
+        mutation: '<mutation><arg name="command"></arg></mutation>',
+        statements: {
+          STACK: [
+            block('controls_if', {
+              mutation: '<mutation elseif="3" else="1"></mutation>',
+              values: {
+                IF0: compare(get('command'), 'EQ', text('up')),
+                IF1: compare(get('command'), 'EQ', text('down')),
+                IF2: compare(get('command'), 'EQ', text('reset')),
+                IF3: compare(get('command'), 'EQ', text('show')),
+              },
+              statements: {
+                DO0: [block('math_change', { variables: { VAR: 'counter' }, values: { DELTA: number(1) } })],
+                DO1: [block('math_change', { variables: { VAR: 'counter' }, values: { DELTA: number(-1) } })],
+                DO2: [set('counter', number(0))],
+                DO3: [show(join(text('Counter is '), get('counter')))],
+                ELSE: [show(join(text('Unknown command: '), get('command')))],
+              },
+            }),
+          ],
+        },
+        at: { x: 20, y: 20 },
+      }),
+      schedule('daily', [
+        set('counter', recall('counter', number(0))),
+        set(
+          'commands',
+          block('lists_split', {
+            fields: { MODE: 'SPLIT' },
+            values: { INPUT: text('up,up,down,show,reset,up,bogus,show'), DELIM: text(',') },
+          })
+        ),
+        block('controls_forEach', {
+          variables: { VAR: 'command' },
+          values: { LIST: get('commands') },
+          statements: { DO: [callNoReturn('runCommand', ['command'], [get('command')])] },
+        }),
+        remember('counter', get('counter')),
+        dashboard('Counter', '🕹️', [
+          block('s4e_wvalue', { values: { Value: get('counter') }, fields: { LABEL: 'Counter' } }),
+          block('s4e_wfooter', { fields: { TEXT: 'Commands run each morning' } }),
+        ]),
       ]),
     ],
   },

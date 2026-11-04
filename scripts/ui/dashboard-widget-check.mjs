@@ -2,6 +2,7 @@
 // its `widgets` storage key, and a widget frame opened with &widgetindex=<id> shows only that workspace. Runs against
 // fake-nomie.js, which keeps its storage in localStorage, so a page opened again is the widget frame of DailyNomie.
 import { mkdirSync, readFileSync } from 'node:fs';
+import { addExample } from './add-example.mjs';
 import { createServer } from 'vite';
 import { chromium } from 'playwright';
 
@@ -31,9 +32,10 @@ try {
   await page.goto(url);
 
   // two workspaces: one shows a value on the widget (a template), one does not
-  await page.getByRole('button', { name: 'Add', exact: true }).click();
-  await page.locator('.row', { hasText: 'Example: Dashboard widget with a value' }).getByRole('button', { name: 'Add' }).first().click();
-  await page.locator('.row', { hasText: 'Example: Yesterday in one number' }).getByRole('button', { name: 'Add' }).first().click();
+  await addExample(page, 'Example: Dashboard widget with a value');
+  await page.goto(url);
+  await addExample(page, 'Example: Yesterday in one number');
+  await page.goto(url);
   await page.locator('.card', { hasText: 'Example: Dashboard widget with a value' }).filter({ has: page.getByRole('button', { name: 'Run', exact: true }) }).getByRole('button', { name: 'Run', exact: true }).click();
   await page.waitForFunction(() => Object.keys(JSON.parse(window.localStorage.getItem('fake-nomie-store') ?? '{}').blockly?.widget ?? {}).length > 0, null, { timeout: 30000 });
 

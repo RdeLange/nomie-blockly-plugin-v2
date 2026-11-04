@@ -29,9 +29,10 @@ const openEditor = async (context, viewport) => {
   const page = await context.newPage();
   page.on('pageerror', (e) => { if (e.message !== 'Failed to fetch') errors.push(e.message); });
   await page.goto(url);
-  await page.getByRole('button', { name: 'Add', exact: true }).click();
-  await page.locator('.row', { hasText: 'Example: Yesterday in one number' }).getByRole('button', { name: 'Add' }).first().click();
-  await page.locator('.card', { hasText: 'Example: Yesterday in one number' }).getByRole('button', { name: 'Edit' }).first().click();
+  // the examples are listed on their own tab; adding one offers its workspace in a notice
+  await page.getByRole('tab', { name: /^Examples/ }).click();
+  await page.locator('.example', { hasText: 'Example: Yesterday in one number' }).getByRole('button', { name: 'Add', exact: true }).click();
+  await page.locator('.notice').getByRole('button', { name: 'Open', exact: true }).click();
   await page.locator('.ed-toolbar').waitFor({ timeout: 15000 });
   await page.waitForTimeout(800);
   // the program goes on the canvas; the Preview tab appears because a widget block is there
@@ -51,7 +52,9 @@ try {
   await context.route(/nomie-plugin\.js/, (route) => route.fulfill({ body: '', contentType: 'text/javascript' }));
 
   let page = await openEditor(context, { width: 1440, height: 900 });
-  await page.getByRole('tab', { name: 'Preview' }).click();
+  // the preview is under the run, in the Run tab
+  await page.getByRole('tab', { name: 'Run' }).click();
+  await page.getByRole('button', { name: 'Show preview' }).click();
   await page.locator('.ed-preview iframe.wd-html').waitFor({ timeout: 15000 });
   const frame = page.locator('.ed-preview iframe.wd-html');
   check('the HTML is a frame with no sandbox permissions', (await frame.getAttribute('sandbox')) === '');

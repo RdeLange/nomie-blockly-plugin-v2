@@ -1,6 +1,7 @@
 // The detailed description of a workspace: a Detailed tab in the panel holds the text, it stays when the tabs change,
 // and Save keeps it with the workspace. Runs against fake-nomie.js, at 1440 x 900 and 390 x 844.
 import { mkdirSync, readFileSync } from 'node:fs';
+import { addExample } from './add-example.mjs';
 import { createServer } from 'vite';
 import { chromium } from 'playwright';
 
@@ -23,9 +24,7 @@ const openEditor = async (viewport) => {
   const page = await context.newPage();
   page.on('pageerror', (e) => { if (e.message !== 'Failed to fetch') errors.push(e.message); });
   await page.goto(url);
-  await page.getByRole('button', { name: 'Add', exact: true }).click();
-  await page.locator('.row', { hasText: 'Example: Yesterday in one number' }).getByRole('button', { name: 'Add' }).first().click();
-  await page.locator('.card', { hasText: 'Example: Yesterday in one number' }).getByRole('button', { name: 'Edit' }).first().click();
+  await addExample(page, 'Example: Yesterday in one number');
   await page.locator('.ed-toolbar').waitFor({ timeout: 15000 });
   await page.waitForTimeout(800);
   return { context, page };

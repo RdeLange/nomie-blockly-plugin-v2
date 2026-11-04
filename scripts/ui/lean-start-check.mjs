@@ -2,6 +2,7 @@
 // workspaces, and the list and the run need nothing from the compiler. Runs against fake-nomie.js, which keeps its
 // stored state in localStorage, so a second page in the same browser context is a second launch.
 import { readFileSync } from 'node:fs';
+import { addExample } from './add-example.mjs';
 import { createServer } from 'vite';
 import { chromium } from 'playwright';
 
@@ -28,8 +29,7 @@ try {
   const firstRequests = [];
   first.on('request', (r) => firstRequests.push(r.url()));
   await first.goto(url);
-  await first.getByRole('button', { name: 'Add', exact: true }).click();
-  await first.locator('.row', { hasText: 'Example: Yesterday in one number' }).getByRole('button', { name: 'Add' }).first().click();
+  await addExample(first, 'Example: Yesterday in one number');
   await first.waitForTimeout(800);
   // the detector works: the first launch compiles the template, so it does request the compiler
   check('the detector sees the compiler when it is needed', firstRequests.some(isBlockly));

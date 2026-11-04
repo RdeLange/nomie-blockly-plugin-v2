@@ -125,6 +125,13 @@ export const templateWorkspaces = (): Workspace[] =>
     normaliseWorkspace({ ...template, id: newId(), latestrun: '' })
   );
 
+// The level of an example on the Add screen: easy, moderate, complex or expert (see example-library.ts)
+export type ExampleLevel = 'easy' | 'moderate' | 'complex' | 'expert';
+// the order of the levels on the Add screen: a learning curve, from one block to a small program
+export const EXAMPLE_LEVEL_ORDER: ExampleLevel[] = ['easy', 'moderate', 'complex', 'expert'];
+export const exampleLevelOf =(name: string): ExampleLevel =>
+  (examples as Array<{ name: string; level?: ExampleLevel }>).find((example) => example.name === name)?.level ?? 'easy';
+
 // The example library (examples.json, built from example-library.ts): each example as a workspace to add. The name and
 // the tutorial are in the language of the Nomie user, when the library has them (phase 22); the name of the workspace
 // stays the same in every language.

@@ -3,6 +3,7 @@
 // screenshots/editor-desktop.png (1440x900), editor-laptop.png (1100x800) and editor-phone.png (390x844).
 // Usage: node scripts/ui/screenshots.mjs [name]   (name is an optional suffix, e.g. "phase5")
 import { mkdirSync } from 'node:fs';
+import { addExample } from './add-example.mjs';
 import { createServer } from 'vite';
 import { chromium } from 'playwright';
 
@@ -33,11 +34,12 @@ try {
       if (e.message !== 'Failed to fetch') errors.push(`${name}: ${e.message}`);
     });
     await page.goto(url, { waitUntil: 'load' });
-    await page.getByRole('button', { name: 'Add', exact: true }).click();
-    // the Add button in the template row of "Example: Yesterday in one number"
-    const row = page.locator('.row', { hasText: 'Example: Yesterday in one number' }).filter({ has: page.getByRole('button', { name: 'Add' }) });
-    await row.getByRole('button', { name: 'Add' }).first().click();
-    await page.getByRole('button', { name: 'Edit' }).first().click();
+    // the library of an empty list: the examples, each with its level
+    await page.getByRole('tab', { name: /^Examples/ }).click();
+    await page.waitForTimeout(400);
+    await page.screenshot({ path: `screenshots/examples-library-${name}${suffix}.png` });
+    // adding an example gives its notice, and Open shows the editor
+    await addExample(page, 'Example: Yesterday in one number');
     await page.waitForTimeout(1500);
     const file = `screenshots/editor-${name}${suffix}.png`;
     await page.screenshot({ path: file });

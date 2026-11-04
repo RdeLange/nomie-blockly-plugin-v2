@@ -1,5 +1,6 @@
 // Screenshots of the block drawer (the Nomie category) and of a block search, at desktop size.
 import { mkdirSync } from 'node:fs';
+import { addExample } from './add-example.mjs';
 import { createServer } from 'vite';
 import { chromium } from 'playwright';
 
@@ -15,9 +16,7 @@ try {
   // no network in CI: the real SDK script is not needed here
   await page.route(/nomie-plugin\.js/, (route) => route.fulfill({ body: '', contentType: 'text/javascript' }));
   await page.goto(url);
-  await page.getByRole('button', { name: 'Add', exact: true }).click();
-  await page.locator('.row', { hasText: 'Example: Yesterday in one number' }).getByRole('button', { name: 'Add' }).first().click();
-  await page.getByRole('button', { name: 'Edit' }).first().click();
+  await addExample(page, 'Example: Yesterday in one number');
   await page.waitForTimeout(1200);
   await page.locator('.blocklyToolboxCategory', { hasText: 'Nomie' }).click();
   await page.waitForTimeout(500);

@@ -2,6 +2,7 @@
 // there are unsaved changes); below 900 px the rail shows the label of the selected tile only, and a long press shows
 // any tile's name. Runs against fake-nomie.js, at 1440 x 900, 1100 x 800 and 390 x 844.
 import { mkdirSync, readFileSync } from 'node:fs';
+import { addExample } from './add-example.mjs';
 import { createServer } from 'vite';
 import { chromium } from 'playwright';
 
@@ -25,11 +26,11 @@ const openTwo = async (viewport, name) => {
   page.on('dialog', (d) => d.dismiss());
   await page.goto(url);
   // the template list opens with the header's Add, and stays open while templates are added
-  await page.getByRole('button', { name: 'Add', exact: true }).click();
-  for (const template of ['Example: Yesterday in one number', 'Kick Start']) {
-    await page.locator('.row', { hasText: template }).getByRole('button', { name: 'Add' }).first().click();
-    await page.waitForTimeout(400);
-  }
+  await addExample(page, 'Example: Yesterday in one number');
+  await page.goto(url);
+  await page.getByRole('button', { name: 'Add', exact: true }).first().click();
+  await page.locator('.row', { hasText: 'Kick Start' }).getByRole('button', { name: 'Add' }).first().click();
+  await page.waitForTimeout(400);
   await page.locator('.card', { hasText: 'Last run' }).filter({ hasText: name }).first().getByRole('button', { name: 'Edit' }).click();
   await page.locator('.ed-toolbar').waitFor({ timeout: 15000 });
   return { context, page };

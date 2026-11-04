@@ -1,6 +1,7 @@
 // Note triggers (phase 14): a When-note workspace is listed with its tracker, a saved note with the tracker runs it and
 // the result is logged, and Try with a note runs it in test mode. Runs against fake-nomie.js.
 import { mkdirSync, readFileSync } from 'node:fs';
+import { addExample } from './add-example.mjs';
 import { createServer } from 'vite';
 import { chromium } from 'playwright';
 
@@ -29,9 +30,7 @@ try {
   await page.addInitScript({ content: readFileSync('scripts/ui/fake-nomie.js', 'utf8') });
   await page.route(/nomie-plugin\.js/, (route) => route.fulfill({ body: '', contentType: 'text/javascript' }));
   await page.goto(url);
-  await page.getByRole('button', { name: 'Add', exact: true }).click();
-  await page.locator('.row', { hasText: 'Example: Yesterday in one number' }).getByRole('button', { name: 'Add' }).first().click();
-  await page.locator('.card', { hasText: 'Example: Yesterday in one number' }).getByRole('button', { name: 'Edit' }).first().click();
+  await addExample(page, 'Example: Yesterday in one number');
   await page.waitForTimeout(1200);
 
   // replace the blocks with a When-note workspace, and save it

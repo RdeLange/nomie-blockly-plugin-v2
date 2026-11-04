@@ -1,6 +1,6 @@
-// The example library (phase 21): the Add screen lists the examples after the templates; an example adds a workspace
-// whose Detailed tab holds its tutorial, and whose blocks are on the canvas. Runs against fake-nomie.js, at 1440 x 900
-// and 390 x 844.
+// The example library on the list screen: an Examples tab, with the examples in four levels (easy, moderate, complex and
+// expert). Adding an example says so at once: the card says Added, a notice offers to open it, and Open shows the
+// tutorial in the Detailed tab. Runs against fake-nomie.js, at 1440 x 900 and 390 x 844.
 import { mkdirSync, readFileSync } from 'node:fs';
 import { createServer } from 'vite';
 import { chromium } from 'playwright';
@@ -28,30 +28,43 @@ const newPage = async (viewport) => {
 
 try {
   const { context, page } = await newPage({ width: 1440, height: 900 });
-  await page.getByRole('button', { name: 'Add', exact: true }).click();
-  const examples = page.locator('.row', { hasText: 'Example: ' });
-  const count = await examples.count();
-  check(`the Add screen lists the examples (${count})`, count >= 25);
-  await page.locator('.row', { hasText: 'Example: Hello, console' }).getByRole('button', { name: 'Add' }).click();
-  await page.getByText('Added "Example: Hello, console"').first().waitFor({ timeout: 5000 }).catch(() => undefined);
-  check('adding an example says so', (await page.getByText('Added "Example: Hello, console"').count()) >= 1);
-  await page.screenshot({ path: 'screenshots/examples-add-desktop.png' });
 
-  // the workspace is in the list; its Edit opens the editor, and the Detailed tab holds the tutorial
-  await page.locator('.card', { hasText: 'Example: Hello, console' }).getByRole('button', { name: 'Edit' }).first().click();
+  // the list opens on the Workspaces tab once there are workspaces; the examples are one tap away
+  await page.getByRole('tab', { name: /^Examples/ }).click();
+  const cards = page.locator('.example');
+  check(`the Examples tab lists the examples (${await cards.count()})`, (await cards.count()) >= 36);
+  check('the examples are in four levels', (await page.locator('.level-head').count()) === 4);
+  await page.screenshot({ path: 'screenshots/examples-levels-desktop.png' });
+
+  // adding an example: its card says Added, and a notice offers to open it
+  const hello = page.locator('.example', { hasText: 'Example: Hello, console' });
+  await hello.getByRole('button', { name: 'Add', exact: true }).click();
+  const notice = page.locator('.notice');
+  await notice.waitFor({ timeout: 5000 });
+  check('adding an example says so in a notice', (await notice.innerText()).includes('Added "Example: Hello, console"'));
+  check('the card then says Added, with an Open button', (await hello.locator('.tick').count()) === 1 && (await hello.getByRole('button', { name: 'Open', exact: true }).count()) === 1);
+  await page.screenshot({ path: 'screenshots/examples-added-desktop.png' });
+
+  // the notice's Open shows the example, and its Detailed tab holds the tutorial
+  await notice.getByRole('button', { name: 'Open', exact: true }).click();
   await page.locator('.ed-toolbar').waitFor({ timeout: 15000 });
   await page.waitForTimeout(800);
   await page.getByRole('tab', { name: 'Detailed' }).click();
   const tutorial = await page.getByLabel('Detailed description').inputValue();
-  check('the Detailed tab holds the tutorial of the example', tutorial.startsWith('In this first example'));
+  check('the Detailed tab holds the step-by-step tutorial', tutorial.startsWith('What you build: a workspace that writes two lines'));
+  check('the tutorial has its numbered steps', (tutorial.match(/^Step \d+:/gm) ?? []).length >= 5);
   await page.getByRole('tab', { name: 'Details' }).click();
   await context.close();
 
+  // on a phone: the same tabs, the same four levels, and the same feedback
   const phone = await newPage({ width: 390, height: 844 });
-  await phone.page.getByRole('button', { name: 'Add', exact: true }).click();
-  await phone.page.locator('.row', { hasText: 'Example: Hello, console' }).waitFor({ timeout: 15000 });
-  await phone.page.screenshot({ path: 'screenshots/examples-add-phone.png' });
-  check('on a phone the examples are listed too', (await phone.page.locator('.row', { hasText: 'Example: ' }).count()) >= 25);
+  await phone.page.locator('.segments').waitFor({ timeout: 15000 });
+  await phone.page.getByRole('tab', { name: /^Examples/ }).click();
+  check('on a phone the examples are listed too', (await phone.page.locator('.example').count()) >= 36);
+  await phone.page.locator('.example', { hasText: 'Example: Mood analyst' }).getByRole('button', { name: 'Add', exact: true }).click();
+  await phone.page.locator('.notice').waitFor({ timeout: 5000 });
+  await phone.page.screenshot({ path: 'screenshots/examples-phone.png' });
+  check('on a phone adding an example gives the notice too', (await phone.page.locator('.notice').count()) === 1);
   await phone.context.close();
 } finally {
   await browser.close();

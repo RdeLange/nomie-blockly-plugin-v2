@@ -19,9 +19,9 @@ const check = (label, ok) => {
 // the words each language shows: the list's Add, the card's Edit, the editor's Save, Run and Detailed tabs, the
 // Settings screen's Import and add, and Blockly's repeat block
 const LANGS = [
-  { code: 'nl', add: 'Toevoegen', edit: 'Bewerken', save: 'Opslaan', run: 'Uitvoeren', detailed: 'Uitgebreid', settings: 'Instellingen', importAdd: 'Importeren en toevoegen', repeat: 'keer herhalen', loops: 'Lussen', yesterday: 'Voorbeeld: Gisteren in één getal', example: 'Voorbeeld: Hallo, console', readNotes: 'LEES JE NOTITIES' },
-  { code: 'de', add: 'Hinzufügen', edit: 'Bearbeiten', save: 'Speichern', run: 'Ausführen', detailed: 'Ausführlich', settings: 'Einstellungen', importAdd: 'Importieren und hinzufügen', repeat: 'wiederhole', loops: 'Schleifen', yesterday: 'Beispiel: Gestern als eine Zahl', example: 'Beispiel: Hallo, Konsole', readNotes: 'NOTIZEN LESEN' },
-  { code: 'it', add: 'Aggiungi', edit: 'Modifica', save: 'Salva', run: 'Esegui', detailed: 'Approfondita', settings: 'Impostazioni', importAdd: 'Importa e aggiungi', repeat: 'ripeti', loops: 'Cicli', yesterday: 'Esempio: Ieri in un numero', example: 'Esempio: Ciao, console', readNotes: 'LEGGI LE NOTE' },
+  { code: 'nl', add: 'Toevoegen', edit: 'Bewerken', save: 'Opslaan', run: 'Uitvoeren', detailed: 'Uitgebreid', settings: 'Instellingen', importAdd: 'Importeren en toevoegen', repeat: 'keer herhalen', loops: 'Lussen', yesterday: 'Voorbeeld: Gisteren in één getal', example: 'Voorbeeld: Hallo, console', readNotes: 'LEES JE NOTITIES', open: 'Openen' },
+  { code: 'de', add: 'Hinzufügen', edit: 'Bearbeiten', save: 'Speichern', run: 'Ausführen', detailed: 'Ausführlich', settings: 'Einstellungen', importAdd: 'Importieren und hinzufügen', repeat: 'wiederhole', loops: 'Schleifen', yesterday: 'Beispiel: Gestern als eine Zahl', example: 'Beispiel: Hallo, Konsole', readNotes: 'NOTIZEN LESEN', open: 'Öffnen' },
+  { code: 'it', add: 'Aggiungi', edit: 'Modifica', save: 'Salva', run: 'Esegui', detailed: 'Approfondita', settings: 'Impostazioni', importAdd: 'Importa e aggiungi', repeat: 'ripeti', loops: 'Cicli', yesterday: 'Esempio: Ieri in un numero', example: 'Esempio: Ciao, console', readNotes: 'LEGGI LE NOTE', open: 'Apri' },
 ];
 
 try {
@@ -34,17 +34,19 @@ try {
     page.on('pageerror', (e) => { if (e.message !== 'Failed to fetch') errors.push(e.message); });
     await page.goto(url);
 
-    check(`${lang.code}: the list is translated`, (await page.getByRole('button', { name: lang.add, exact: true }).count()) === 1);
+    // the list is translated: its Add button, and the Add of each example card on the Examples tab
+    check(`${lang.code}: the list is translated`, (await page.getByRole('button', { name: lang.add, exact: true }).count()) >= 1);
     // the Settings screen: its import buttons
     await page.getByRole('button', { name: lang.settings, exact: true }).click();
     check(`${lang.code}: the Settings screen is translated`, (await page.getByRole('button', { name: lang.importAdd, exact: true }).count()) === 1);
     await page.goto(url);
-    await page.getByRole('button', { name: lang.add, exact: true }).click();
-    // the examples are in the language too (phase 22)
+    // the examples are in the language too (phase 22): the second tab of the list is the Examples
+    await page.getByRole('tab').nth(1).click();
     await page.getByText(lang.example).first().waitFor({ timeout: 5000 }).catch(() => undefined);
     check(`${lang.code}: the examples are translated`, (await page.getByText(lang.example).count()) >= 1);
-    await page.locator('.row', { hasText: lang.yesterday }).getByRole('button', { name: lang.add }).first().click();
-    await page.locator('.card', { hasText: lang.yesterday }).filter({ has: page.getByRole('button', { name: lang.edit }) }).first().getByRole('button', { name: lang.edit }).click();
+    await page.locator('.example', { hasText: lang.yesterday }).getByRole('button', { name: lang.add, exact: true }).click();
+    // the notice offers to open the new workspace
+    await page.locator('.notice').getByRole('button', { name: lang.open, exact: true }).click();
     await page.locator('.ed-toolbar').waitFor({ timeout: 15000 });
 
     check(`${lang.code}: the editor toolbar is translated`, (await page.getByRole('button', { name: lang.save, exact: true }).count()) === 1);

@@ -1,6 +1,7 @@
 // Remembered values and secrets (phase 12): a template asks for its secret before a run, Settings shows the name and
 // never the value, a run remembers a value that Details lists, and Forget all clears it. Runs against fake-nomie.js.
 import { mkdirSync, readFileSync } from 'node:fs';
+import { addExample } from './add-example.mjs';
 import { createServer } from 'vite';
 import { chromium } from 'playwright';
 
@@ -32,9 +33,7 @@ const openApp = async (viewport) => {
 
 // adds a template and opens its editor (the card of that name, as the list may hold other workspaces too)
 const addAndEdit = async (page, name) => {
-  await page.getByRole('button', { name: 'Add', exact: true }).click();
-  await page.locator('.row', { hasText: name }).getByRole('button', { name: 'Add' }).first().click();
-  await page.locator('.card', { hasText: name }).getByRole('button', { name: 'Edit' }).first().click();
+  await addExample(page, name);
   await page.waitForTimeout(1200);
 };
 
@@ -61,6 +60,7 @@ try {
   await page.getByRole('button', { name: 'Back', exact: true }).click();
 
   // with the secret in Settings, the warning is gone
+  await page.goto(url);
   await page.locator('.card', { hasText: 'Example: Read a web service' }).getByRole('button', { name: 'Edit' }).first().click();
   await page.waitForTimeout(1200);
   await page.getByRole('tab', { name: /Run/ }).click();

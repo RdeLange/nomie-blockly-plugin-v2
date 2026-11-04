@@ -20,9 +20,10 @@ const openEditor = async (context, templateName, viewport) => {
   const page = await context.newPage();
   page.on('pageerror', (e) => { if (e.message !== 'Failed to fetch') errors.push(e.message); });
   await page.goto(url);
-  await page.getByRole('button', { name: 'Add', exact: true }).click();
-  await page.locator('.row', { hasText: templateName }).getByRole('button', { name: 'Add' }).first().click();
-  await page.locator('.card', { hasText: 'Last run' }).filter({ hasText: templateName }).first().getByRole('button', { name: 'Edit' }).click();
+  // the examples are listed on their own tab; adding one offers its workspace in a notice
+  await page.getByRole('tab', { name: /^Examples/ }).click();
+  await page.locator('.example', { hasText: templateName }).getByRole('button', { name: 'Add', exact: true }).click();
+  await page.locator('.notice').getByRole('button', { name: 'Open', exact: true }).click();
   await page.locator('.ed-toolbar').waitFor({ timeout: 15000 });
   await page.waitForTimeout(500);
   return page;
@@ -35,8 +36,10 @@ try {
 
   // a workspace with a widget: the Preview tab, and the preview at dashboard size
   let page = await openEditor(context, 'Example: Dashboard widget with a value', { width: 1440, height: 900 });
-  check('a workspace with a widget block has a Preview tab', (await page.getByRole('tab', { name: 'Preview' }).count()) === 1);
-  await page.getByRole('tab', { name: 'Preview' }).click();
+  // the panel has four tabs; the preview is under the run, in the Run tab (the panel is 320px, so no fifth tab)
+  check('a workspace with a widget block has no Preview tab, the panel fits four', (await page.getByRole('tab').count()) === 4);
+  await page.getByRole('tab', { name: 'Run' }).click();
+  await page.getByRole('button', { name: 'Show preview' }).click();
   await page.locator('.ed-preview .wd').waitFor({ timeout: 15000 });
   check('the preview draws the widget', (await page.locator('.ed-preview .wd').count()) === 1);
   const headBox = await page.locator('.ed-preview .wd-head').boundingBox();
