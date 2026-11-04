@@ -50,7 +50,11 @@ browser checks in `scripts/ui/` listed in `.github/workflows/check.yml`.
     "today" before it lands.
 16. **The plan still names removed templates** (the Retrieve Temperature template in the phase 12 and 13 notes). The
     templates were replaced by the example library (phase 21). Update the plan text.
-17. **Publishing.** The plugin is published from `dailynomie/nomie-blockly-plugin-v2`: its workflow "Deploy Nomie
+17. **Phone-only code.** On a phone the plugin shows the list only (phone-list-check.mjs), so the phone rail
+    (long press, one label, the rail rules below 900 px in notebook.css and rail.ts) is no longer reachable. Remove it.
+18. **DailyNomie 7 radial menu** (`dailynomie7` branch `dev`, commit e4abdd40): Blockly replaces Pointers. Its
+    guardrail check and build pass, but it is not checked at 390 px in a browser, and it is committed, not pushed.
+19. **Publishing.** The plugin is published from `dailynomie/nomie-blockly-plugin-v2`: its workflow "Deploy Nomie
     Blockly v2 to GitHub Pages" checks out `RdeLange/nomie-blockly-plugin-v2` at `main`, builds it and deploys `dist/`.
     It runs on pushes to that repository's own `main` and on manual dispatch, not on pushes to the source repository.
     So after a push to `main` here, run the workflow:
