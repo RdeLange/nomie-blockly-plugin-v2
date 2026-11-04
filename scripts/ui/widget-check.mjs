@@ -47,7 +47,7 @@ try {
   check('the widget shows the label', (await tile.locator('.widget-label').textContent()) === '7-day average');
   check('the widget shows the value', (await tile.locator('.widget-value').textContent()) === saved.components[0].value);
   check('the widget says when it was set', (await tile.locator('.widget-time').textContent()).startsWith('updated '));
-  check('the tile has a Run button', (await tile.getByRole('button', { name: 'Run' }).count()) === 1);
+  check('the tile has no Run button: a dashboard widget runs by itself', (await tile.getByRole('button', { name: 'Run' }).count()) === 0);
   await page.screenshot({ path: 'screenshots/widget-view.png' });
   await page.close();
 } finally {

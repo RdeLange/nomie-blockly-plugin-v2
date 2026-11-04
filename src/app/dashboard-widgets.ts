@@ -8,7 +8,7 @@ export type DashboardWidget = { widgetid: string; name: string; emoji: string; c
 
 // A workspace that builds a widget (the widget builder, or the "show on widget" block it replaced) can be placed on
 // the dashboard
-const showsOnWidget = (w: Pick<Workspace, 'workspaceBlocks'>) => /<block type="s4e_(dashboard|widget)"/.test(w.workspaceBlocks);
+export const showsOnWidget = (w: Pick<Workspace, 'workspaceBlocks'>) => /<block type="s4e_(dashboard|widget)"/.test(w.workspaceBlocks);
 
 // The name and emoji the widget gives itself in its header (empty when it has none)
 const headerOf = (xml: string): { name: string; emoji: string } => {

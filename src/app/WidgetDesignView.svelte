@@ -7,7 +7,8 @@
   import { htmlDocument } from '../runtime/html-widget';
   import { t } from './i18n.svelte';
 
-  let { design, name, emoji, onRun }: { design: WidgetDesign; name: string; emoji: string; onRun: () => void } = $props();
+  // onRun is given in the editor's preview only: a dashboard widget runs by itself and has no Run button (phase 23)
+  let { design, name, emoji, onRun }: { design: WidgetDesign; name: string; emoji: string; onRun?: () => void } = $props();
   const W = 300;
   const H = 40;
 </script>
@@ -16,7 +17,9 @@
   <div class="wd-head">
     <span class="wd-emoji">{design.emoji || emoji}</span>
     <span class="wd-title">{design.name || name}</span>
-    <button class="wd-run" onclick={onRun}>{t('Run')}</button>
+    {#if onRun}
+      <button class="wd-run" onclick={onRun}>{t('Run')}</button>
+    {/if}
   </div>
   <div class="wd-main">
     {#each design.components as component, i (i)}

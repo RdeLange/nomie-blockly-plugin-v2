@@ -174,6 +174,7 @@ const NL: Record<string, string> = {
   'No workspaces yet. Add them on a larger screen.': 'Nog geen werkruimten. Voeg ze toe op een groter scherm.',
   'Templates are starting points. Add one, then change it to fit your needs.': 'Sjablonen zijn startpunten. Voeg er een toe en pas hem aan op wat je nodig hebt.',
   'No workspaces yet. Add one with New workspace, or start from a template or an example.': 'Nog geen werkruimten. Voeg er een toe met Nieuwe werkruimte, of begin met een sjabloon of een voorbeeld.',
+  'No value yet.': 'Nog geen waarde.',
 };
 
 // German: DailyNomie 7's words where it has them (Speichern, Exportieren, Duplizieren, Löschen, Bearbeiten, Zurück)
@@ -343,6 +344,7 @@ const DE: Record<string, string> = {
   'No workspaces yet. Add them on a larger screen.': 'Noch keine Arbeitsbereiche. Füge sie auf einem größeren Bildschirm hinzu.',
   'Templates are starting points. Add one, then change it to fit your needs.': 'Vorlagen sind Ausgangspunkte. Füge eine hinzu und passe sie an deine Bedürfnisse an.',
   'No workspaces yet. Add one with New workspace, or start from a template or an example.': 'Noch keine Arbeitsbereiche. Füge einen mit Neuer Arbeitsbereich hinzu, oder starte mit einer Vorlage oder einem Beispiel.',
+  'No value yet.': 'Noch kein Wert.',
 };
 
 // Italian: DailyNomie 7's words where it has them (Salva, Esporta, Duplica, Elimina, Modifica, Indietro)
@@ -512,6 +514,7 @@ const IT: Record<string, string> = {
   'No workspaces yet. Add them on a larger screen.': 'Ancora nessuno spazio di lavoro. Aggiungili su uno schermo più grande.',
   'Templates are starting points. Add one, then change it to fit your needs.': 'I modelli sono punti di partenza. Aggiungine uno e modificalo come ti serve.',
   'No workspaces yet. Add one with New workspace, or start from a template or an example.': 'Ancora nessuno spazio di lavoro. Aggiungine uno con Nuovo spazio di lavoro, oppure parti da un modello o da un esempio.',
+  'No value yet.': 'Ancora nessun valore.',
 };
 
 // The translations by language. English has none: the text is its own translation.

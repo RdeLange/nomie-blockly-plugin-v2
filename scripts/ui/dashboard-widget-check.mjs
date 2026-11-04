@@ -63,14 +63,25 @@ try {
   const retrieveId = store.blockly.workspaces.find((w) => w.displayName === 'Example: Yesterday in one number').id;
   await page.goto(`${url}?pid=test&widgetid=${retrieveId}`);
   await openWidgetFrame(page);
-  await page.getByRole('button', { name: 'Run', exact: true }).waitFor({ timeout: 15000 });
-  check('a workspace without a value says so, with Run', (await page.locator('.wd').count()) === 0 && (await page.getByRole('button', { name: 'Run', exact: true }).count()) === 1);
+  await page.getByText('No value yet.', { exact: true }).waitFor({ timeout: 15000 });
+  check('a workspace without a value says so, and has no Run button (it runs by itself)', (await page.locator('.wd').count()) === 0 && (await page.getByRole('button', { name: 'Run', exact: true }).count()) === 0);
 
   // a widget of a workspace that was removed says so
   await page.goto(`${url}?pid=test&widgetid=gone`);
   await openWidgetFrame(page);
   await page.getByText("This widget's workspace was removed", { exact: false }).waitFor({ timeout: 15000 });
   check('a widget whose workspace was removed says so', true);
+
+  // a widget that has never run fills itself in when it opens: no Run button, and its charts appear
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto(url);
+  await addExample(page, 'Example: Widget charts');
+  const chartsId = (await stored(page)).blockly.workspaces.find((w) => w.displayName === 'Example: Widget charts').id;
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto(`${url}?pid=test&widgetid=${chartsId}`);
+  await openWidgetFrame(page);
+  await page.locator('.wd svg').first().waitFor({ timeout: 30000 });
+  check('a widget that has not run fills itself in, with no Run button', (await page.getByRole('button', { name: 'Run', exact: true }).count()) === 0);
   await page.close();
 } finally {
   await browser.close();

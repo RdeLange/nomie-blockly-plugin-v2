@@ -32,7 +32,8 @@
   import { startNomie } from '../nomie/plugin';
   import { actionDeps, notify } from './dialogs';
   import { runNow } from './actions';
-  import { widgetTiles } from './dashboard-widgets';
+  import { showsOnWidget, widgetTiles } from './dashboard-widgets';
+  import { attemptAllowed, markAttempt, needsWidgetRun } from './widget-freshness';
   import { headlineOf } from '../runtime/widget';
   import WidgetDesignView from './WidgetDesignView.svelte';
 
@@ -43,11 +44,25 @@
   });
 
   // the widget: a run button for each workspace, and the value a workspace last showed (see the widget view)
-  const runFromWidget = (id: string) => {
+  // A dashboard widget runs its workspace by itself when it has no value, or an old one (phase 23). A workspace is tried
+  // at most once an hour, so one that fails is not run again on every reload of the widget.
+  $effect(() => {
+    if (ui.mode !== 'widget' || !ui.ready) return;
     const deps = actionDeps();
-    const workspace = appState.workspaces.find((w) => w.id === id);
-    if (deps && workspace) void runNow(deps, workspace);
-  };
+    if (!deps) return;
+    const now = Date.now();
+    const index = ui.widgetIndex;
+    const candidates =
+      index !== undefined
+        ? widgetTiles(appState.workspaces, appState.widget, index).map((tile) => tile.workspace)
+        : appState.workspaces.filter(showsOnWidget);
+    for (const workspace of candidates) {
+      if (needsWidgetRun(appState.widget[workspace.id], now) && attemptAllowed(workspace.id, now)) {
+        markAttempt(workspace.id, now);
+        void runNow(deps, workspace);
+      }
+    }
+  });
   const updatedText = (at: string) =>
     new Date(at).toLocaleString(undefined, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
 </script>
@@ -61,12 +76,11 @@
     <div>
       {#each tiles as tile (tile.workspace.id)}
         {#if tile.shown}
-          <WidgetDesignView design={tile.shown} name={tile.workspace.displayName} emoji={tile.workspace.emoji} onRun={() => runFromWidget(tile.workspace.id)} />
+          <WidgetDesignView design={tile.shown} name={tile.workspace.displayName} emoji={tile.workspace.emoji} />
         {:else}
           <div class="row">
             <span class="emoji" style="background: {tile.workspace.color}">{tile.workspace.emoji}</span>
-            <span class="grow"><strong>{tile.workspace.displayName}</strong><br /><span class="muted">{t('No value yet. Run the workspace.')}</span></span>
-            <button class="button" onclick={() => runFromWidget(tile.workspace.id)}>{t('Run')}</button>
+            <span class="grow"><strong>{tile.workspace.displayName}</strong><br /><span class="muted">{t('No value yet.')}</span></span>
           </div>
         {/if}
       {:else}
@@ -85,14 +99,12 @@
           <span class="widget-label">{headlineOf(shown)?.label}</span>
           <span class="widget-value">{headlineOf(shown)?.value}</span>
           <span class="widget-time">{t('updated')} {updatedText(shown.at)}</span>
-          <button class="button" onclick={() => runFromWidget(workspace.id)}>{t('Run')}</button>
         </div>
       {/each}
       {#each appState.workspaces.filter((w) => !appState.widget[w.id]).slice(0, 4) as workspace (workspace.id)}
         <div class="row" style="margin-top: 10px">
           <span class="emoji" style="background: {workspace.color}">{workspace.emoji}</span>
           <span class="grow">{workspace.displayName}</span>
-          <button class="button" onclick={() => runFromWidget(workspace.id)}>{t('Run')}</button>
         </div>
       {/each}
     </div>
