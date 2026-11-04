@@ -82,6 +82,28 @@ try {
   await openWidgetFrame(page);
   await page.locator('.wd svg').first().waitFor({ timeout: 30000 });
   check('a widget that has not run fills itself in, with no Run button', (await page.getByRole('button', { name: 'Run', exact: true }).count()) === 0);
+
+  // a widget's own run writes no notes: the log example runs when its widget opens, and writes none
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto(url);
+  await addExample(page, 'Example: Log a value each day');
+  await page.goto(url);
+  await addExample(page, 'Example: Remember between runs');
+  const stateNow = await stored(page);
+  const logId = stateNow.blockly.workspaces.find((w) => w.displayName === 'Example: Log a value each day').id;
+  const rememberId = stateNow.blockly.workspaces.find((w) => w.displayName === 'Example: Remember between runs').id;
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto(`${url}?pid=test&widgetid=${rememberId}`);
+  await openWidgetFrame(page);
+  // the remember example keeps a count on each run: the count shows that the widget's own run happened
+  await page.waitForFunction((id) => JSON.parse(window.localStorage.getItem('fake-nomie-store') ?? '{}').blockly?.memory?.[id] !== undefined, rememberId, { timeout: 30000 }).catch(() => undefined);
+  const afterRemember = await stored(page);
+  check("a widget's own run keeps the value it remembers", afterRemember.blockly?.memory?.[rememberId]?.runs === 1);
+  await page.goto(`${url}?pid=test&widgetid=${logId}`);
+  await openWidgetFrame(page);
+  await page.waitForTimeout(3000);
+  const writes = await page.evaluate(() => (window.__nomie?.created ?? []).length);
+  check("a widget's own run writes no note", writes === 0);
   await page.close();
 } finally {
   await browser.close();

@@ -51,6 +51,8 @@ export type HostContext = {
   timeouts?: Partial<HostTimeouts>;
   // a test run writes no notes: each write is shown in the output instead
   test?: boolean;
+  // a quiet run writes no notes either, but says nothing (a dashboard widget's own run, phase 23)
+  quiet?: boolean;
   // remembered values of the workspace, changed in place by remember and forget (see run.ts)
   memory?: Memory;
   // the secrets from Settings, by name; a workspace reads them with secret(name)
@@ -242,9 +244,11 @@ export const installHost = (interpreter: any, scope: any, ctx: HostContext) => {
   asyncFn(
     'logValue',
     async (value, tracker, day) => {
-      if (!ctx.test) return logDailyTrackerValue(ctx.api, value, tracker, day);
-      const { day: on, note } = dailyTrackerNote(value, tracker, day);
-      ctx.output(`Would log ${note} on ${on}`);
+      if (!ctx.test && !ctx.quiet) return logDailyTrackerValue(ctx.api, value, tracker, day);
+      if (ctx.test) {
+        const { day: on, note } = dailyTrackerNote(value, tracker, day);
+        ctx.output(`Would log ${note} on ${on}`);
+      }
       return true;
     },
     3,
@@ -259,6 +263,7 @@ export const installHost = (interpreter: any, scope: any, ctx: HostContext) => {
 
   // a note on a day, at 13:00 as the logValue block writes it. A test run only says what it would write.
   native('logNote', (text, day) => {
+    if (ctx.quiet) return true;
     if (ctx.test) {
       ctx.output(`Would write the note "${formatValue(text)}" on ${resolveDay(String(day), historyDay())}`);
       return true;
@@ -272,6 +277,7 @@ export const installHost = (interpreter: any, scope: any, ctx: HostContext) => {
       ctx.output('Error: only web addresses (https://) can be opened');
       return false;
     }
+    if (ctx.quiet) return true;
     if (ctx.scheduled || ctx.test) {
       ctx.output(`Would open ${address.href}`);
       return true;

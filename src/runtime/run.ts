@@ -32,6 +32,8 @@ export type RunOptions = {
   onProgress?: (steps: number) => void;
   // a test run writes no notes (see HostContext.test)
   test?: boolean;
+  // a quiet run writes no notes, and keeps its memory and its widget value (see HostContext.quiet)
+  quiet?: boolean;
   // the remembered values before the run (see memory.ts); a copy is changed during the run
   memory?: Memory;
   // the secrets from Settings; their values are masked in everything the run shows
@@ -90,6 +92,7 @@ export const runWorkspace = (options: RunOptions): Promise<RunResult> =>
       },
       timeouts: options.timeouts,
       test: options.test,
+      quiet: options.quiet,
       memory,
       secrets,
       redact,

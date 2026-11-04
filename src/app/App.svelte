@@ -31,7 +31,7 @@
   });
   import { startNomie } from '../nomie/plugin';
   import { actionDeps, notify } from './dialogs';
-  import { runNow } from './actions';
+  import { runWidget } from './actions';
   import { showsOnWidget, widgetTiles } from './dashboard-widgets';
   import { attemptAllowed, markAttempt, needsWidgetRun } from './widget-freshness';
   import { headlineOf } from '../runtime/widget';
@@ -59,7 +59,7 @@
     for (const workspace of candidates) {
       if (needsWidgetRun(appState.widget[workspace.id], now) && attemptAllowed(workspace.id, now)) {
         markAttempt(workspace.id, now);
-        void runNow(deps, workspace);
+        void runWidget(deps, workspace);
       }
     }
   });

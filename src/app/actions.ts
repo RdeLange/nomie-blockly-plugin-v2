@@ -33,6 +33,8 @@ export type RunHooks = {
   onProgress?: (steps: number) => void;
   // a test run writes no notes. Only the editor's runs use it; the list, the schedule and note triggers never do.
   test?: boolean;
+  // a quiet run writes no notes, and keeps its memory and its widget value: a dashboard widget's own run (phase 23)
+  quiet?: boolean;
   // the note that started the run (a When-note workspace), or the note typed in Try with a note
   note?: TriggerNote;
 };
@@ -89,6 +91,7 @@ const runCompiled = async (deps: Deps, workspace: Workspace, hooks: RunHooks, sc
     stop: hooks.stop,
     onProgress: hooks.onProgress,
     test: hooks.test,
+    quiet: hooks.quiet,
     memory: appState.memory[workspace.id],
     secrets: { ...appState.secrets },
     note: hooks.note,
@@ -103,6 +106,10 @@ const runCompiled = async (deps: Deps, workspace: Workspace, hooks: RunHooks, sc
 // A manual run of the workspace's blocks, shown as the run goes on. It waits for any run that is already going.
 export const runNow = (deps: Deps, workspace: Workspace, hooks: RunHooks = {}): Promise<RunResult> =>
   queue(() => runCompiled(deps, workspace, hooks, false, { active: false, start: new Date(), end: new Date() }), failedRun);
+
+// A dashboard widget runs its workspace on its own when it has no value, or an old one: no notes are written
+export const runWidget = (deps: Deps, workspace: Workspace): Promise<RunResult> =>
+  runNow(deps, workspace, { quiet: true });
 
 export type DayHooks = RunHooks & {
   // before each day runs: the day, which one it is (from 1) and how many there are
