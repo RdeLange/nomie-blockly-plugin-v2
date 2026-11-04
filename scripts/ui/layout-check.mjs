@@ -25,12 +25,13 @@ const openTwo = async (viewport, name) => {
   page.on('pageerror', (e) => { if (e.message !== 'Failed to fetch') errors.push(e.message); });
   page.on('dialog', (d) => d.dismiss());
   await page.goto(url);
-  // the template list opens with the header's Add, and stays open while templates are added
+  // a template is added on the Templates tab, and the workspaces are listed on the Workspaces tab
   await addExample(page, 'Example: Yesterday in one number');
   await page.goto(url);
-  await page.getByRole('button', { name: 'Add', exact: true }).first().click();
+  await page.getByRole('tab', { name: /^Templates/ }).click();
   await page.locator('.row', { hasText: 'Kick Start' }).getByRole('button', { name: 'Add' }).first().click();
   await page.waitForTimeout(400);
+  await page.getByRole('tab', { name: /^Workspaces/ }).click();
   await page.locator('.card', { hasText: 'Last run' }).filter({ hasText: name }).first().getByRole('button', { name: 'Edit' }).click();
   await page.locator('.ed-toolbar').waitFor({ timeout: 15000 });
   return { context, page };

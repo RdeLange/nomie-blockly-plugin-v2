@@ -39,8 +39,9 @@
     })[level];
 
   // the list has two tabs: the workspaces you have, and the examples. Without workspaces, the examples come first.
-  let tab = $state<'workspaces' | 'examples'>(appState.workspaces.length === 0 ? 'examples' : 'workspaces');
-  let adding = $state(false);
+  let tab = $state<'workspaces' | 'examples' | 'templates'>(appState.workspaces.length === 0 ? 'examples' : 'workspaces');
+  // the starting points: each one is added as a workspace of its own
+  const templates = templateWorkspaces();
   let fileInput: HTMLInputElement | undefined = $state();
   // what just happened, at the top of the list. It stays for a while, or until it is closed.
   let notice = $state<{ id: number; text: string; action?: { label: string; run: () => void } } | undefined>();
@@ -93,7 +94,6 @@
       if (!(await askConfirm(tf('Add {count}?', { count: String(count) }), `${t('Only add workspaces you trust.')}\n\n${await importSummary(workspaces)}`))) return;
       await addWorkspaces(workspaces);
       say(workspaces.length === 1 ? t('Added 1 workspace.') : tf('Added {count} workspaces.', { count: String(workspaces.length) }));
-      adding = false;
     } catch (error) {
       say(tf('This file could not be read: {error}', { error: (error as Error).message }));
     }
@@ -136,7 +136,6 @@
   const addNew = async () => {
     // the workspace is added with a new id, and the editor opens that one
     const [added] = await addWorkspaces([newWorkspaceFromBlocks()]);
-    adding = false;
     edit(added.id);
   };
 </script>
@@ -147,7 +146,6 @@
     <button class="button plain" onclick={() => (ui.view = 'settings')}>{t('Settings')}</button>
     {#if !ui.phone}
       <button class="button plain" onclick={() => (ui.view = 'info')}>{t('About')}</button>
-      <button class="button" onclick={() => (adding = !adding)}>{adding ? t('Close') : t('Add')}</button>
     {/if}
   </div>
 </div>
@@ -160,6 +158,9 @@
   <button role="tab" aria-selected={tab === 'examples'} class:on={tab === 'examples'} onclick={() => (tab = 'examples')}>
     {t('Examples')}<span>{examples.length}</span>
   </button>
+  <button role="tab" aria-selected={tab === 'templates'} class:on={tab === 'templates'} onclick={() => (tab = 'templates')}>
+    {t('Templates')}<span>{templates.length}</span>
+  </button>
 </div>
 {/if}
 
@@ -170,28 +171,6 @@
       <button class="button" onclick={() => { notice?.action?.run(); notice = undefined; }}>{notice.action.label}</button>
     {/if}
     <button class="button plain" onclick={() => (notice = undefined)} aria-label={t('Close')}>✕</button>
-  </div>
-{/if}
-
-{#if adding && !ui.phone}
-  <div class="card">
-    <p class="muted">{t('Add a workspace')}</p>
-    <div class="row">
-      <button class="button" onclick={addNew}>{t('New workspace')}</button>
-      <button class="button" onclick={() => fileInput?.click()}>{t('Import a .wsp file')}</button>
-      <input bind:this={fileInput} type="file" accept=".wsp,.json,application/json" onchange={addFromFile} hidden />
-    </div>
-    <p class="muted" style="margin-top: 14px">{t('Templates')}</p>
-    {#each templateWorkspaces() as template (template.name)}
-      <div class="row" style="margin-top: 8px">
-        <span class="emoji" style="background: {template.color}">{template.emoji}</span>
-        <span class="grow">
-          {template.displayName}
-          <br /><span class="muted">{template.description}</span>
-        </span>
-        <button class="button plain" onclick={() => addTemplate(template)}>{t('Add')}</button>
-      </div>
-    {/each}
   </div>
 {/if}
 
@@ -223,13 +202,34 @@
       {/each}
     </section>
   {/each}
+{:else if tab === 'templates' && !ui.phone}
+  <p class="muted lead">{t('Templates are starting points. Add one, then change it to fit your needs.')}</p>
+  <div class="card">
+    {#each templates as template (template.name)}
+      <div class="row" style="margin-top: 8px">
+        <span class="emoji" style="background: {template.color}">{template.emoji}</span>
+        <span class="grow">
+          {template.displayName}
+          <br /><span class="muted">{template.description}</span>
+        </span>
+        <button class="button plain" onclick={() => addTemplate(template)}>{t('Add')}</button>
+      </div>
+    {/each}
+  </div>
 {:else}
+  {#if !ui.phone}
+    <div class="row actions">
+      <button class="button" onclick={addNew}>{t('New workspace')}</button>
+      <button class="button" onclick={() => fileInput?.click()}>{t('Import a .wsp file')}</button>
+      <input bind:this={fileInput} type="file" accept=".wsp,.json,application/json" onchange={addFromFile} hidden />
+    </div>
+  {/if}
   {#if appState.workspaces.length === 0}
     <div class="card start">
       {#if ui.phone}
         <p>{t('No workspaces yet. Add them on a larger screen.')}</p>
       {:else}
-        <p>{t('No workspaces yet. Add one above, or start from a template.')}</p>
+        <p>{t('No workspaces yet. Add one with New workspace, or start from a template or an example.')}</p>
         <button class="button" onclick={() => (tab = 'examples')}>{t('Start with an example')}</button>
       {/if}
     </div>
@@ -311,6 +311,12 @@
 
   .lead {
     margin: 0 0 10px;
+  }
+
+  .actions {
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 12px;
   }
 
   /* the four levels, each with its colour: a learning curve from easy to expert */

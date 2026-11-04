@@ -24,8 +24,7 @@ try {
   // desktop: add a workspace, so the phone has one to list
   const desktop = await context.newPage();
   await desktop.goto(url);
-  // the header's Add comes first; the examples below it have Add buttons too
-  await desktop.getByRole('button', { name: 'Add', exact: true }).first().click();
+  await desktop.getByRole('tab', { name: /^Templates/ }).click();
   await desktop.locator('.row', { hasText: 'Kick Start' }).getByRole('button', { name: 'Add' }).first().click();
   await desktop.waitForFunction(() => (window.localStorage.getItem('fake-nomie-store') ?? '').includes('Kick Start'), null, { timeout: 15000 });
   await desktop.close();

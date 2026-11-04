@@ -28,7 +28,7 @@ try {
   const page = await context.newPage();
   page.on('pageerror', (e) => { if (e.message !== 'Failed to fetch') errors.push(e.message); });
   await page.goto(url);
-  await page.getByRole('button', { name: 'Add', exact: true }).first().waitFor({ timeout: 15000 });
+  await page.getByRole('tab', { name: /^Examples/ }).waitFor({ timeout: 15000 });
 
   // Nomie changes to dark, German, with its dark colours
   await page.evaluate((message) => window.postMessage({ action: 'prefsChanged', data: { user: message } }, '*'), prefs('dark', DARK, 'de'));
