@@ -3,7 +3,7 @@
   // The editor (mockup D1 with the right panel in tabs, as D4). Desktop: a toolbar, the rail and canvas, and a panel
   // on the right with Details, Run and Console. Phone (under 900 px): the run buttons float at the bottom of the
   // canvas (mockup 1), and the panel opens as a sheet over the canvas.
-  import { onMount, onDestroy } from 'svelte';
+  import { onMount, onDestroy, untrack } from 'svelte';
   import * as Blockly from 'blockly';
   import { javascriptGenerator } from 'blockly/javascript';
   import { notebookTheme, notebookDarkTheme, GRID } from '../blockly/theme';
@@ -130,6 +130,7 @@
   });
 
   onMount(() => {
+    floating = storedFloat();
     if (!host || !frame) return;
     const media = window.matchMedia(WIDE);
     const onMedia = () => {
@@ -472,6 +473,58 @@
     else if (result.preview) preview = { design: result.preview };
     else preview = { error: t('This workspace has no widget to show.') };
   };
+  // the floating preview: it floats over the canvas while you keep editing, and stays open when the workspace is reopened
+  const floatKey = () => `blockly-float-preview:${id}`;
+  const storedFloat = (): boolean => {
+    try {
+      return localStorage.getItem(floatKey()) === '1';
+    } catch {
+      return false;
+    }
+  };
+  let floating = $state(false);
+  // no position until the card is dragged: it starts in the top-right corner of the canvas
+  let floatPos = $state({ x: 0, y: 0, placed: false });
+  let dragging = false;
+  let dragOffsetX = 0;
+  let dragOffsetY = 0;
+  const setFloating = (on: boolean) => {
+    floating = on;
+    try {
+      localStorage.setItem(floatKey(), on ? '1' : '');
+    } catch {
+      // storage can be off: the preview still floats for this visit
+    }
+    if (on) void refreshPreview();
+  };
+  // a floating preview that was left open is drawn again when the workspace opens
+  $effect(() => {
+    if (floating && wide && hasWidgetBlock && !preview) untrack(() => void refreshPreview());
+  });
+  const startDrag = (event: PointerEvent) => {
+    // a press on a button in the header is a click: capturing the pointer here would swallow it
+    if ((event.target as HTMLElement).closest('button')) return;
+    const card = (event.currentTarget as HTMLElement).parentElement;
+    if (!card) return;
+    const box = card.getBoundingClientRect();
+    dragging = true;
+    dragOffsetX = event.clientX - box.left;
+    dragOffsetY = event.clientY - box.top;
+    (event.currentTarget as HTMLElement).setPointerCapture(event.pointerId);
+  };
+  // the card stays inside the canvas
+  const moveDrag = (event: PointerEvent) => {
+    if (!dragging || !frame) return;
+    const area = frame.getBoundingClientRect();
+    const card = (event.currentTarget as HTMLElement).parentElement?.getBoundingClientRect();
+    if (!card) return;
+    const x = Math.min(Math.max(0, event.clientX - area.left - dragOffsetX), area.width - card.width);
+    const y = Math.min(Math.max(0, event.clientY - area.top - dragOffsetY), area.height - card.height);
+    floatPos = { x, y, placed: true };
+  };
+  const endDrag = () => {
+    dragging = false;
+  };
   const selectTab = (key: string) => {
     tab = key as typeof tab;
   };
@@ -514,6 +567,22 @@
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6" /><path d="M20 20l-4.5-4.5" /></svg>
           <input bind:this={searchField} bind:value={searchQuery} oninput={onSearch} onblur={onSearchBlur} onkeydown={onSearchKey} placeholder={t('Search all blocks')} aria-label={t('Search all blocks')} />
         </label>
+      {/if}
+      {#if floating && wide && hasWidgetBlock}
+        <div class="ed-float" style:left={floatPos.placed ? `${floatPos.x}px` : undefined} style:top={floatPos.placed ? `${floatPos.y}px` : undefined} role="region" aria-label={t('Floating preview')}>
+          <div class="ed-float-head" role="presentation" onpointerdown={startDrag} onpointermove={moveDrag} onpointerup={endDrag} onpointercancel={endDrag} title={t('Drag to move')}>
+            <strong class="grow">{t('Preview')}</strong>
+            <button class="nb-btn" onclick={refreshPreview} disabled={running}>{preview ? t('Refresh preview') : t('Show preview')}</button>
+            <button class="ed-float-close" onclick={() => setFloating(false)} aria-label={t('Close preview')}>✕</button>
+          </div>
+          <div class="ed-float-body">
+            {#if preview?.design}
+              <WidgetDesignView design={preview.design} name={draft.displayName} emoji={draft.emoji} onRun={run} />
+            {:else if preview?.error}
+              <p class="ed-problem-text">{preview.error}</p>
+            {/if}
+          </div>
+        </div>
       {/if}
       {#if running}
         <div class="run-status" role="status">
@@ -681,9 +750,14 @@
                 <div class="ed-actions">
                   <strong class="ed-heading grow">{t('Preview')}</strong>
                   <button class="nb-btn" onclick={refreshPreview} disabled={running}>{preview ? t('Refresh preview') : t('Show preview')}</button>
+                  {#if wide}
+                    <button class="nb-btn" onclick={() => setFloating(!floating)}>{floating ? t('Dock preview') : t('Float preview')}</button>
+                  {/if}
                 </div>
                 <p class="ed-hint">{t('As it will look on the dashboard. A preview is a test run: no notes are written.')}</p>
-                {#if preview?.design}
+                {#if floating && wide}
+                  <p class="ed-hint">{t('The preview floats on the canvas.')}</p>
+                {:else if preview?.design}
                   <div class="ed-preview">
                     <WidgetDesignView design={preview.design} name={draft.displayName} emoji={draft.emoji} onRun={run} />
                   </div>

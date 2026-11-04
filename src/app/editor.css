@@ -639,6 +639,15 @@
 }
 
 /* the widget preview sits at the end of the Run tab, below the run and its days */
+.ed-widget-preview .ed-actions {
+  flex-wrap: wrap;
+  row-gap: 10px;
+}
+
+.ed-widget-preview .ed-actions > .ed-heading {
+  flex: 0 0 auto;
+}
+
 .ed-widget-preview {
   margin-top: 18px;
   padding-top: 14px;
@@ -647,4 +656,54 @@
 .ed-problem-text {
   color: var(--nb-danger, #c0392b);
   font-size: 13px;
+}
+
+/* the floating preview: a card over the canvas, in its top-right corner until it is dragged. Only the card takes
+   pointer events, so the canvas around it stays usable. */
+.editor .blockly-frame {
+  position: relative;
+}
+
+.ed-float {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 5;
+  width: 320px;
+  max-width: calc(100% - 24px);
+  border: 1px solid var(--nb-line);
+  border-radius: 12px;
+  background: var(--nb-surface);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+  overflow: hidden;
+}
+
+.ed-float-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--nb-line);
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+
+.ed-float-head:active {
+  cursor: grabbing;
+}
+
+.ed-float-close {
+  border: 0;
+  background: none;
+  color: inherit;
+  font-size: 16px;
+  padding: 4px 6px;
+  cursor: pointer;
+}
+
+.ed-float-body {
+  padding: 10px;
+  max-height: 60vh;
+  overflow: auto;
 }
