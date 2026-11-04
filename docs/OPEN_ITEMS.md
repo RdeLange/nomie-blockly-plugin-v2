@@ -21,8 +21,10 @@ browser checks in `scripts/ui/` listed in `.github/workflows/check.yml`.
 
 6. **Phase 10 gate on GitHub.** A deliberately broken test makes `npm test` exit 1 locally. I have not seen the GitHub
    check turn red on a broken test.
-7. **Live DailyNomie.** The widget storage key (`widgets`), the widget frame (`widgetindex`) and the widget preview
-   have only been checked against `scripts/ui/fake-nomie.js`, not in the real DailyNomie.
+7. **Live DailyNomie.** The widget storage key (`widgets`), the widget frame (`widgetid`, the parameter the Nomie
+   plugin SDK documents; `widgetindex` is still read) and the widget preview have only been checked against
+   `scripts/ui/fake-nomie.js`, not in the real DailyNomie. The widget picker in DailyNomie needs `addToWidgets: true`
+   and a non-empty `widgets` list; confirm both in a live run.
 8. **Examples that need something a test run cannot give** (`live` in `src/domain/example-library.ts`: a secret, the
    network, a location, a prompt). They are compiled and checked in the tests, but never run.
 9. **Phase 16 size.** Measured once (first JavaScript file 1,042,723 → 200,975 bytes); no size budget in CI.

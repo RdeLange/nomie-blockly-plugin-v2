@@ -41,6 +41,8 @@ describe('the widgets a plugin lists on the dashboard', () => {
 describe('the widget index in the address of the widget frame', () => {
   it('is the widget id DailyNomie picked, and nothing when there is none', () => {
     expect(widgetIndexOf('?pid=abc&widgetindex=water')).toBe('water');
+    // Nomie passes the widget id as widgetid (the SDK's documented parameter)
+    expect(widgetIndexOf('?pid=abc&widgetid=water')).toBe('water');
     expect(widgetIndexOf('?pid=abc')).toBeUndefined();
     expect(widgetIndexOf('')).toBeUndefined();
   });

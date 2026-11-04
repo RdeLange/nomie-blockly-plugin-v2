@@ -1,6 +1,6 @@
 // The widgets of the DailyNomie dashboard (phase 20). Each workspace that shows a value on the Nomie widget can be a
 // dashboard widget of its own. The plugin lists them in its `widgets` storage key (the list format of Nomie Lab v3);
-// DailyNomie opens the widget frame with &widgetindex=<the widget id>, which here is the workspace id.
+// DailyNomie opens the widget frame with &widgetid=<the widget id>, which here is the workspace id.
 import type { Workspace } from '../domain/workspace';
 import type { WidgetEntry } from '../runtime/widget';
 
@@ -28,7 +28,11 @@ export const dashboardWidgets = (list: Workspace[]): DashboardWidget[] =>
   });
 
 // The widget DailyNomie picked, from the address of the widget frame; undefined for the one widget of phase 15
-export const widgetIndexOf = (search: string): string | undefined => new URLSearchParams(search).get('widgetindex') ?? undefined;
+// Nomie passes the widget id as widgetid, as its plugin SDK documents; widgetindex is read too, as before
+export const widgetIndexOf = (search: string): string | undefined => {
+  const params = new URLSearchParams(search);
+  return params.get('widgetid') ?? params.get('widgetindex') ?? undefined;
+};
 
 export type WidgetTile = { workspace: Workspace; shown?: WidgetEntry };
 

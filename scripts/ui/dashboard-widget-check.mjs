@@ -1,5 +1,5 @@
 // Each workspace can be a dashboard widget of its own (phase 20): the plugin lists the workspaces that show a value in
-// its `widgets` storage key, and a widget frame opened with &widgetindex=<id> shows only that workspace. Runs against
+// its `widgets` storage key, and a widget frame opened with &widgetid=<id> shows only that workspace. Runs against
 // fake-nomie.js, which keeps its storage in localStorage, so a page opened again is the widget frame of DailyNomie.
 import { mkdirSync, readFileSync } from 'node:fs';
 import { addExample } from './add-example.mjs';
@@ -46,7 +46,7 @@ try {
     list.length === 1 && list[0].widgetid === moodId && list[0].name === 'Mood' && list[0].emoji === '😊' && Object.keys(list[0].config).length === 0);
 
   // DailyNomie opens the widget frame for that workspace: one tile, the one of the workspace it picked
-  await page.goto(`${url}?pid=test&widgetindex=${moodId}`);
+  await page.goto(`${url}?pid=test&widgetid=${moodId}`);
   await openWidgetFrame(page);
   await page.locator('.wd').waitFor({ timeout: 15000 });
   check('a widget of its own shows its workspace only', (await page.locator('.wd').count()) === 1);
@@ -56,13 +56,13 @@ try {
 
   // a workspace without a value yet: its widget says so, and offers Run
   const retrieveId = store.blockly.workspaces.find((w) => w.displayName === 'Example: Yesterday in one number').id;
-  await page.goto(`${url}?pid=test&widgetindex=${retrieveId}`);
+  await page.goto(`${url}?pid=test&widgetid=${retrieveId}`);
   await openWidgetFrame(page);
   await page.getByRole('button', { name: 'Run', exact: true }).waitFor({ timeout: 15000 });
   check('a workspace without a value says so, with Run', (await page.locator('.wd').count()) === 0 && (await page.getByRole('button', { name: 'Run', exact: true }).count()) === 1);
 
   // a widget of a workspace that was removed says so
-  await page.goto(`${url}?pid=test&widgetindex=gone`);
+  await page.goto(`${url}?pid=test&widgetid=gone`);
   await openWidgetFrame(page);
   await page.getByText("This widget's workspace was removed", { exact: false }).waitFor({ timeout: 15000 });
   check('a widget whose workspace was removed says so', true);
