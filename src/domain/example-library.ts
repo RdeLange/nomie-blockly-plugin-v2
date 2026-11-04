@@ -904,7 +904,7 @@ export const EXAMPLES: Example[] = [
             },
           }),
         ]),
-      ]),
+      ], { x: 20, y: 200 }),
     ],
   },
   {
