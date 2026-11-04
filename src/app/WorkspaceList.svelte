@@ -145,11 +145,14 @@
   <h1 class="title">Blockly</h1>
   <div class="row">
     <button class="button plain" onclick={() => (ui.view = 'settings')}>{t('Settings')}</button>
-    <button class="button plain" onclick={() => (ui.view = 'info')}>{t('About')}</button>
-    <button class="button" onclick={() => (adding = !adding)}>{adding ? t('Close') : t('Add')}</button>
+    {#if !ui.phone}
+      <button class="button plain" onclick={() => (ui.view = 'info')}>{t('About')}</button>
+      <button class="button" onclick={() => (adding = !adding)}>{adding ? t('Close') : t('Add')}</button>
+    {/if}
   </div>
 </div>
 
+{#if !ui.phone}
 <div class="segments" role="tablist">
   <button role="tab" aria-selected={tab === 'workspaces'} class:on={tab === 'workspaces'} onclick={() => (tab = 'workspaces')}>
     {t('Workspaces')}<span>{appState.workspaces.length}</span>
@@ -158,6 +161,7 @@
     {t('Examples')}<span>{examples.length}</span>
   </button>
 </div>
+{/if}
 
 {#if notice}
   <div class="notice" role="status">
@@ -169,7 +173,7 @@
   </div>
 {/if}
 
-{#if adding}
+{#if adding && !ui.phone}
   <div class="card">
     <p class="muted">{t('Add a workspace')}</p>
     <div class="row">
@@ -191,7 +195,7 @@
   </div>
 {/if}
 
-{#if tab === 'examples'}
+{#if tab === 'examples' && !ui.phone}
   <p class="muted lead">{t('Each example is a short tutorial. Add one, open it, and read its Detailed tab.')}</p>
   <p class="muted lead">{t('Start with the first level and work down: each level builds on the one before.')}</p>
   {#each EXAMPLE_LEVEL_ORDER as level, i (level)}
@@ -222,8 +226,12 @@
 {:else}
   {#if appState.workspaces.length === 0}
     <div class="card start">
-      <p>{t('No workspaces yet. Add one above, or start from a template.')}</p>
-      <button class="button" onclick={() => (tab = 'examples')}>{t('Start with an example')}</button>
+      {#if ui.phone}
+        <p>{t('No workspaces yet. Add them on a larger screen.')}</p>
+      {:else}
+        <p>{t('No workspaces yet. Add one above, or start from a template.')}</p>
+        <button class="button" onclick={() => (tab = 'examples')}>{t('Start with an example')}</button>
+      {/if}
     </div>
   {/if}
 
@@ -251,15 +259,19 @@
         <div class="health" class:failed={health?.failed} style="margin-top: 8px">{health?.text}</div>
       {/if}
       <div class="row" style="margin-top: 10px; justify-content: flex-end">
-        <button class="button plain" onclick={() => info(workspace)}>{t('Info')}</button>
-        <button class="button plain" onclick={() => edit(workspace.id)}>{t('Edit')}</button>
-        {#if healthOf(workspace, appState.scheduleDays[workspace.id], appState.lastTrigger[workspace.id])?.failed}
-          <button class="button plain" onclick={() => showFailure(workspace.id)}>{t('Show')}</button>
+        {#if !ui.phone}
+          <button class="button plain" onclick={() => info(workspace)}>{t('Info')}</button>
+          <button class="button plain" onclick={() => edit(workspace.id)}>{t('Edit')}</button>
+          {#if healthOf(workspace, appState.scheduleDays[workspace.id], appState.lastTrigger[workspace.id])?.failed}
+            <button class="button plain" onclick={() => showFailure(workspace.id)}>{t('Show')}</button>
+          {/if}
+          <button class="button plain" onclick={() => exportOne(workspace)}>{t('Export')}</button>
+          <button class="button plain" onclick={() => duplicate(workspace)}>{t('Duplicate')}</button>
         {/if}
-        <button class="button plain" onclick={() => exportOne(workspace)}>{t('Export')}</button>
-        <button class="button plain" onclick={() => duplicate(workspace)}>{t('Duplicate')}</button>
         <button class="button" onclick={() => run(workspace)}>{t('Run')}</button>
-        <button class="button danger" onclick={() => remove(workspace)}>{t('Delete')}</button>
+        {#if !ui.phone}
+          <button class="button danger" onclick={() => remove(workspace)}>{t('Delete')}</button>
+        {/if}
       </div>
     </div>
   {/each}

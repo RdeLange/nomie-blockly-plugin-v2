@@ -171,6 +171,7 @@ const NL: Record<string, string> = {
   'This file could not be read: {error}': 'Dit bestand kon niet worden gelezen: {error}',
   'Each example is a short tutorial. Add one, open it, and read its Detailed tab.': 'Elk voorbeeld is een korte les. Voeg er een toe, open hem en lees het tabblad Uitgebreid.',
   'Added "{name}".': '"{name}" toegevoegd.',
+  'No workspaces yet. Add them on a larger screen.': 'Nog geen werkruimten. Voeg ze toe op een groter scherm.',
 };
 
 // German: DailyNomie 7's words where it has them (Speichern, Exportieren, Duplizieren, Löschen, Bearbeiten, Zurück)
@@ -337,6 +338,7 @@ const DE: Record<string, string> = {
   'This file could not be read: {error}': 'Diese Datei konnte nicht gelesen werden: {error}',
   'Each example is a short tutorial. Add one, open it, and read its Detailed tab.': 'Jedes Beispiel ist eine kurze Anleitung. Füge eins hinzu, öffne es und lies den Reiter Ausführlich.',
   'Added "{name}".': '"{name}" hinzugefügt.',
+  'No workspaces yet. Add them on a larger screen.': 'Noch keine Arbeitsbereiche. Füge sie auf einem größeren Bildschirm hinzu.',
 };
 
 // Italian: DailyNomie 7's words where it has them (Salva, Esporta, Duplica, Elimina, Modifica, Indietro)
@@ -503,6 +505,7 @@ const IT: Record<string, string> = {
   'This file could not be read: {error}': 'Questo file non può essere letto: {error}',
   'Each example is a short tutorial. Add one, open it, and read its Detailed tab.': 'Ogni esempio è una breve guida. Aggiungine uno, aprilo e leggi la scheda Approfondita.',
   'Added "{name}".': '"{name}" aggiunto.',
+  'No workspaces yet. Add them on a larger screen.': 'Ancora nessuno spazio di lavoro. Aggiungili su uno schermo più grande.',
 };
 
 // The translations by language. English has none: the text is its own translation.

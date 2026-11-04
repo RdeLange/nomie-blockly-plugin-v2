@@ -9,7 +9,7 @@
   import SettingsView from './SettingsView.svelte';
   import { compileStale } from './actions';
   import WorkspaceSidebar from './WorkspaceSidebar.svelte';
-  import { sideBySide } from './layout';
+  import { isPhone, sideBySide } from './layout';
   import { onDestroy } from 'svelte';
   // the width of the plugin's frame: wide enough, the list sits beside the editor (phase 19)
   let width = $state(typeof window !== 'undefined' ? window.innerWidth : 0);
@@ -19,10 +19,15 @@
     if (typeof window !== 'undefined') window.removeEventListener('resize', onResize);
   });
   const split = $derived(sideBySide(width));
+  // a phone shows the list only (see ui.phone); the editor is not opened there
+  const phone = $derived(isPhone(width));
+  $effect(() => {
+    ui.phone = phone;
+  });
   // The editor is Blockly. It is loaded the first time it opens, so the plugin's start does not load it (phase 16).
   let editorModule = $state<{ default: any } | undefined>();
   $effect(() => {
-    if (ui.view === 'editor' && !editorModule) void import('./WorkspaceEditor.svelte').then((m) => (editorModule = m));
+    if (ui.view === 'editor' && !phone && !editorModule) void import('./WorkspaceEditor.svelte').then((m) => (editorModule = m));
   });
   import { startNomie } from '../nomie/plugin';
   import { actionDeps, notify } from './dialogs';
@@ -91,7 +96,7 @@
         </div>
       {/each}
     </div>
-  {:else if ui.view === 'list'}
+  {:else if ui.view === 'list' || (phone && ui.view === 'editor')}
     <WorkspaceList />
   {:else if ui.view === 'editor' && ui.editingId}
     {#if editorModule}

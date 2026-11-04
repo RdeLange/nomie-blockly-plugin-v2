@@ -1,6 +1,6 @@
 // The example library on the list screen: an Examples tab, with the examples in four levels (easy, moderate, complex and
 // expert). Adding an example says so at once: the card says Added, a notice offers to open it, and Open shows the
-// tutorial in the Detailed tab. Runs against fake-nomie.js, at 1440 x 900 and 390 x 844.
+// tutorial in the Detailed tab. Runs against fake-nomie.js, at 1440 x 900 (the phone: phone-list-check.mjs).
 import { mkdirSync, readFileSync } from 'node:fs';
 import { createServer } from 'vite';
 import { chromium } from 'playwright';
@@ -57,15 +57,7 @@ try {
   await context.close();
 
   // on a phone: the same tabs, the same four levels, and the same feedback
-  const phone = await newPage({ width: 390, height: 844 });
-  await phone.page.locator('.segments').waitFor({ timeout: 15000 });
-  await phone.page.getByRole('tab', { name: /^Examples/ }).click();
-  check('on a phone the examples are listed too', (await phone.page.locator('.example').count()) >= 36);
-  await phone.page.locator('.example', { hasText: 'Example: Mood analyst' }).getByRole('button', { name: 'Add', exact: true }).click();
-  await phone.page.locator('.notice').waitFor({ timeout: 5000 });
-  await phone.page.screenshot({ path: 'screenshots/examples-phone.png' });
-  check('on a phone adding an example gives the notice too', (await phone.page.locator('.notice').count()) === 1);
-  await phone.context.close();
+  // the phone is checked in phone-list-check.mjs: a phone shows the list only, not the editor
 } finally {
   await browser.close();
   await server.close();

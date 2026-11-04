@@ -31,6 +31,8 @@ try {
   page.on('pageerror', (e) => { if (e.message !== 'Failed to fetch') errors.push(e.message); });
   await page.goto(url);
 
+  // the workspaces are added on a desktop-sized page (a phone only lists them and runs them)
+  await page.setViewportSize({ width: 1440, height: 900 });
   // two workspaces: one shows a value on the widget (a template), one does not
   await addExample(page, 'Example: Dashboard widget with a value');
   await page.goto(url);
@@ -39,6 +41,7 @@ try {
   await page.locator('.card', { hasText: 'Example: Dashboard widget with a value' }).filter({ has: page.getByRole('button', { name: 'Run', exact: true }) }).getByRole('button', { name: 'Run', exact: true }).click();
   await page.waitForFunction(() => Object.keys(JSON.parse(window.localStorage.getItem('fake-nomie-store') ?? '{}').blockly?.widget ?? {}).length > 0, null, { timeout: 30000 });
 
+  await page.setViewportSize({ width: 390, height: 844 });
   const store = await stored(page);
   const moodId = store.blockly.workspaces.find((w) => w.displayName === 'Example: Dashboard widget with a value').id;
   const list = store.widgets ?? [];

@@ -1,5 +1,5 @@
 // The HTML widget (phase 20): an HTML block with a parameter is drawn in the preview as a frame with no scripts, the
-// placeholder is filled, and a script in the HTML is removed. Runs against fake-nomie.js, at 1440 x 900 and 390 x 844.
+// placeholder is filled, and a script in the HTML is removed. Runs against fake-nomie.js, at 1440 x 900 (the phone: phone-list-check.mjs).
 import { mkdirSync, readFileSync } from 'node:fs';
 import { createServer } from 'vite';
 import { chromium } from 'playwright';
@@ -65,15 +65,7 @@ try {
   await page.screenshot({ path: 'screenshots/html-widget-desktop.png' });
   await page.close();
 
-  const phone = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2 });
-  await phone.addInitScript({ content: readFileSync('scripts/ui/fake-nomie.js', 'utf8') });
-  await phone.route(/nomie-plugin\.js/, (route) => route.fulfill({ body: '', contentType: 'text/javascript' }));
-  page = await openEditor(phone, { width: 390, height: 844 });
-  await page.getByRole('button', { name: 'Preview', exact: true }).click();
-  await page.locator('.ed-preview iframe.wd-html').waitFor({ timeout: 15000 });
-  check('on a phone the HTML widget is drawn in the preview', (await page.locator('.ed-preview iframe.wd-html').count()) === 1);
-  await page.screenshot({ path: 'screenshots/html-widget-phone.png' });
-  await page.close();
+  // the phone is checked in phone-list-check.mjs: a phone shows the list only, not the editor
 } finally {
   await browser.close();
   await server.close();

@@ -37,12 +37,7 @@ try {
   await desktop.screenshot({ path: 'screenshots/panel-run.png' });
   console.log('Run tab problems:', await desktop.locator('.ed-problem').count(), '| badge:', await desktop.locator('.ed-badge').textContent());
 
-  const phone = await openEditor({ width: 390, height: 844 });
-  await phone.getByRole('button', { name: 'Show details' }).click();
-  await phone.waitForTimeout(400);
-  await phone.screenshot({ path: 'screenshots/panel-phone.png' });
-  await phone.getByRole('button', { name: 'Close the panel' }).click();
-  console.log('phone sheet closes:', (await phone.locator('.ed-panel').count()) === 0);
+  // the phone is checked in phone-list-check.mjs: a phone shows the list only, not the editor
 } finally {
   await browser.close();
   await server.close();

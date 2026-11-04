@@ -1,6 +1,6 @@
 // The layout of phase 19: from 1200 px wide the list of workspaces sits beside the editor (switching asks first when
 // there are unsaved changes); below 900 px the rail shows the label of the selected tile only, and a long press shows
-// any tile's name. Runs against fake-nomie.js, at 1440 x 900, 1100 x 800 and 390 x 844.
+// any tile's name. Runs against fake-nomie.js, at 1440 x 900 and 1100 x 800 (the phone: phone-list-check.mjs).
 import { mkdirSync, readFileSync } from 'node:fs';
 import { addExample } from './add-example.mjs';
 import { createServer } from 'vite';
@@ -74,29 +74,7 @@ try {
   await page.screenshot({ path: 'screenshots/split-1100.png' });
   await context.close();
 
-  // 390 x 844: the rail shows one label, and all the tiles fit
-  ({ context, page } = await openTwo({ width: 390, height: 844 }, 'Example: Yesterday in one number'));
-  const visibleLabels = () => page.evaluate(() =>
-    Array.from(document.querySelectorAll('.nomie-rail-label')).filter((el) => getComputedStyle(el).display !== 'none').length
-  );
-  check('the phone rail has eleven tiles', (await page.locator('.nomie-rail-tile').count()) === 11);
-  // a long press on a tile shows its name, and the name goes when the press ends (before a category is opened,
-  // as an open drawer covers the rail)
-  const tile = page.locator('.nomie-rail-tile').nth(3);
-  const box = await tile.boundingBox();
-  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
-  await page.mouse.down();
-  await page.waitForTimeout(700);
-  check('a long press shows the name of the tile', (await visibleLabels()) === 1);
-  await page.mouse.up();
-  await page.waitForTimeout(100);
-  // Blockly selects a tile when it is pressed, so the held tile is the selected one: its label stays
-  check('when the press ends, the held tile is the selected one, and its label stays', (await visibleLabels()) === 1);
-  // the selected tile is the one in use: once one is opened, its label shows
-  await page.locator('.blocklyToolboxCategory', { hasText: 'Nomie' }).click();
-  await page.waitForTimeout(300);
-  check('the phone rail shows the label of the selected tile only', (await visibleLabels()) === 1);
-  await context.close();
+  // the phone has no editor, so no rail: phone-list-check.mjs covers the phone
 } finally {
   await browser.close();
   await server.close();

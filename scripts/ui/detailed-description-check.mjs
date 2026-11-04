@@ -1,5 +1,5 @@
 // The detailed description of a workspace: a Detailed tab in the panel holds the text, it stays when the tabs change,
-// and Save keeps it with the workspace. Runs against fake-nomie.js, at 1440 x 900 and 390 x 844.
+// and Save keeps it with the workspace. Runs against fake-nomie.js, at 1440 x 900 (the phone: phone-list-check.mjs).
 import { mkdirSync, readFileSync } from 'node:fs';
 import { addExample } from './add-example.mjs';
 import { createServer } from 'vite';
@@ -45,14 +45,7 @@ try {
   check('Save keeps the detailed description with the workspace', stored.includes('Logs my mood every morning'));
   await context.close();
 
-  const phone = await openEditor({ width: 390, height: 844 });
-  // on a phone the panel is closed until the Details button opens it
-  await phone.page.getByRole('button', { name: 'Show details' }).click();
-  await phone.page.getByRole('tab', { name: 'Detailed' }).click();
-  await phone.page.getByLabel('Detailed description').fill(TEXT);
-  check('on a phone the Detailed tab has the text box', (await phone.page.getByLabel('Detailed description').count()) === 1);
-  await phone.page.screenshot({ path: 'screenshots/detailed-phone.png' });
-  await phone.context.close();
+  // the phone is checked in phone-list-check.mjs: a phone shows the list only, not the editor
 } finally {
   await browser.close();
   await server.close();

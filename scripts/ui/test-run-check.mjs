@@ -81,12 +81,7 @@ try {
   check('the first real run turns test mode off', (await untested(page)) === undefined);
   await page.close();
 
-  // the phone run bar has the switch as well
-  const phone = await openFromBackup({ width: 390, height: 844 });
-  const phoneSwitch = phone.locator('.run-test input');
-  check('the phone run bar shows the test switch, on', await phoneSwitch.isChecked());
-  await phone.screenshot({ path: 'screenshots/test-run-phone.png' });
-  await phone.close();
+  // the phone is checked in phone-list-check.mjs: a phone shows the list only, not the editor
 } finally {
   await browser.close();
   await server.close();

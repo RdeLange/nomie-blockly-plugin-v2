@@ -1,6 +1,6 @@
 // The widget preview (phase 20): the Preview tab, and on a phone the Preview button next to Console, are there only when
 // a widget block is on the canvas. The preview is the widget as the dashboard shows it, sized like a dashboard widget.
-// Runs against fake-nomie.js, at 1440 x 900 and 390 x 844.
+// Runs against fake-nomie.js, at 1440 x 900 (the phone: phone-list-check.mjs).
 import { mkdirSync, readFileSync } from 'node:fs';
 import { createServer } from 'vite';
 import { chromium } from 'playwright';
@@ -58,21 +58,7 @@ try {
   check('a workspace without a widget block has no Preview tab', (await page.getByRole('tab', { name: 'Preview' }).count()) === 0);
   await page.close();
 
-  // the phone: the Preview button is next to Console, only with a widget block
-  const phoneContext = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2 });
-  await phoneContext.addInitScript({ content: readFileSync('scripts/ui/fake-nomie.js', 'utf8') });
-  await phoneContext.route(/nomie-plugin\.js/, (route) => route.fulfill({ body: '', contentType: 'text/javascript' }));
-  page = await openEditor(phoneContext, 'Example: Dashboard widget with a value', { width: 390, height: 844 });
-  const previewButton = page.getByRole('button', { name: 'Preview', exact: true });
-  check('on a phone, a widget workspace has the Preview button', (await previewButton.count()) === 1);
-  await previewButton.click();
-  await page.locator('.ed-preview .wd').waitFor({ timeout: 15000 });
-  check('the phone preview draws the widget', (await page.locator('.ed-preview .wd').count()) === 1);
-  await page.screenshot({ path: 'screenshots/preview-phone.png' });
-  await page.close();
-  page = await openEditor(phoneContext, 'Example: Yesterday in one number', { width: 390, height: 844 });
-  check('on a phone, a workspace without a widget has no Preview button', (await page.getByRole('button', { name: 'Preview', exact: true }).count()) === 0);
-  await page.close();
+  // the phone is checked in phone-list-check.mjs: a phone shows the list only, not the editor
 } finally {
   await browser.close();
   await server.close();
