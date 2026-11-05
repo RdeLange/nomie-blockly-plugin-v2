@@ -32,6 +32,11 @@
         "displayName": "Esempio: Ciao, console",
         "description": "Il primo spazio di lavoro: righe nella console e un avviso di Nomie.",
         "detailedDescription": "Cosa costruisci: uno spazio di lavoro che scrive due righe nella console e un messaggio di Nomie.\n\nPasso 1: apri il gruppo Nomie. Nella tavolozza dei blocchi a sinistra apri il gruppo Nomie. Trova il blocco Pianificatore e trascinalo sulla tela vuota.\n\nPasso 2: aggiungi la riga della console. Apri la sezione Scrivi e mostra e trascina un blocco console dentro il Pianificatore, nel suo script. Il Pianificatore è la parte che viene eseguita, quindi ogni blocco che deve girare va dentro.\n\nPasso 3: dai un testo alla riga. Apri il gruppo Testo e trascina un blocco di testo nel Value del blocco console. Clicca sul testo e scrivi: Ciao dalla console.\n\nPasso 4: aggiungi una seconda riga. Trascina un altro blocco console sotto la prima, e inseriscine uno con il testo Ciao dalla console del browser. La console mostra le righe nell'ordine in cui le trova.\n\nPasso 5: mostra un messaggio di Nomie. Trascina un blocco messaggio sotto la seconda riga e dagli un blocco di testo con Ciao da un messaggio.\n\nVerifica: premi Esegui. La scheda Console nel pannello mostra le due righe, una dopo l'altra. Il messaggio compare come avviso di Nomie.\n\nProva poi: cambia i testi ed esegui di nuovo. La console conserva solo le righe dell'ultima esecuzione."
+      },
+      "es": {
+        "displayName": "Ejemplo: Hola, consola",
+        "description": "El primer espacio de trabajo: líneas en la consola y un aviso de Nomie.",
+        "detailedDescription": "En este primer ejemplo construyes el espacio de trabajo más pequeño y útil: una línea de texto en la consola.\n\nPaso 1: Empieza en la sección Nomie del cajón y pon el bloque Programador en el lienzo. Su script es lo que se ejecuta, así que pon el bloque siguiente dentro.\n\nPaso 2: Después añade el bloque de consola y conecta un bloque de texto a su Valor. Escribe un saludo en el texto.\n\nPaso 3: Luego añade una segunda línea de consola y un bloque de mensaje que muestre el mismo texto como aviso. Pulsa Ejecutar: la consola muestra cada línea en orden y el mensaje aparece como aviso de Nomie.\n\nPaso 4: Prueba a cambiar el texto y vuelve a ejecutar."
       }
     }
   },
@@ -68,6 +73,11 @@
         "displayName": "Esempio: Ieri in un numero",
         "description": "Legge un tracker per un giorno e mostra la media.",
         "detailedDescription": "Cosa costruisci: una frase che ti dice il valore medio dell'umore di ieri, letto dalle tue note.\n\nCosa ti serve: un tracciatore in Nomie chiamato #mood, con alcune note di ieri. Senza note la frase mostra uno zero, ed è corretto.\n\nPasso 1: aggiungi il Pianificatore. Trascina il Pianificatore dal gruppo Nomie sulla tela.\n\nPasso 2: aggiungi un messaggio. Metti un blocco messaggio dal gruppo Nomie dentro il Pianificatore. Il messaggio è ciò che Nomie ti mostra quando l'esecuzione finisce.\n\nPasso 3: unisci due parti. Trascina un blocco unisci nel messaggio. Unisci inserisce testi e valori uno dopo l'altro, e ha tanti ingressi quanti ne servono. Con l'ingranaggio sul blocco puoi aggiungere un terzo ingresso.\n\nPasso 4: scrivi la prima parte. Metti un blocco di testo nel primo ingresso di unisci e scrivi: Il tuo umore medio di ieri era.\n\nPasso 5: leggi il valore. Trascina un blocco valore giornaliero nel secondo ingresso. Compila i tre ingressi: un blocco tracciatore con #mood in Tracker, un selettore di giorno con ieri in Giorno, e un selettore di statistica con media in Statistica.\n\nVerifica: premi Esegui. Il messaggio mostra la frase con il numero. Imposta il selettore di giorno su oggi ed esegui di nuovo.\n\nProva poi: metti un blocco di testo con un punto alla fine, oppure usa il blocco arrotonda dal gruppo Matematica per togliere i decimali."
+      },
+      "es": {
+        "displayName": "Ejemplo: Ayer en un número",
+        "description": "Lee un tracker de un día y muestra el promedio.",
+        "detailedDescription": "Este ejemplo lee tus notas.\n\nPaso 1: Pide el promedio del estado de ánimo de ayer y muestra la respuesta con una frase alrededor. Empieza con el bloque Programador.\n\nPaso 2: Dentro, añade un bloque mostrar mensaje. En el mensaje une dos partes con un bloque de unir: un texto que empieza la frase, y un bloque de valor de día.\n\nPaso 3: El bloque de valor de día tiene tres entradas: el tracker (#mood, del bloque de tracker), el día (ayer, del selector de día) y la estadística (promedio, del selector de estadísticas). Pruébalo primero en modo de prueba.\n\nPaso 4: La frase muestra el valor que contienen tus notas; sin notas muestra un cero."
       }
     }
   },
@@ -104,6 +114,11 @@
         "displayName": "Esempio: Umore su un periodo",
         "description": "Un valore di periodo, arrotondato e mostrato come frase.",
         "detailedDescription": "Cosa costruisci: una frase con l'umore medio degli ultimi 30 giorni, arrotondato a un numero intero.\n\nPasso 1: parti dall'esempio di ieri. Se ce l'hai, copia il Pianificatore con il suo messaggio. Altrimenti aggiungi un Pianificatore e un messaggio dal gruppo Nomie.\n\nPasso 2: aggiungi un valore di periodo. Cerca il blocco valore di periodo nel gruppo Nomie. Funziona come il valore giornaliero, ma copre un intervallo di giorni. Mettilo nel blocco unisci del messaggio.\n\nPasso 3: scegli tracciatore e periodo. Metti un blocco tracciatore con #mood in Trackable. Metti un selettore di periodo in Periodo e scegli Ultimi 30 giorni. Metti un selettore di statistica in Statistica e scegli media.\n\nPasso 4: arrotonda il numero. Trascina un blocco arrotonda dal gruppo Matematica e metti il valore di periodo nel suo ingresso numerico. Lascia l'opzione com'è: elimina i decimali.\n\nPasso 5: scrivi la frase. Metti un blocco di testo prima del blocco arrotonda con: Il tuo umore medio negli ultimi 30 giorni è.\n\nVerifica: premi Esegui. Il messaggio mostra la frase con un numero intero alla fine.\n\nProva poi: cambia il selettore di periodo su Ultimi 7 giorni, e la frase cambia con lui. È lo schema per i riepiloghi settimanali o mensili: cambia periodo e statistica, e gli stessi blocchi rispondono a un'altra domanda."
+      },
+      "es": {
+        "displayName": "Ejemplo: Estado de ánimo en un periodo",
+        "description": "Un valor de periodo, redondeado y mostrado como frase.",
+        "detailedDescription": "Aquí lees un periodo más largo.\n\nPaso 1: Paso 1: Añade el bloque de valor de periodo, que funciona como el de valor de día pero abarca un intervalo: en el selector de periodo elige Últimos 30 días, y la estadística promedio.\n\nPaso 2: Redondea el valor de periodo con un bloque de redondeo, para que la respuesta no tenga decimales.\n\nPaso 3: Paso 2: Muéstralo con un mensaje y un texto delante.\n\nPaso 4: Es el patrón para resúmenes semanales y mensuales: cambia el periodo y la estadística, y los mismos bloques responden a otra pregunta."
       }
     }
   },
@@ -140,6 +155,11 @@
         "displayName": "Esempio: Registra un valore ogni giorno",
         "description": "Scrive una nota con un valore di tracker, per il giorno dell'esecuzione.",
         "detailedDescription": "Cosa costruisci: una nota nella tua cronologia Nomie per ogni giorno in cui lo spazio di lavoro gira, con un valore per il tracciatore #goodday.\n\nCosa ti serve: una pianificazione giornaliera. Questo esempio scrive nelle tue note, quindi lo provi prima.\n\nPasso 1: aggiungi il Pianificatore e impostalo su giornaliero. Trascina il Pianificatore dal gruppo Nomie sulla tela. Nella scheda Dettagli scegli Giornaliero. Lo spazio di lavoro gira così una volta al giorno.\n\nPasso 2: aggiungi il blocco registra valore. Trascina il blocco registra valore dal gruppo Nomie dentro il Pianificatore.\n\nPasso 3: dagli un valore. Trascina un blocco numero nell'ingresso Value e scrivi 1.\n\nPasso 4: scegli il tracciatore. Trascina un blocco tracciatore nell'ingresso Tracker e scrivi #goodday. Nomie crea il tracciatore se non esiste ancora.\n\nPasso 5: scegli il giorno. Trascina un selettore di giorno nell'ingresso Data e scegli oggi.\n\nPasso 6: prova prima. Nella scheda Esegui attiva l'interruttore Test. Premi Esegui. La console mostra la riga Registrerei, con il giorno, e nessuna nota viene scritta.\n\nVerifica: disattiva il Test e premi Esegui. Allora compare per oggi una nota con #goodday(1) nella tua cronologia.\n\nProva poi: usa un blocco di testo e un blocco unisci per scrivere anche il giorno nel messaggio, oppure usa il pulsante Ieri per vedere come gira un'esecuzione per ieri."
+      },
+      "es": {
+        "displayName": "Ejemplo: Registrar un valor cada día",
+        "description": "Escribe una nota con un valor de tracker, para el día de la ejecución.",
+        "detailedDescription": "Este ejemplo escribe en tus notas, así que es mejor probarlo primero en modo de prueba: en ese modo solo indica lo que escribiría.\n\nPaso 1: Paso 1: Pon el bloque registrar valor dentro de un bloque Programador diario, para que escriba una nota por cada día de una ejecución programada.\n\nPaso 2: Dale el tracker #goodday, un valor de 1 y el selector de día en hoy.\n\nPaso 3: Paso 2: Haz la prueba: la consola muestra la línea \"Registraría\" con el día.\n\nPaso 4: Cuando estés conforme, desactiva el modo de prueba y ejecútalo de verdad."
       }
     }
   },
@@ -176,6 +196,11 @@
         "displayName": "Esempio: Attesa tra le righe",
         "description": "Attende un secondo tra due righe della console.",
         "detailedDescription": "Cosa costruisci: due righe nella console, con una pausa di un secondo tra le due.\n\nPasso 1: aggiungi il Pianificatore. Trascina il Pianificatore dal gruppo Nomie sulla tela.\n\nPasso 2: aggiungi la prima riga. Nel Pianificatore trascina un blocco console dalla sezione Scrivi e mostra e inseriscine uno di testo: Prima riga.\n\nPasso 3: aggiungi la pausa. Trascina il blocco attesa sotto la prima riga (scrivi attesa nella ricerca in cima alla tavolozza per trovarlo). Imposta i secondi su 1.\n\nPasso 4: aggiungi la seconda riga. Sotto il blocco attesa metti un altro blocco console con il testo: Seconda riga, un secondo dopo.\n\nVerifica: premi Esegui. La console mostra la prima riga, e la seconda compare un secondo dopo. L'esecuzione aspetta durante la pausa, e lo vedi nello stato sopra la tela.\n\nProva poi: imposta la pausa a 3 secondi. Usa le pause con parsimonia: ogni secondo conta nel tempo che un'esecuzione può impiegare, e un'esecuzione si ferma dopo cinque minuti."
+      },
+      "es": {
+        "displayName": "Ejemplo: Esperar entre líneas",
+        "description": "Espera un segundo entre dos líneas de la consola.",
+        "detailedDescription": "Un espacio de trabajo puede hacer una pausa.\n\nPaso 1: Construye dos líneas de consola con un bloque de espera entre ellas: primero la línea de consola, luego el bloque de espera fijado a 1 segundo, y después la segunda línea.\n\nPaso 2: La ejecución se detiene durante la espera, y la consola muestra la primera línea antes que la segunda.\n\nPaso 3: Usa las esperas con moderación: cada segundo cuenta para el tiempo que puede durar una ejecución."
       }
     }
   },
@@ -212,6 +237,11 @@
         "displayName": "Esempio: I selettori",
         "description": "Selettori di tracker, giorno, periodo, statistica e data in un unico posto.",
         "detailedDescription": "Cosa costruisci: un messaggio che mostra cosa sceglie ogni selettore, così vedi i valori prima di usarli.\n\nCosa ti serve: nient'altro. I selettori sono i piccoli blocchi che scelgono un valore: un tracciatore, un giorno, un periodo, una statistica e una data.\n\nPasso 1: aggiungi il Pianificatore e un messaggio. Trascina il Pianificatore dal gruppo Nomie sulla tela e metti un blocco messaggio dentro.\n\nPasso 2: aggiungi un blocco unisci. Trascina un blocco unisci nel messaggio. Lì inserirai in fila testi e selettori.\n\nPasso 3: aggiungi il tracciatore. Metti un blocco di testo con Tracker: e accanto trascina un blocco tracciatore con #mood.\n\nPasso 4: aggiungi giorno e periodo. Aggiungi il testo | Giorno: , poi un selettore di giorno su ieri. Aggiungi il testo | Periodo: , poi un selettore di periodo su Ultimi 7 giorni.\n\nPasso 5: aggiungi statistica e data. Aggiungi il testo | Statistica: e un selettore di statistica su media. Chiudi con | Data: e un selettore di data, dove scrivi una data come 2026-11-01.\n\nVerifica: premi Esegui. Il messaggio elenca ogni selettore con il suo valore.\n\nProva poi: cambia un selettore nel menu a tendina ed esegui di nuovo. Ogni blocco che legge o scrive note prende il suo tracciatore, giorno o periodo da selettori come questi."
+      },
+      "es": {
+        "displayName": "Ejemplo: Los selectores",
+        "description": "Selectores de tracker, día, periodo, estadística y fecha en un solo lugar.",
+        "detailedDescription": "Los selectores son los pequeños bloques que eligen un valor: un tracker, un día, un periodo, una estadística y una fecha.\n\nPaso 1: Paso 1: En este ejemplo cada selector va dentro de un mostrar mensaje, para que veas lo que elige.\n\nPaso 2: Construye el mensaje con bloques de unir, uno por cada selector.\n\nPaso 3: Paso 2: Cambia el valor elegido en la lista desplegable y vuelve a ejecutar para ver cómo cambia el texto.\n\nPaso 4: Cada bloque que lee o escribe notas toma su tracker, día o periodo de estos selectores."
       }
     }
   },
@@ -248,6 +278,11 @@
         "displayName": "Esempio: Ultimo valore e giorni dall'ultimo",
         "description": "L'ultimo valore registrato, e quanti giorni fa è stato registrato.",
         "detailedDescription": "Cosa costruisci: due righe dalle tue note. La prima dà il tuo ultimo valore dell'umore degli ultimi 14 giorni. La seconda conta i giorni dall'ultima volta in cui #mood è stato registrato.\n\nCosa ti serve: un tracciatore #mood in Nomie, con alcune note. La cronologia guarda indietro nelle tue note, quindi un account nuovo non mostra ancora nulla.\n\nPasso 1: aggiungi il Pianificatore. Trascinalo dal gruppo Nomie sulla tela e impostalo su giornaliero nella scheda Dettagli.\n\nPasso 2: aggiungi l'ultimo valore. Metti un messaggio nel Pianificatore. Nel blocco unisci del messaggio trascina un blocco ultimo valore dal gruppo Nomie. Metti #mood nell'ingresso Tracker e imposta i giorni su 14. Il blocco cerca l'ultima nota con quel tracciatore negli ultimi 14 giorni.\n\nPasso 3: scrivi la prima riga. Metti un blocco di testo prima dell'ultimo valore, con le parole: Ultimo umore:.\n\nPasso 4: aggiungi la seconda riga. Sotto il messaggio metti un secondo messaggio. Trascina un blocco giorni da in un blocco unisci, con un blocco tracciatore #mood nell'ingresso.\n\nPasso 5: scrivi il testo davanti. Prima del blocco giorni da metti un blocco di testo con le parole: Giorni da quando #mood è stato registrato:.\n\nVerifica: premi Esegui. Entrambi i messaggi vengono dalle stesse note, quindi concordano. Senza note la prima riga è vuota, e la seconda conta da zero.\n\nProva poi: porta i 14 giorni a 60, e guarda come cambia l'ultimo valore."
+      },
+      "es": {
+        "displayName": "Ejemplo: Último valor y días desde entonces",
+        "description": "El último valor registrado, y hace cuántos días se registró.",
+        "detailedDescription": "Los bloques de historial miran hacia atrás en tus notas.\n\nPaso 1: El bloque último valor encuentra la nota más reciente con un tracker dentro de un número de días, y el bloque días desde entonces cuenta los días desde esa nota hasta hoy.\n\nPaso 2: Constrúyelos en un bloque Programador diario: un mensaje con el último estado de ánimo (mirando 14 días atrás), y una segunda línea con los días desde que se registró #mood por última vez.\n\nPaso 3: Las dos respuestas salen de las mismas notas, así que coinciden entre sí."
       }
     }
   },
@@ -284,6 +319,11 @@
         "displayName": "Esempio: Una serie",
         "description": "Conta i giorni di fila con un tracker, e ti fa i complimenti.",
         "detailedDescription": "Cosa costruisci: un contatore di serie. Mostra per quanti giorni di seguito è stato registrato un tracciatore, e ti fa i complimenti quando la serie è di tre giorni o più.\n\nCosa ti serve: un tracciatore #habit in Nomie, registrato in alcuni giorni.\n\nPasso 1: aggiungi il Pianificatore e un messaggio. Trascina il Pianificatore dal gruppo Nomie sulla tela e mettici un messaggio dentro.\n\nPasso 2: aggiungi un blocco se. Trascina un blocco se dal gruppo Logica nel Pianificatore, sopra il messaggio.\n\nPasso 3: costruisci la condizione. Trascina un blocco confronto dal gruppo Logica nell'ingresso del blocco se. A sinistra metti il blocco serie dal gruppo Nomie, a destra un blocco numero con 3. Scegli l'operatore maggiore o uguale.\n\nPasso 4: scegli il tracciatore. Metti un blocco tracciatore con #habit nel blocco serie. Leggi il suggerimento: il blocco serie conta al massimo 60 giorni, fino al giorno dell'esecuzione.\n\nPasso 5: aggiungi i due messaggi. Nel blocco se metti un messaggio con: Tre giorni di fila, complimenti! Clicca l'ingranaggio del blocco se, aggiungi un ramo altrimenti e mettici un messaggio con: Continua così.\n\nVerifica: premi Esegui. Senza serie compare il messaggio del ramo altrimenti. Prova con note su tre giorni di fila per vedere il primo messaggio.\n\nProva poi: cambia il 3 in 7, e fanne un obiettivo settimanale."
+      },
+      "es": {
+        "displayName": "Ejemplo: Una racha",
+        "description": "Cuenta los días seguidos con un tracker, y te felicita.",
+        "detailedDescription": "Una racha cuenta los días seguidos en que se registró un tracker, hasta el día de la ejecución.\n\nPaso 1: Construye un bloque si: cuando la racha sea al menos 3, muestra un mensaje de felicitación; si no, un breve ánimo.\n\nPaso 2: La condición es un bloque de comparación, con el bloque de racha a la izquierda y el número 3 a la derecha.\n\nPaso 3: Pruébalo con otros trackers y lee el aviso del bloque de racha: cuenta como máximo 60 días."
       }
     }
   },
@@ -320,6 +360,11 @@
         "displayName": "Esempio: Scrivi una nota",
         "description": "Scrive una nota di testo libero in un giorno a tua scelta.",
         "detailedDescription": "Cosa costruisci: una nota libera nella tua cronologia Nomie, scritta per ieri. È un modo semplice per scrivere un riepilogo o un promemoria.\n\nCosa ti serve: una pianificazione giornaliera. Questo esempio scrive nelle tue note, quindi lo provi prima.\n\nPasso 1: aggiungi il Pianificatore e impostalo su giornaliero. Trascina il Pianificatore dal gruppo Nomie sulla tela e scegli Giornaliero nella scheda Dettagli.\n\nPasso 2: aggiungi il blocco registra nota. Trascina il blocco registra nota dal gruppo Nomie nel Pianificatore.\n\nPasso 3: scrivi il testo. Metti un blocco di testo nell'ingresso Testo della nota, con le parole: Settimana discussa #review. Il cancelletto fa sì che Nomie crei il tracciatore #review se non esiste.\n\nPasso 4: scegli il giorno. Metti un selettore di giorno nell'ingresso Data e scegli ieri. La nota viene scritta per ieri.\n\nPasso 5: prova prima. Nella scheda Esegui attiva l'interruttore Test e premi Esegui. La console mostra la nota che scriverebbe, e non viene salvato nulla.\n\nVerifica: disattiva il Test e premi Esegui. La nota compare per ieri nella tua cronologia, con il tag review.\n\nProva poi: scrivi un riepilogo settimanale con un blocco unisci e un valore di periodo, così la nota ti dice la media della settimana."
+      },
+      "es": {
+        "displayName": "Ejemplo: Escribir una nota",
+        "description": "Escribe una nota de texto libre en un día de tu elección.",
+        "detailedDescription": "El bloque registrar nota escribe una nota de texto libre, que puede contener trackers, personas y contexto, como una nota de Nomie.\n\nPaso 1: Constrúyelo dentro de un bloque Programador con el texto \"Repasé la semana #review\" y el selector de día en ayer.\n\nPaso 2: Usa primero el modo de prueba: muestra la nota que escribiría.\n\nPaso 3: Este es el bloque para un resumen semanal o un recordatorio que aparece en tu línea de tiempo."
       }
     }
   },
@@ -356,6 +401,11 @@
         "displayName": "Esempio: Dove sono",
         "description": "Mostra la posizione che Nomie comunica, se lo consenti.",
         "detailedDescription": "Cosa costruisci: un messaggio con la tua posizione, o un messaggio chiaro se la posizione non è nota.\n\nCosa ti serve: l'autorizzazione alla posizione per Nomie. Nomie la chiede la prima volta, e puoi cambiarla dopo nelle impostazioni del dispositivo.\n\nPasso 1: aggiungi il Pianificatore e un messaggio. Trascina il Pianificatore dal gruppo Nomie sulla tela e mettici un messaggio.\n\nPasso 2: aggiungi il blocco la mia posizione. Trascinalo dal gruppo Nomie nel messaggio.\n\nPasso 3: metti un testo davanti. Nel messaggio inserisci un blocco unisci, con un blocco di testo con le parole: Ti trovi a, e dopo di lui il blocco la mia posizione.\n\nPasso 4: provalo. Nella scheda Esegui attiva l'interruttore Test e premi Esegui. La prima volta Nomie chiede l'autorizzazione: concedila.\n\nVerifica: il messaggio mostra una latitudine e una longitudine. Se non compare nulla, la posizione non era disponibile. Per questo ogni uso di la mia posizione dovrebbe avere un'alternativa, come un testo che dice che la posizione è sconosciuta.\n\nProva poi: aggiungi un blocco se che controlla se il risultato è vuoto, e mostra un testo nel ramo altrimenti."
+      },
+      "es": {
+        "displayName": "Ejemplo: Dónde estoy",
+        "description": "Muestra la ubicación que informa Nomie, si la permites.",
+        "detailedDescription": "El bloque mi ubicación pide a Nomie tu posición, y devuelve una latitud y una longitud, o nada cuando la posición no se conoce.\n\nPaso 1: Paso 1: Constrúyelo dentro de un mensaje, con un texto delante.\n\nPaso 2: Nomie pide permiso la primera vez.\n\nPaso 3: Paso 2: Pruébalo primero en modo de prueba y mira aparecer la posición.\n\nPaso 4: Si no aparece nada, la posición no estaba disponible; por eso cualquier uso de mi ubicación debería tener una alternativa."
       }
     }
   },
@@ -392,6 +442,11 @@
         "displayName": "Esempio: Apri un link",
         "description": "Apre una pagina web in Nomie quando lo esegui a mano.",
         "detailedDescription": "Cosa costruisci: un blocco che apre una pagina web dentro Nomie, come una dashboard tua.\n\nPasso 1: aggiungi il Pianificatore. Trascinalo dal gruppo Nomie sulla tela.\n\nPasso 2: aggiungi il blocco apri link. Trascinalo dal gruppo Nomie nel Pianificatore.\n\nPasso 3: dagli un indirizzo. Metti un blocco di testo nell'ingresso del link, con l'indirizzo completo della pagina, che inizia con https.\n\nPasso 4: provalo. Dall'editor premi Esegui. Un'esecuzione manuale apre la pagina in una finestra dentro Nomie.\n\nVerifica: la finestra si apre con la pagina. Se fai girare lo spazio di lavoro con una pianificazione, il blocco scrive solo Aprirei nell'uscita. Una pianificazione quindi non apre mai una finestra.\n\nProva poi: tieni l'indirizzo in un segreto o in un testo che puoi cambiare, e usa solo indirizzi di cui ti fidi. Uno spazio di lavoro condiviso con qualcun altro esegue lo stesso indirizzo sul suo dispositivo."
+      },
+      "es": {
+        "displayName": "Ejemplo: Abrir un enlace",
+        "description": "Abre una página web en Nomie cuando lo ejecutas a mano.",
+        "detailedDescription": "El bloque abrir enlace abre una página web en una ventana dentro de Nomie.\n\nPaso 1: Constrúyelo con un bloque de texto que contenga la dirección.\n\nPaso 2: En una ejecución manual se abre la página; en una ejecución programada el bloque solo escribe \"Abriría\" en la salida, así que una programación nunca abre una ventana.\n\nPaso 3: Úsalo para una página que revisas cada día, como un panel propio. Comprueba antes de ejecutar que la dirección es la que quieres abrir."
       }
     }
   },
@@ -428,6 +483,11 @@
         "displayName": "Esempio: Recupera una pagina web",
         "description": "Recupera una pagina web e mostra l'inizio della risposta.",
         "detailedDescription": "Cosa costruisci: una richiesta a un indirizzo web, con la risposta mostrata nella console.\n\nCosa ti serve: una connessione a internet, e un indirizzo di cui ti fidi. L'esempio usa un indirizzo pubblico. Uno spazio di lavoro condiviso esegue i suoi indirizzi sul dispositivo di chi lo aggiunge.\n\nPasso 1: aggiungi il Pianificatore. Trascinalo dal gruppo Nomie sulla tela.\n\nPasso 2: aggiungi il blocco richiedi. Trascinalo dal gruppo Nomie nel Pianificatore.\n\nPasso 3: dagli un indirizzo. Metti un blocco di testo nell'ingresso dell'indirizzo, con una pagina di cui ti fidi. Inizia con https.\n\nPasso 4: mostra la risposta. Trascina un blocco console sotto la richiesta e inserisci il blocco richiedi nel Value del blocco console.\n\nVerifica: premi Esegui. La console mostra la risposta come testo, spesso l'inizio di una pagina web o una lista in JSON.\n\nProva poi: la maggior parte dei servizi risponde in JSON. Gli esempi sugli oggetti mostrano passo per passo come leggerlo."
+      },
+      "es": {
+        "displayName": "Ejemplo: Obtener una página web",
+        "description": "Obtiene una página web y muestra el principio de su respuesta.",
+        "detailedDescription": "El bloque de obtener llama a una dirección web y da la respuesta como texto.\n\nPaso 1: Constrúyelo con un bloque de texto con la dirección, y muestra la respuesta en la consola.\n\nPaso 2: La mayoría de servicios responden en JSON; los bloques de objeto del ejemplo Objetos y JSON muestran cómo leerlo.\n\nPaso 3: Llama solo a direcciones en las que confíes, porque un espacio de trabajo que se comparte contigo también las ejecuta."
       }
     }
   },
@@ -464,6 +524,11 @@
         "displayName": "Esempio: Widget della dashboard con un valore",
         "description": "Un widget sulla dashboard con un valore, una tendenza e un piè di pagina.",
         "detailedDescription": "Cosa costruisci: un widget della dashboard con un numero, una piccola tendenza e un piè di pagina.\n\nCosa ti serve: niente di speciale. Il widget viene conservato dopo un'esecuzione, quindi devi far girare lo spazio di lavoro una volta.\n\nPasso 1: aggiungi il Pianificatore e impostalo su giornaliero. Trascina il Pianificatore dal gruppo Nomie sulla tela e scegli Giornaliero nella scheda Dettagli.\n\nPasso 2: aggiungi il blocco dashboard. Trascina il blocco dashboard dal gruppo Nomie nel Pianificatore. Dagli un nome, come Umore, e un'emoji, come una faccina. Nome ed emoji compaiono nell'intestazione del widget.\n\nPasso 3: aggiungi il valore. Dentro la dashboard trascina il blocco valore dalla sezione Widget dashboard. Mettici un blocco valore di periodo, con il tracciatore #mood, il periodo Ultimi 7 giorni e la statistica media. Dai al valore un'etichetta: Media degli ultimi 7 giorni.\n\nPasso 4: aggiungi la tendenza. Sotto il valore trascina il blocco tendenza. Inserisci #mood e dagli l'etichetta Ultimi 14 giorni.\n\nPasso 5: aggiungi il piè di pagina. Trascina per ultimo il blocco piè di pagina e scrivi: Aggiornato ogni mattina.\n\nVerifica: premi Esegui una volta. Poi apri la sezione Anteprima in fondo alla scheda Esegui. Mostra il widget come lo mostrerà la dashboard. Un'anteprima è un test, quindi non viene scritta nessuna nota.\n\nProva poi: cambia l'etichetta del valore o il periodo, e rivedi l'anteprima."
+      },
+      "es": {
+        "displayName": "Ejemplo: Widget del panel con un valor",
+        "description": "Un widget en el panel con un valor, una tendencia y un pie de página.",
+        "detailedDescription": "Un widget del panel se construye con los bloques de widget, en orden.\n\nPaso 1: Paso 1: Empieza con el bloque de panel: tiene un nombre y un emoji para la cabecera.\n\nPaso 2: Dentro, muestra un valor con el bloque de valor de periodo, una tendencia de #mood en 14 días, y una línea de pie de página al final.\n\nPaso 3: Paso 2: Ejecútalo una vez para que el widget se guarde, y luego mira el panel en Nomie.\n\nPaso 4: La pestaña Vista previa del editor muestra el widget tal como lo mostrará el panel."
       }
     }
   },
@@ -500,6 +565,11 @@
         "displayName": "Esempio: Grafici nel widget",
         "description": "Un grafico a linee e un grafico a barre in un unico widget.",
         "detailedDescription": "Cosa costruisci: una dashboard con due grafici dello stesso tracciatore. Il primo è un grafico a linee su 30 giorni, il secondo un grafico a barre su 7 giorni.\n\nCosa ti serve: un tracciatore #mood in Nomie, con note in alcuni giorni, così i grafici hanno qualcosa da disegnare.\n\nPasso 1: aggiungi il Pianificatore e impostalo su giornaliero. Trascina il Pianificatore dal gruppo Nomie sulla tela.\n\nPasso 2: aggiungi la dashboard. Trascina un blocco dashboard nel Pianificatore, dagli il nome Grafici umore e un'emoji, come un grafico.\n\nPasso 3: aggiungi il grafico a linee. Dentro la dashboard trascina il blocco grafico a linee dalla sezione Widget dashboard. Metti #mood nell'ingresso Tracker. Imposta i giorni su 30, il colore su blu e l'etichetta su Ultimi 30 giorni.\n\nPasso 4: aggiungi il grafico a barre. Sotto il grafico a linee trascina il blocco grafico a barre. Metti di nuovo #mood, imposta i giorni su 7, il colore su verde e l'etichetta su Ultimi 7 giorni.\n\nPasso 5: guarda l'anteprima. Premi una volta Esegui, poi apri la sezione Anteprima nella scheda Esegui.\n\nVerifica: la linea collega i giorni, e un giorno senza nota è un vuoto. Le barre mostrano una barra per ognuno degli ultimi 7 giorni. Entrambi vengono dalle stesse note, disegnate in due modi.\n\nProva poi: cambia il colore delle barre e guarda come appare il widget nel tuo tema di Nomie."
+      },
+      "es": {
+        "displayName": "Ejemplo: Gráficos del widget",
+        "description": "Un gráfico de líneas y un gráfico de barras en un mismo widget.",
+        "detailedDescription": "Un gráfico muestra un tracker día a día.\n\nPaso 1: El gráfico de líneas une los días con una línea, y un día sin nota es un hueco. El gráfico de barras da una barra por día.\n\nPaso 2: Construye ambos dentro de un bloque de panel: un gráfico de líneas de #mood en 30 días en azul, y un gráfico de barras de los últimos 7 días en verde. Cada gráfico tiene su propia etiqueta.\n\nPaso 3: Compáralos en la pestaña Vista previa: dibujan las mismas notas de dos maneras."
       }
     }
   },
@@ -536,6 +606,11 @@
         "displayName": "Esempio: Widget con HTML",
         "description": "Un widget con il tuo HTML, riempito con valori dai blocchi.",
         "detailedDescription": "Cosa costruisci: un widget della dashboard con un tuo HTML, riempito con un valore dalle tue note.\n\nCosa ti serve: un tracciatore #mood con note in alcuni giorni, perché ci sia un valore da mostrare.\n\nPasso 1: aggiungi il Pianificatore e impostalo su giornaliero. Trascina il Pianificatore dal gruppo Nomie sulla tela.\n\nPasso 2: aggiungi la dashboard. Trascina un blocco dashboard nel Pianificatore e dagli il nome HTML umore.\n\nPasso 3: aggiungi il blocco HTML. Dentro la dashboard trascina il blocco HTML dalla sezione Widget dashboard. Nella casella di testo scrivi: <p>Umore medio: <b>{{mood}}</b></p>. Il segnaposto {{mood}} viene sostituito con un valore a ogni esecuzione.\n\nPasso 4: aggiungi un parametro. Sotto il blocco HTML trascina un blocco parametro. Il suo nome è mood, come il segnaposto. Il suo valore è un blocco valore di periodo con #mood, il periodo Ultimi 7 giorni e la statistica media.\n\nPasso 5: guarda l'anteprima. Premi una volta Esegui e apri la sezione Anteprima nella scheda Esegui.\n\nVerifica: il widget mostra l'umore medio in grassetto. L'HTML viene ripulito prima di essere mostrato: script e link vengono rimossi, e le immagini devono venire da https.\n\nProva poi: aggiungi un secondo segnaposto, come {{count}}, con un altro blocco parametro che conta le note."
+      },
+      "es": {
+        "displayName": "Ejemplo: Widget con HTML",
+        "description": "Un widget con tu propio HTML, rellenado con valores de los bloques.",
+        "detailedDescription": "El bloque HTML muestra tu propio HTML en un widget.\n\nPaso 1: Paso 1: Escribe el HTML en el cuadro de texto, y pon un marcador como {{mood}} donde va un valor.\n\nPaso 2: Después añade un bloque de parámetro por cada marcador: el nombre es el nombre del marcador, y el valor es cualquier bloque, aquí el promedio del estado de ánimo.\n\nPaso 3: Paso 2: El HTML se limpia antes de mostrarse: se quitan los scripts y los enlaces, y las imágenes deben venir de https.\n\nPaso 4: Cambia el HTML, ejecuta y mira la pestaña Vista previa."
       }
     }
   },
@@ -572,6 +647,11 @@
         "displayName": "Esempio: Ricordare tra le esecuzioni",
         "description": "Conserva un conteggio da un'esecuzione alla successiva.",
         "detailedDescription": "Cosa costruisci: uno spazio di lavoro che conta le proprie esecuzioni. Conserva il conteggio da un'esecuzione all'altra, e lo dimentica alla terza.\n\nCosa ti serve: niente. Questo esempio usa solo la memoria dello spazio di lavoro.\n\nPasso 1: aggiungi il Pianificatore e impostalo su giornaliero. Trascina il Pianificatore dal gruppo Nomie sulla tela.\n\nPasso 2: ricorda un nuovo conteggio. Nel Pianificatore trascina un blocco ricorda. Chiamalo runs. Il suo valore è un blocco aritmetico con l'addizione: a sinistra un blocco richiama chiamato runs con predefinito 0, a destra il numero 1.\n\nPasso 3: mostra il conteggio. Sotto metti un blocco messaggio con un blocco unisci: il testo Questo spazio di lavoro è stato eseguito, un blocco richiama chiamato runs con predefinito 0, e il testo volte.\n\nPasso 4: dimentica alla terza esecuzione. Aggiungi un blocco se. La condizione è un blocco confronto: il blocco richiama chiamato runs uguale a 3. Nel blocco se metti un blocco dimentica chiamato runs e un messaggio che dice che il conteggio è stato dimenticato.\n\nVerifica: premi tre volte Esegui. Il conteggio va 1, 2, 3, e alla terza esecuzione il messaggio dice che il conteggio è stato dimenticato. L'esecuzione successiva riparte da 0.\n\nProva poi: cambia il 3 in 5, per ricordare una serie più lunga."
+      },
+      "es": {
+        "displayName": "Ejemplo: Recordar entre ejecuciones",
+        "description": "Guarda un contador de una ejecución a la siguiente.",
+        "detailedDescription": "Un espacio de trabajo olvida todo entre ejecuciones, a menos que recuerde un valor.\n\nPaso 1: En este ejemplo cuentas cuántas veces se ha ejecutado. Recordar toma un nombre y un valor.\n\nPaso 2: Recuperar toma un nombre y un valor predeterminado para la primera ejecución. Constrúyelo en orden: recupera el contador (predeterminado 0), suma 1 con un bloque aritmético, guarda el resultado con el mismo nombre y muéstralo.\n\nPaso 3: Ejecútalo tres veces: el contador pasa a 1, 2, 3. En la tercera ejecución un bloque si olvida el valor con el bloque olvidar, así que la siguiente empieza de nuevo desde 0."
       }
     }
   },
@@ -608,6 +688,11 @@
         "displayName": "Esempio: Tenere una chiave nelle Impostazioni",
         "description": "Usa un segreto delle Impostazioni, così la chiave non è nei blocchi.",
         "detailedDescription": "Cosa costruisci: uno spazio di lavoro che usa una chiave dalle Impostazioni, senza scriverla nei blocchi.\n\nCosa ti serve: un segreto chiamato EXAMPLE_KEY nelle Impostazioni. Apri le Impostazioni del plugin e aggiungi il segreto con quel nome e la tua chiave.\n\nPasso 1: metti la chiave nelle Impostazioni. Apri le Impostazioni e aggiungi un segreto chiamato EXAMPLE_KEY. La chiave stessa non viene mai mostrata nei blocchi.\n\nPasso 2: aggiungi il Pianificatore. Trascinalo dal gruppo Nomie sulla tela.\n\nPasso 3: aggiungi il blocco segreto. Metti un messaggio nel Pianificatore. Trascina un blocco segreto dal gruppo Nomie dentro, e scegli EXAMPLE_KEY.\n\nPasso 4: eseguilo. Premi Esegui. Il messaggio mostra il segreto come quattro puntini, così la chiave non compare mai nell'uscita.\n\nVerifica: se il segreto manca, l'esecuzione si ferma e ti dice quale aggiungere. Provalo rinominando il segreto nelle Impostazioni ed eseguendo di nuovo.\n\nProva poi: usa il segreto in un indirizzo web, con un blocco unisci. I file condivisi non contengono mai la tua chiave, quindi puoi mandare lo spazio di lavoro a qualcun altro in sicurezza."
+      },
+      "es": {
+        "displayName": "Ejemplo: Guardar una clave en Ajustes",
+        "description": "Usa un secreto de Ajustes, así la clave no aparece en los bloques.",
+        "detailedDescription": "Un espacio de trabajo a menudo necesita una clave.\n\nPaso 1: No escribas la clave en un bloque de texto, donde cualquier archivo compartido se la llevaría; usa el bloque de secreto con el nombre de la clave. Añade la clave en Ajustes con el mismo nombre.\n\nPaso 2: La ejecución muestra el secreto como cuatro puntos, así que nunca aparece en la salida. Si el secreto falta, la ejecución se detiene y dice cuál debes añadir.\n\nPaso 3: Este ejemplo necesita una clave llamada EXAMPLE_KEY; una prueba solo comprueba que el bloque está bien configurado."
       }
     }
   },
@@ -644,6 +729,11 @@
         "displayName": "Esempio: Quando una nota viene salvata",
         "description": "Si esegue quando viene salvata una nota con un tracker, e legge quella nota.",
         "detailedDescription": "Cosa costruisci: uno spazio di lavoro che gira quando viene salvata una nota con un certo tracciatore, invece che con una pianificazione.\n\nCosa ti serve: un tracciatore #run in Nomie. Ogni nota con quel tracciatore avvia lo spazio di lavoro.\n\nPasso 1: aggiungi il blocco quando c'è una nota. Trascinalo dal gruppo Nomie sulla tela e scrivi il tracciatore #run nel suo campo.\n\nPasso 2: aggiungi un messaggio. Dentro il blocco quando c'è una nota metti un blocco messaggio dal gruppo Nomie.\n\nPasso 3: leggi la nota. Nel messaggio unisci tre blocchi dal gruppo Nomie: un blocco valore nota con #mood, un blocco testo nota e un blocco giorno nota. Metti un testo davanti a ciascuno, perché il messaggio sia chiaro.\n\nPasso 4: provalo. In Nomie scrivi una nota con #run e #mood(4). Salvala.\n\nVerifica: Nomie esegue lo spazio di lavoro, e il messaggio mostra il valore dell'umore 4, il testo della nota e il suo giorno. Fuori da un'esecuzione su nota questi blocchi non danno nulla, e il controllo prima dell'esecuzione te lo segnala.\n\nProva poi: aggiungi un blocco se che controlla il valore dell'umore, e mostra un messaggio diverso quando è sotto 3."
+      },
+      "es": {
+        "displayName": "Ejemplo: Cuando se guarda una nota",
+        "description": "Se ejecuta cuando se guarda una nota con un tracker, y lee esa nota.",
+        "detailedDescription": "En lugar de un programa, un bloque cuando se guarda una nota ejecuta el espacio de trabajo cuando se guarda una nota con su tracker.\n\nPaso 1: Constrúyelo con el tracker #run. Dentro lees la nota: el bloque valor en esta nota da el valor de #mood en la nota, el bloque texto de esta nota da el texto, y el bloque día de esta nota da el día.\n\nPaso 2: Muéstralos en un mismo mensaje. Registra una nota con #run y #mood(4) para verlos.\n\nPaso 3: Fuera de una ejecución desde una nota, estos bloques no dan nada, y la comprobación previa a la ejecución lo indica."
       }
     }
   },
@@ -680,6 +770,11 @@
         "displayName": "Esempio: Contare con un ciclo",
         "description": "Ripete un blocco un certo numero di volte, e conta con un ciclo for.",
         "detailedDescription": "Cosa costruisci: cicli in due forme. Un blocco ripeti esegue i suoi blocchi un numero fisso di volte, e un blocco per conta con una variabile.\n\nPasso 1: aggiungi il Pianificatore. Trascinalo dal gruppo Nomie sulla tela.\n\nPasso 2: aggiungi un blocco ripeti. Dal gruppo Cicli trascina un blocco ripeti nel Pianificatore. Imposta il numero di volte su 3. Dentro metti un blocco console con il testo Ripetuto.\n\nPasso 3: aggiungi un blocco per. Sotto il blocco ripeti trascina un blocco per dal gruppo Cicli. La variabile è i, l'inizio è 1, la fine è 5 e il passo è 1.\n\nPasso 4: mostra il contatore. Nel blocco per metti un messaggio: un blocco unisci con il testo Passo e la variabile i dal gruppo Variabili.\n\nVerifica: premi Esegui. La console mostra Ripetuto tre volte, e poi cinque righe, da Passo 1 a Passo 5. I cicli permettono a uno spazio di lavoro di coprire molti giorni o molte note in un'unica esecuzione.\n\nProva poi: porta la fine del blocco per a 30, e conta i giorni con una pianificazione giornaliera."
+      },
+      "es": {
+        "displayName": "Ejemplo: Contar con un bucle",
+        "description": "Repite un bloque un número de veces, y cuenta con un bucle for.",
+        "detailedDescription": "Un bucle repite sus bloques.\n\nPaso 1: El bloque repetir ejecuta su contenido un número fijo de veces: aquí tres. El bucle for cuenta con una variable: empieza en 1, para en 5 y avanza de 1 en 1, y la variable i guarda el número actual.\n\nPaso 2: Construye un bucle for con un mensaje que une \"Paso \" y i. La consola muestra cinco líneas.\n\nPaso 3: Los bucles son la forma en que un espacio de trabajo cubre muchos días o muchas notas de una vez."
       }
     }
   },
@@ -716,6 +811,11 @@
         "displayName": "Esempio: Mentre e interrompi",
         "description": "Ripete finché una condizione vale, e si ferma presto con interrompi.",
         "detailedDescription": "Cosa costruisci: un contatore che ripete finché una condizione è vera, e che si ferma presto con un'interruzione.\n\nPasso 1: imposta la variabile. Aggiungi un blocco imposta dal gruppo Variabili, con la variabile n e il numero 0.\n\nPasso 2: aggiungi un ciclo mentre. Trascina un ciclo mentre dal gruppo Cicli sotto il blocco imposta. Tienilo su mentre e costruisci la condizione con un blocco confronto: n minore di 10.\n\nPasso 3: aggiungi il blocco se nel ciclo. Nel ciclo mentre trascina un blocco se. La condizione è un blocco confronto: n uguale a 4.\n\nPasso 4: interrompi il ciclo. Nel blocco se metti un blocco interrompi dal gruppo Cicli.\n\nPasso 5: mostra e conta. Sotto il blocco se, dentro il ciclo, metti un blocco console con n, e un blocco cambia che aggiunge 1 a n.\n\nVerifica: premi Esegui. La console mostra i numeri da 0 a 3, poi il ciclo si ferma a 4.\n\nProva poi: sposta l'interruzione a un altro numero. Fai attenzione a cambiare la variabile nel ciclo, altrimenti non finisce mai. L'esecuzione si ferma anche dopo un numero molto alto di passi, così non può restare bloccata per sempre."
+      },
+      "es": {
+        "displayName": "Ejemplo: Mientras y romper",
+        "description": "Repite mientras se cumple una condición, y para pronto con romper.",
+        "detailedDescription": "Un bucle mientras se repite mientras su condición sea verdadera, y un bloque romper detiene el bucle antes de tiempo.\n\nPaso 1: Paso 1: Construye un contador: fija la variable n en 0.\n\nPaso 2: Luego un bucle mientras con la condición n < 10, y dentro un bloque si: cuando n sea 4, rompe el bucle; si no, muestra n y suma 1 a n.\n\nPaso 3: Paso 2: La consola muestra los números del 0 al 3, y luego el bucle se detiene.\n\nPaso 4: Ten cuidado de cambiar la variable dentro del bucle, o el bucle no termina nunca; la ejecución también se detiene tras un número muy grande de pasos."
       }
     }
   },
@@ -752,6 +852,11 @@
         "displayName": "Esempio: Scorrere una lista",
         "description": "Passa in rassegna ogni elemento di una lista, uno alla volta.",
         "detailedDescription": "Cosa costruisci: un ciclo per ogni elemento che passa uno alla volta su una lista di tre giorni.\n\nPasso 1: aggiungi il blocco per ogni. Dal gruppo Cicli trascina un blocco per ogni sulla tela. Imposta la sua variabile su item.\n\nPasso 2: crea la lista. Trascina un blocco crea lista dal gruppo Liste nell'ingresso della lista del blocco per ogni. Aggiungi tre blocchi di testo con le parole Lunedì, Martedì e Mercoledì. Usa l'ingranaggio del blocco lista per aggiungere gli ingressi.\n\nPasso 3: mostra ogni elemento. Dentro il blocco per ogni metti un blocco console e inserisci la variabile item.\n\nVerifica: premi Esegui. La console mostra i tre elementi nell'ordine della lista.\n\nProva poi: metti una lista di numeri e sommali con un blocco somma dal gruppo Matematica."
+      },
+      "es": {
+        "displayName": "Ejemplo: Recorrer una lista",
+        "description": "Recorre cada elemento de una lista, uno por uno.",
+        "detailedDescription": "Un bloque para cada elemento toma por turnos cada elemento de una lista.\n\nPaso 1: Paso 1: Construye una lista de tres días con un bloque crear lista, luego un bloque para cada elemento sobre la lista, con la variable item.\n\nPaso 2: Dentro, muestra el elemento.\n\nPaso 3: Paso 2: La consola muestra los tres elementos en orden.\n\nPaso 4: Las listas son la forma de guardar varios valores, como el estado de ánimo de la última semana, antes de que el espacio de trabajo trabaje con ellos."
       }
     }
   },
@@ -788,6 +893,11 @@
         "displayName": "Esempio: Decidere con la logica",
         "description": "Se, e, o, non, vero e falso, in un'unica decisione.",
         "detailedDescription": "Cosa costruisci: una decisione con un blocco se, un ramo altrimenti e blocchi logici, più un blocco ternario che sceglie un valore in una sola riga.\n\nPasso 1: aggiungi il blocco se. Trascina un blocco se dal gruppo Logica sulla tela, e clicca l'ingranaggio per aggiungere un ramo altrimenti.\n\nPasso 2: costruisci la condizione. Trascina un blocco e nell'ingresso del blocco se. A sinistra metti un blocco confronto: 3 minore di 5. A destra metti un blocco non con dentro un blocco confronto: 2 maggiore di 7.\n\nPasso 3: aggiungi i due messaggi. Nel blocco se metti un messaggio con Entrambe sono vere. Nel ramo altrimenti metti un messaggio con Qualcosa non va.\n\nPasso 4: scegli un valore in una riga. Sotto il blocco se trascina un blocco ternario in un blocco console. La sua condizione è il blocco vero, il valore allora è sì e il valore altrimenti è no.\n\nVerifica: premi Esegui. Il primo messaggio mostra il testo del ramo altrimenti, perché il blocco non rende falsa la condizione. Cambia i numeri nei blocchi confronto ed esegui di nuovo per vedere entrambi i rami.\n\nProva poi: aggiungi un secondo blocco confronto al e, e usa un blocco o per un'altra condizione."
+      },
+      "es": {
+        "displayName": "Ejemplo: Decidir con lógica",
+        "description": "Si, y, o, no, verdadero y falso, en una sola decisión.",
+        "detailedDescription": "Los bloques de lógica dan una respuesta verdadera o falsa, y un bloque si actúa según ella.\n\nPaso 1: Paso 1: Construye una condición con dos bloques de comparación, unidos con un bloque y, y niega el resultado con el bloque no.\n\nPaso 2: El bloque si muestra un mensaje cuando es verdadero, y una rama sino muestra otro cuando no lo es.\n\nPaso 3: Paso 2: Cambia los números de los bloques de comparación y vuelve a ejecutar para ver las dos ramas.\n\nPaso 4: El bloque ternario elige uno de dos valores en una sola línea, como muestra la última línea."
       }
     }
   },
@@ -824,6 +934,11 @@
         "displayName": "Esempio: Numeri",
         "description": "Aritmetica, potenze, trigonometria, costanti e controlli sui numeri.",
         "detailedDescription": "Cosa costruisci: una piccola calcolatrice. Ogni riga della console mostra uno dei blocchi matematici al lavoro.\n\nPasso 1: aggiungi un blocco console per ogni somma. Trascina un blocco console dalla sezione Scrivi e mostra sulla tela, e mettici un blocco aritmetico: 2 più 3.\n\nPasso 2: aggiungi altre operazioni. Metti altri blocchi console, ognuno con un blocco dal gruppo Matematica: un blocco moltiplica, un blocco radice quadrata, un blocco seno dal blocco trigonometria, e la costante pi greco.\n\nPasso 3: controlla se un numero è pari. Aggiungi un blocco proprietà del numero con l'opzione pari, e un blocco numero con 4.\n\nPasso 4: aggiungi un resto. Usa il blocco modulo per ottenere il resto di 17 diviso 5.\n\nVerifica: premi Esegui. Ogni riga mostra il suo risultato. Leggi le etichette nella console per collegare ogni riga al suo blocco.\n\nProva poi: metti i risultati in variabili e uniscili in un unico messaggio."
+      },
+      "es": {
+        "displayName": "Ejemplo: Números",
+        "description": "Aritmética, potencias, trigonometría, constantes y comprobaciones de números.",
+        "detailedDescription": "Los bloques matemáticos trabajan con números.\n\nPaso 1: Este ejemplo construye una pequeña calculadora: un bloque aritmético suma y multiplica, un bloque de un número saca una raíz cuadrada, un bloque trigonométrico da un seno, y la constante pi viene de su bloque.\n\nPaso 2: Un bloque de propiedad del número comprueba si un número es par, y un bloque módulo da el resto.\n\nPaso 3: Muestra cada resultado en su propia línea, y lee las etiquetas de la consola para relacionar cada línea con su bloque."
       }
     }
   },
@@ -860,6 +975,11 @@
         "displayName": "Esempio: Casuale, arrotondamenti e medie",
         "description": "Numeri casuali, arrotondamento, una media di una lista e una variazione.",
         "detailedDescription": "Cosa costruisci: una serie di valori che cambiano a ogni esecuzione: numeri casuali, un valore arrotondato, la media di una lista e un valore limitato.\n\nPasso 1: aggiungi i blocchi casuali. Trascina un blocco intero casuale dal gruppo Matematica in un blocco console. Imposta i limiti su 1 e 10. Poi aggiungi un blocco frazione casuale, che dà un numero tra 0 e 1.\n\nPasso 2: arrotonda per eccesso. Metti un blocco arrotonda con l'opzione arrotonda per eccesso attorno a un blocco numero, e mostralo.\n\nPasso 3: trova la media di una lista. Usa una lista di numeri in un blocco crea lista, e l'opzione media del blocco matematico per le liste.\n\nPasso 4: tieni un valore nell'intervallo. Usa un blocco limita con il valore 15, il limite inferiore 0 e il limite superiore 10. Il risultato è 10.\n\nVerifica: fai girare lo spazio di lavoro più volte. I valori casuali cambiano ogni volta, il resto resta uguale.\n\nProva poi: usa il blocco intero casuale per scegliere un giorno da una lista, con l'indice della lista."
+      },
+      "es": {
+        "displayName": "Ejemplo: Aleatorio, redondeo y promedios",
+        "description": "Números aleatorios, redondeo, un promedio de una lista y un cambio.",
+        "detailedDescription": "Este ejemplo recoge los bloques que redondean, eligen al azar y resumen una lista.\n\nPaso 1: Paso 1: Un bloque de entero aleatorio elige un número entero entre dos límites, y un bloque de fracción aleatoria elige un número entre 0 y 1.\n\nPaso 2: Un bloque de redondeo con la opción redondear hacia arriba redondea hacia arriba.\n\nPaso 3: Paso 2: Un bloque de promedio trabaja sobre una lista, y un bloque de limitar mantiene un valor entre un límite inferior y uno superior.\n\nPaso 4: Ejecútalo varias veces: los valores aleatorios cambian, el resto se mantiene igual."
       }
     }
   },
@@ -896,6 +1016,11 @@
         "displayName": "Esempio: Strumenti per il testo",
         "description": "Lunghezza, maiuscole, spazi, ricerca e taglio del testo.",
         "detailedDescription": "Cosa costruisci: una serie di blocchi di testo al lavoro. Ogni risultato va su una riga separata della console.\n\nPasso 1: aggiungi la lunghezza. Trascina un blocco lunghezza dal gruppo Testo in un blocco console, e mettici un blocco di testo con la parola Nomie.\n\nPasso 2: cambia le maiuscole. Aggiungi un blocco cambia maiuscole e un blocco di testo. Scegli maiuscole.\n\nPasso 3: togli gli spazi. Aggiungi un blocco taglia con un testo che ha spazi ai due estremi.\n\nPasso 4: trova una parola. Aggiungi un blocco trova posizione che cerca la posizione della parola blu in un testo.\n\nPasso 5: prendi una parte. Aggiungi un blocco sottotesto che ritaglia le prime cinque lettere di un testo.\n\nVerifica: premi Esegui. Ogni riga mostra il suo risultato. Confronta ogni blocco con la riga che produce.\n\nProva poi: unisci due testi con un blocco unisci, e mostra la lunghezza del risultato."
+      },
+      "es": {
+        "displayName": "Ejemplo: Herramientas de texto",
+        "description": "Longitud, mayúsculas, recortar, buscar y cortar texto.",
+        "detailedDescription": "Los bloques de texto cambian e inspeccionan palabras.\n\nPaso 1: Paso 1: Este ejemplo muestra la longitud de un texto, cambia las mayúsculas, quita los espacios de ambos extremos, busca la posición de una palabra, toma una letra y corta una parte.\n\nPaso 2: Cada resultado va en una línea propia en la consola.\n\nPaso 3: Paso 2: Constrúyelos uno tras otro, y compara cada bloque con la línea que produce.\n\nPaso 4: Un bloque de añadir texto también añade al final de una variable el saludo."
       }
     }
   },
@@ -932,6 +1057,11 @@
         "displayName": "Esempio: Liste",
         "description": "Creare, leggere, modificare, cercare, dividere e ordinare liste.",
         "detailedDescription": "Cosa costruisci: una lista e i blocchi lista che ci lavorano: la lunghezza, un controllo di vuoto, la posizione di un elemento, l'elemento in una posizione, una modifica e l'ordinamento.\n\nPasso 1: aggiungi la lunghezza. Trascina un blocco lunghezza dal gruppo Liste in un blocco console, e mettici un blocco crea lista con i testi a, b e c.\n\nPasso 2: controlla se è vuota. Aggiungi un blocco è vuota con un blocco crea lista vuota, e mostra il risultato.\n\nPasso 3: trova una posizione. Aggiungi un blocco trova posizione che trova la prima b in una lista di a e b.\n\nPasso 4: prendi un elemento. Aggiungi un blocco prendi elemento per il primo elemento, e un blocco che prende l'elemento in posizione 1 dalla fine.\n\nPasso 5: cambia un elemento. Imposta la variabile days su una lista con Lun e Mar. Usa un blocco imposta elemento per cambiare il primo elemento in Dom, e poi mostra days.\n\nPasso 6: dividi e ordina. Dividi il testo lun,mar,mer con una virgola in una lista, e ordina una lista di numeri 3, 1 e 2.\n\nVerifica: premi Esegui. Ogni passo mostra il suo risultato, così puoi seguire com'è la lista in ogni momento.\n\nProva poi: metti i numeri ordinati in un messaggio con un blocco unisci."
+      },
+      "es": {
+        "displayName": "Ejemplo: Listas",
+        "description": "Crear, leer, cambiar, buscar, dividir y ordenar listas.",
+        "detailedDescription": "Una lista guarda varios valores en orden.\n\nPaso 1: Este ejemplo construye una lista y usa sobre ella los bloques de lista: la longitud, una comprobación de lista vacía, la posición de un elemento, el elemento en una posición y el cambio de un elemento.\n\nPaso 2: Un bloque dividir corta un texto en una lista, y un bloque ordenar pone los números en orden.\n\nPaso 3: Cada paso muestra su resultado en la consola, para que puedas seguir cómo es la lista en cada punto."
       }
     }
   },
@@ -968,6 +1098,11 @@
         "displayName": "Esempio: Funzioni con valori",
         "description": "Definisce una funzione con un parametro e un risultato, e la richiama.",
         "detailedDescription": "Cosa costruisci: due funzioni, una restituisce un valore e l'altra fa qualcosa. Una funzione è un insieme di blocchi con un nome che puoi richiamare più volte.\n\nCosa ti serve: niente. L'esempio è un piccolo programma completo in un unico spazio di lavoro.\n\nPasso 1: definisci la funzione doppio. Dal gruppo Funzioni trascina una funzione con risultato sulla tela. Chiamala doppio e aggiungi con l'ingranaggio un parametro n.\n\nPasso 2: aggiungi il ritorno anticipato. Dentro la funzione metti un blocco se-ritorna. La condizione è n minore di 0, il valore è 0. Se n è sotto zero, la funzione si ferma lì e il resto viene saltato.\n\nPasso 3: restituisci il risultato. Sotto il blocco se-ritorna metti il blocco ritorna con il valore n per 2.\n\nPasso 4: definisci la funzione saluto. Trascina una funzione senza risultato, chiamala saluto e aggiungi il parametro chi. Dentro mostra un messaggio che unisce Ciao e chi.\n\nPasso 5: richiamale. Nel Pianificatore, sotto le definizioni, mostra una chiamata a doppio con il numero 21 e una chiamata a saluto con il testo Nomie.\n\nVerifica: premi Esegui. La console mostra 42, e poi Ciao Nomie.\n\nProva poi: definisci una funzione che richiama doppio, così una funzione usa l'altra."
+      },
+      "es": {
+        "displayName": "Ejemplo: Funciones con valores",
+        "description": "Define una función con un parámetro y un resultado, y la llama.",
+        "detailedDescription": "Una función es un conjunto de bloques con un nombre que puedes volver a llamar.\n\nPaso 1: Esta duplica un número. Construye primero la definición: un bloque de función con el nombre double, un parámetro n, y un bloque de devolver que da n por 2.\n\nPaso 2: Dentro va primero un bloque si-devolver: si n es menor que 0, devuelve 0 de inmediato, y el resto se salta. Después llama a la función con el número 21 en un bloque mostrar.\n\nPaso 3: La consola muestra 42. Define una función una vez y llámala donde la necesites."
       }
     }
   },
@@ -1004,6 +1139,11 @@
         "displayName": "Esempio: Oggetti e JSON",
         "description": "Costruisce un oggetto, legge e modifica i suoi campi, e legge JSON.",
         "detailedDescription": "Cosa costruisci: un piccolo record e i blocchi che lo leggono e lo cambiano. Gli oggetti contengono campi con nome, e i blocchi JSON leggono e scrivono testo nella stessa forma.\n\nPasso 1: crea un oggetto. Dal gruppo Oggetti trascina un blocco crea oggetto su un blocco console. Aggiungi con l'ingranaggio due campi: temp, con il numero 18, e mood, con il numero 7.\n\nPasso 2: leggi un campo. Aggiungi un blocco ottieni che legge temp da un oggetto ricavato da testo JSON. Usa il testo {\"temp\": 18, \"mood\": 7} in un blocco da testo JSON a oggetto.\n\nPasso 3: mostra le chiavi. Aggiungi un blocco chiavi sullo stesso oggetto, e mostra il risultato.\n\nPasso 4: leggi un valore dal JSON. Aggiungi un blocco valore da chiave, con la chiave mood e l'oggetto dal testo JSON.\n\nPasso 5: scrivi JSON. Aggiungi un blocco da oggetto a JSON che trasforma un oggetto di nuovo in testo.\n\nPasso 6: cambia un campo. Usa il blocco imposta con il campo mood e il numero 9.\n\nVerifica: premi Esegui. Ogni riga della console mostra il suo risultato. I servizi web rispondono in JSON, quindi questo è lo schema per leggerne le risposte.\n\nProva poi: leggi l'umore dall'oggetto e mostralo in una frase."
+      },
+      "es": {
+        "displayName": "Ejemplo: Objetos y JSON",
+        "description": "Construye un objeto, lee y cambia sus campos, y lee JSON.",
+        "detailedDescription": "Un objeto guarda campos con nombre, como un pequeño registro.\n\nPaso 1: Construye uno con el bloque crear objeto: dos campos, temp y mood. Lee un campo con el bloque obtener y cambia uno con el bloque establecer.\n\nPaso 2: Los bloques JSON van en el otro sentido: el bloque de texto JSON a objeto lee un texto en JSON y lo convierte en objeto, y el bloque valor de clave saca un valor de él. Muestra cada resultado en la consola.\n\nPaso 3: Los servicios web responden en JSON, así que este es el patrón para leer sus respuestas."
       }
     }
   },
@@ -1040,6 +1180,11 @@
         "displayName": "Esempio: Provare e catturare",
         "description": "Cattura un problema, mostra un messaggio gentile e finisce sempre.",
         "detailedDescription": "Cosa costruisci: un blocco che prova a leggere dati sbagliati e cattura l'errore senza fermare l'esecuzione.\n\nPasso 1: aggiungi un blocco prova. Dal gruppo Avanzato trascina un blocco prova e cattura sulla tela. Il suo parametro è error.\n\nPasso 2: metti un blocco rischioso in prova. Dentro prova metti un blocco console con un blocco da testo JSON a oggetto che legge il testo {non json, che non è JSON valido.\n\nPasso 3: cattura l'errore. Dentro cattura metti un messaggio: un blocco unisci con il testo Impossibile leggere i dati e la variabile error.\n\nPasso 4: aggiungi un finalmente. Clicca l'ingranaggio del blocco e aggiungi una parte finalmente. Dentro metti un blocco console con il testo Comunque finito.\n\nVerifica: premi Esegui. La parte prova fallisce e il messaggio mostra l'errore. La riga finalmente viene eseguita comunque. Senza il blocco prova, l'intera esecuzione si fermerebbe sui dati sbagliati.\n\nProva poi: usa lo stesso schema per un indirizzo web che a volte non risponde, e mostra un messaggio gentile in cattura."
+      },
+      "es": {
+        "displayName": "Ejemplo: Intentar y capturar",
+        "description": "Captura un problema, muestra un mensaje amable y siempre termina.",
+        "detailedDescription": "Algunos pasos pueden fallar, por ejemplo cuando un texto no es JSON válido.\n\nPaso 1: Un bloque intentar ejecuta sus bloques; si uno falla, se ejecuta el bloque capturar y recibe el error. El bloque finalmente se ejecuta en ambos casos.\n\nPaso 2: Construye un bloque intentar con un bloque de texto JSON a objeto que lea un texto roto. En el bloque capturar muestra \"No se pudieron leer los datos\" con el error.\n\nPaso 3: La ejecución continúa después de capturar, así que un solo problema no detiene todo el espacio de trabajo."
       }
     }
   },
@@ -1076,6 +1221,11 @@
         "displayName": "Esempio: Fai una domanda",
         "description": "Ti chiede una parola quando lo esegui a mano, e usa la risposta.",
         "detailedDescription": "Cosa costruisci: una domanda che ti chiede una parola, e mostra la tua risposta in una frase.\n\nCosa ti serve: niente. La domanda compare quando fai girare lo spazio di lavoro a mano. Un'esecuzione pianificata non ha nessuno che risponda, quindi questo esempio serve per i test manuali.\n\nPasso 1: aggiungi il Pianificatore. Trascinalo dal gruppo Nomie sulla tela.\n\nPasso 2: aggiungi un messaggio. Nel Pianificatore trascina un blocco messaggio dal gruppo Nomie.\n\nPasso 3: unisci la risposta. Nel messaggio aggiungi un blocco unisci. La prima parte è un blocco di testo: La tua risposta era.\n\nPasso 4: fai la domanda. Trascina un blocco domanda dal gruppo Testo nella seconda parte del blocco unisci. Nel testo scrivi: Qual è la tua parola per l'umore?\n\nVerifica: premi Esegui. Nomie mostra la domanda. Scrivi una parola, e il messaggio mostra la tua risposta.\n\nProva poi: chiedi un numero e usalo in un calcolo. Ricorda che una domanda funziona solo se c'è qualcuno a rispondere."
+      },
+      "es": {
+        "displayName": "Ejemplo: Hacer una pregunta",
+        "description": "Te pide una palabra cuando lo ejecutas a mano, y usa la respuesta.",
+        "detailedDescription": "Un bloque de pregunta de texto te hace una pregunta cuando ejecutas el espacio de trabajo a mano, y da la respuesta como texto.\n\nPaso 1: Constrúyelo dentro de un mensaje: \"Tu respuesta fue \" seguido del bloque de pregunta, con la pregunta \"¿Qué palabra describe tu estado de ánimo?\".\n\nPaso 2: En una ejecución programada no se hace la pregunta.\n\nPaso 3: Usa una pregunta para una elección que haces cada vez, y un tracker para todo lo que quieras guardar."
       }
     }
   },
@@ -1112,6 +1262,11 @@
         "displayName": "Esempio: Una parola su un periodo",
         "description": "Conta le note che citano una parola negli ultimi 30 giorni, e ne somma i valori.",
         "detailedDescription": "Cosa costruisci: il numero di note che nominano una parola negli ultimi 30 giorni, e la somma dei loro valori.\n\nCosa ti serve: alcune note in Nomie che nominano la parola movimento, così le risposte non sono zero.\n\nPasso 1: aggiungi il Pianificatore e un messaggio. Trascina il Pianificatore dal gruppo Nomie sulla tela e mettici un messaggio.\n\nPasso 2: inizia la frase. Nel messaggio metti un blocco unisci. La prima parte è un blocco di testo: Trovato \"movimento\" in.\n\nPasso 3: aggiungi il valore di periodo. Trascina un blocco valore di periodo nel blocco unisci. Il suo soggetto è il testo movimento, non un tracciatore, così cerca la parola nelle note. Il periodo è Ultimi 30 giorni e la statistica è conteggio.\n\nPasso 4: chiudi la frase. Dopo il valore di periodo scrivi il testo note negli ultimi 30 giorni.\n\nPasso 5: aggiungi la somma. Metti un secondo messaggio con un blocco valore di periodo e la statistica somma. Questo somma i valori delle note che nominano la parola.\n\nVerifica: premi Esegui. Il primo messaggio mostra quante note nominano movimento, il secondo la somma dei loro valori.\n\nProva poi: cambia la parola, oppure porta il periodo a Ultimi 90 giorni. Gli stessi due blocchi rispondono a un'altra domanda."
+      },
+      "es": {
+        "displayName": "Ejemplo: Una palabra en un periodo",
+        "description": "Cuenta las notas que mencionan una palabra en los últimos 30 días, y suma sus valores.",
+        "detailedDescription": "No todo valor es un tracker.\n\nPaso 1: Un bloque de valor de periodo también puede tomar una palabra, y entonces busca esa palabra en tus notas durante el periodo. En este ejemplo buscas la palabra ejercicio en los últimos 30 días, y pides la suma.\n\nPaso 2: Construye el bloque de valor de periodo con un bloque de texto en la entrada Trackable, un selector de periodo en Últimos 30 días, y un selector de estadística en suma. Pon el resultado en un mensaje con una frase delante.\n\nPaso 3: Cambia la palabra por cualquier cosa de la que escribas en tus notas, y vuelve a ejecutar: los mismos bloques responden a otra pregunta."
       }
     }
   },
@@ -1148,6 +1303,11 @@
         "displayName": "Esempio: Leggere un servizio web",
         "description": "Chiama un servizio meteo con la tua chiave, e legge la temperatura dalla risposta.",
         "detailedDescription": "Cosa costruisci: una lettura del meteo da un servizio web, con la tua chiave conservata nelle Impostazioni. Mostra come funziona un flusso reale: una chiave, una richiesta, la risposta in JSON, e i valori letti da essa.\n\nCosa ti serve: un account presso un servizio meteo che ti dà una chiave. Metti la chiave nelle Impostazioni con il nome OPENWEATHER_KEY. Senza, l'esecuzione si ferma e ti dice quale segreto aggiungere.\n\nPasso 1: metti la chiave. Nelle Impostazioni aggiungi un segreto chiamato OPENWEATHER_KEY con la tua chiave.\n\nPasso 2: conserva la risposta. Aggiungi un blocco imposta con la variabile WeatherData. Il suo valore è un blocco richiesta. Costruisci l'indirizzo con un blocco unisci: l'inizio dell'indirizzo, poi un blocco segreto con OPENWEATHER_KEY, e poi il resto con lingua e unità.\n\nPasso 3: leggi la temperatura. Aggiungi un blocco imposta con la variabile Temperature. Il suo valore è un blocco valore da chiave con la chiave temp, che legge da un oggetto. Quell'oggetto viene da un blocco valore da chiave con la chiave main, che legge dall'oggetto della variabile WeatherData.\n\nPasso 4: mostra il risultato. Aggiungi un messaggio: un blocco unisci con il testo Fa, la variabile Temperature e il testo gradi ad Amsterdam.\n\nVerifica: premi Esegui. Il messaggio mostra la temperatura. Se manca la chiave, l'esecuzione ti dice quale segreto aggiungere.\n\nProva poi: cambia la città nell'indirizzo, e leggi l'umidità dalla stessa risposta."
+      },
+      "es": {
+        "displayName": "Ejemplo: Leer un servicio web",
+        "description": "Llama a un servicio del tiempo con tu clave, y lee la temperatura de la respuesta.",
+        "detailedDescription": "Este ejemplo une varias partes en un solo flujo.\n\nPaso 1: Primero la clave: es un secreto, añadido en Ajustes con el nombre OPENWEATHER_KEY, así que no está escrita en los bloques. Después la petición: un bloque de obtener con una unión de la dirección, el secreto y las opciones.\n\nPaso 2: La respuesta es texto en JSON, así que se lee en dos pasos: el valor de la clave main da un objeto, y el valor de la clave temp dentro de él es la temperatura. La respuesta se guarda en dos variables, WeatherData y Temperature, y se muestra en un mensaje.\n\nPaso 3: Sin el secreto, la ejecución se detiene y dice qué secreto hay que añadir."
       }
     }
   },
@@ -1184,6 +1344,11 @@
         "displayName": "Esempio: Analista dell'umore",
         "description": "Calcola la media, il giorno migliore e quello peggiore di una lista di umori, con un giudizio per ogni giorno.",
         "detailedDescription": "Cosa costruisci: un piccolo programma statistico in un unico spazio di lavoro. Legge una lista di umori, calcola la media, il giorno migliore e quello peggiore con i blocchi lista, conta i giorni bassi con una funzione che dà a ogni giorno un giudizio, e mostra i risultati. I nomi di funzioni e variabili restano in inglese, come nei blocchi.\n\nCosa ti serve: niente. La lista di umori è scritta nell'esempio, così vedi ogni passo. Più avanti puoi sostituirla con le tue note.\n\nPasso 1: definisci la funzione verdict. Dal gruppo Funzioni trascina una funzione con risultato, chiamala verdict, con il parametro score. Mettici due blocchi se-ritorna: se score è 7 o più, restituisci il testo good; se è 5 o più, il testo okay. Il blocco ritorna finale dà il testo low.\n\nPasso 2: definisci la funzione meanOf. Aggiungi una seconda funzione con risultato, con il parametro values. Il risultato è l'opzione media (AVERAGE) del blocco matematico per le liste, con values come lista.\n\nPasso 3: leggi gli umori. Nel Pianificatore imposta la variabile moods su un blocco dividi. L'ingresso è il testo 6,7,4,8,5,9,7, e il separatore è una virgola. Così il testo diventa una lista.\n\nPasso 4: calcola i numeri. Imposta mean su una chiamata di meanOf con moods. Imposta best e worst sulle opzioni massimo e minimo del blocco matematico per le liste su moods.\n\nPasso 5: conta i giorni bassi. Imposta lowDays a 0. Aggiungi un ciclo per ogni su moods, con la variabile day. Dentro metti un blocco se: se verdict di day è uguale al testo low, cambia lowDays di 1.\n\nPasso 6: mostra i risultati. Aggiungi un messaggio che unisce mean, best, worst e lowDays. Aggiungi una riga della console che mostra il giudizio su mean.\n\nVerifica: premi Esegui. Il messaggio dà i numeri, la console il giudizio. Cambia la lista degli umori, e il giudizio e il conteggio cambiano con lei.\n\nProva poi: cambia le soglie in verdict, oppure mostra un giudizio per ogni giorno nella console."
+      },
+      "es": {
+        "displayName": "Ejemplo: Analista del ánimo",
+        "description": "Calcula la media, el mejor y el peor día de una lista de estados de ánimo, y un veredicto para cada día.",
+        "detailedDescription": "Qué construyes: un pequeño programa de estadística en un solo espacio de trabajo. Lee una lista de estados de ánimo, calcula la media, el mejor y el peor día con los bloques de lista, cuenta los días bajos con una función que da un veredicto a cada día, y muestra los resultados.\n\nQué necesitas: nada. La lista de estados de ánimo está escrita en el ejemplo, así que puedes ver cada paso. Más adelante puedes sustituirla por tus propias notas.\n\nPaso 1: Define la función de veredicto. En el grupo Funciones, arrastra una función con resultado y ponle el nombre verdict, con un parámetro score. Dentro añade dos bloques si-devolver: cuando score sea 7 o más, devuelve bueno; cuando sea 5 o más, devuelve regular. El bloque de devolver al final da bajo.\n\nPaso 2: Define la función de media. Añade una segunda función con resultado llamada meanOf, con el parámetro values. Su resultado es la opción promedio del bloque matemático de lista, con values como lista.\n\nPaso 3: Lee los estados de ánimo. En el Programador, fija la variable moods a un bloque dividir. Su entrada es el texto 6,7,4,8,5,9,7, y su separador es una coma. Esto convierte el texto en una lista.\n\nPaso 4: Calcula los números. Fija mean a una llamada de meanOf con moods. Fija best y worst a las opciones máximo y mínimo del bloque matemático de lista sobre moods.\n\nPaso 5: Cuenta los días bajos. Fija lowDays a 0. Añade un para cada elemento sobre moods, con la variable day. Dentro, un bloque si: cuando el veredicto de day sea igual al texto bajo, cambia lowDays en 1.\n\nPaso 6: Muestra los resultados. Añade un mensaje que une la media, el mejor, el peor y los días bajos. Añade una línea de consola que muestre el veredicto de la media.\n\nComprúebalo: pulsa Ejecutar. El mensaje da los números, y la consola da el veredicto. Cambia la lista de estados de ánimo, y el veredicto y el recuento cambian con ella.\n\nPrueba después: cambia los umbrales de verdict, o añade un veredicto para cada día en la consola."
       }
     }
   },
@@ -1220,6 +1385,11 @@
         "displayName": "Esempio: Motore delle abitudini",
         "description": "Conta una serie tra un'esecuzione e l'altra, festeggia una tappa e mostra la serie su un widget.",
         "detailedDescription": "Cosa costruisci: un motore delle abitudini che conserva il suo stato tra le esecuzioni. Ogni mattina guarda a ieri: se l'abitudine è stata fatta, la serie streak sale di uno; se no, torna a zero. Festeggia una settimana, e mostra la serie su un widget.\n\nCosa ti serve: un tracciatore #habit in Nomie, registrato nei giorni in cui fai l'abitudine. La serie parte da zero la prima volta.\n\nPasso 1: imposta la pianificazione. Aggiungi il Pianificatore dal gruppo Nomie e scegli Giornaliero nella scheda Dettagli.\n\nPasso 2: controlla ieri. Nel Pianificatore metti un blocco se con un ramo altrimenti. La condizione è un blocco confronto: un blocco valore giornaliero per #habit, il giorno yesterday e la statistica sum, maggiore di 0.\n\nPasso 3: aggiorna la serie. Nel ramo se metti un blocco ricorda chiamato streak, il cui valore è un blocco richiama di streak con predefinito 0, più 1. Nel ramo altrimenti metti un blocco ricorda chiamato streak con il numero 0.\n\nPasso 4: festeggia una settimana. Aggiungi un altro blocco se: se un richiama di streak con predefinito 0 è uguale a 7, mostra un messaggio: A week in a row!\n\nPasso 5: tieni il record e mostra il widget. Aggiungi un blocco se: se un richiama di streak è maggiore di un richiama di best (predefinito 0), ricorda best con la serie e mostra un messaggio: New record. Poi aggiungi una dashboard chiamata Habit con l'emoji del fuoco. Dentro metti due blocchi valore: Best streak (il richiama di best) e Days in a row (il richiama di streak), una tendenza di #habit e un piè di pagina.\n\nVerifica: premi Esegui, poi apri la sezione Anteprima nella scheda Esegui. La prima esecuzione mostra zero, perché non c'è ancora nulla di ricordato. L'esecuzione di domani conta da oggi.\n\nProva poi: porta la tappa a 30 giorni, e mostra un altro messaggio dopo il primo giorno di una nuova serie."
+      },
+      "es": {
+        "displayName": "Ejemplo: Motor de hábitos",
+        "description": "Cuenta una racha entre ejecuciones, celebra un hito y muestra la racha en un widget.",
+        "detailedDescription": "Qué construyes: un motor de hábitos que guarda su estado entre ejecuciones. Cada mañana mira ayer: si el hábito se cumplió, la racha sube en uno; si no, vuelve a cero. Celebra una semana, y muestra la racha en un widget.\n\nQué necesitas: un tracker #habit en Nomie, registrado los días que haces el hábito. La racha empieza en cero la primera vez.\n\nPaso 1: Fija el programa. Añade el Programador del grupo Nomie y elige Diario en la pestaña Detalles.\n\nPaso 2: Mira ayer. Dentro del Programador, añade un bloque si con una rama sino. Su condición es un bloque de comparación: un bloque de valor de día para #habit, el día ayer y la estadística suma, mayor que 0.\n\nPaso 3: Actualiza la racha. En la rama si, añade un bloque recordar llamado streak, con el valor de un bloque recuperar llamado streak con predeterminado 0, más 1. En la rama sino, añade un bloque recordar llamado streak con el número 0.\n\nPaso 4: Celebra una semana. Añade otro bloque si: cuando recuperar streak con predeterminado 0 sea igual a 7, muestra un mensaje: ¡Una semana seguida!\n\nPaso 5: Guarda el récord y muestra el widget. Añade un bloque si: cuando recuperar streak sea mayor que recuperar best (predeterminado 0), recuerda best con la racha, y muestra un mensaje: Nuevo récord. Después añade un panel llamado Hábito con el emoji del fuego. Dentro, añade dos bloques de valor: Mejor racha (el recuperar de best) y Días seguidos (el recuperar de streak), una tendencia de #habit y un pie de página.\n\nComprúebalo: pulsa Ejecutar, y después abre la sección Vista previa de la pestaña Ejecutar. La primera ejecución muestra cero días seguidos, porque aún no hay nada recordado. La ejecución de mañana sigue contando desde el valor de hoy.\n\nPrueba después: cambia el hito a 30 días, y muestra otro mensaje después del primer día de una racha nueva."
       }
     }
   },
@@ -1256,6 +1426,11 @@
         "displayName": "Esempio: Registro del budget",
         "description": "Un registro di spese come oggetti, con una funzione che somma, un avviso e una lettura sicura degli errori.",
         "detailedDescription": "Cosa costruisci: un registro del budget. Conserva un elenco di movimenti come oggetti, somma i costi con una funzione, avvisa quando superi il budget, legge i dati sbagliati in modo sicuro con prova e cattura, e mostra le spese su un widget. I nomi di funzioni e variabili restano in inglese, come nei blocchi.\n\nCosa ti serve: niente. I movimenti sono nell'esempio, così vedi ogni passo. Più avanti puoi cambiarli, oppure leggerli da un servizio web.\n\nPasso 1: definisci la funzione costOf. Dal gruppo Funzioni aggiungi una funzione con risultato, chiamata costOf, con il parametro entry. Il risultato è un blocco ottieni oggetto per il campo cost di entry.\n\nPasso 2: inizia la giornata. Nel Pianificatore imposta budget a 20 e spent a 0.\n\nPasso 3: crea il registro. Imposta ledger su un blocco crea lista con tre movimenti. Ogni movimento è un blocco crea oggetto con due campi: item e cost. Usa coffee con 3, lunch con 9 e books con 12.\n\nPasso 4: somma i movimenti. Aggiungi un ciclo per ogni su ledger, con la variabile entry. Dentro cambia spent con il risultato di costOf con entry. Poi mostra una riga: il campo item del movimento, due punti e il risultato di costOf.\n\nPasso 5: avvisa quando superi il budget. Aggiungi un blocco se: se spent è maggiore di budget, mostra un messaggio che unisce Over budget by con spent meno budget.\n\nPasso 6: leggi i dati sbagliati in sicurezza. Aggiungi un blocco prova e cattura. In prova leggi un testo che non è JSON valido, come {not json, con un blocco da testo JSON a oggetto. In cattura mostra un messaggio con l'errore. Aggiungi una riga finale.\n\nPasso 7: mostra il widget. Aggiungi una dashboard chiamata Budget. Dentro metti un blocco valore per spent, e un blocco HTML con il testo Spent {{spent}} of {{budget}}, con due parametri.\n\nVerifica: premi Esegui. La console elenca i movimenti, il messaggio segnala il superamento, e il blocco prova segnala i dati sbagliati senza fermare l'esecuzione.\n\nProva poi: alza il budget a 15, e il messaggio sul superamento sparisce."
+      },
+      "es": {
+        "displayName": "Ejemplo: Libro de presupuesto",
+        "description": "Un libro de apuntes como objetos, sumado con una función, con intentar y capturar para datos incorrectos.",
+        "detailedDescription": "Qué construyes: un libro de presupuesto. Guarda una lista de apuntes como objetos, suma los costes con una función, avisa cuando te pasas del presupuesto, lee datos incorrectos con intentar y capturar, y muestra el gasto en un widget.\n\nQué necesitas: nada. Los apuntes están en el ejemplo, así que puedes ver cada paso. Más adelante puedes cambiarlos, o leerlos de un servicio web.\n\nPaso 1: Define la función de coste. En el grupo Funciones, añade una función con resultado llamada costOf, con el parámetro entry. Su resultado es un bloque obtener propiedad para el campo cost, de entry.\n\nPaso 2: Empieza el día. En el Programador, fija budget a 20 y spent a 0.\n\nPaso 3: Crea el libro. Fija ledger a un bloque crear lista con tres apuntes. Cada apunte es un bloque crear objeto con dos campos: item y cost. Usa café con 3, comida con 9 y libros con 12.\n\nPaso 4: Suma los apuntes. Añade un para cada elemento sobre ledger, con la variable entry. Dentro, cambia spent en el resultado de costOf con entry. Después muestra una línea: el item del apunte, dos puntos, y el resultado de costOf.\n\nPaso 5: Avisa si te pasas. Añade un bloque si: cuando spent sea mayor que budget, muestra un mensaje que une Te has pasado en con spent menos budget.\n\nPaso 6: Lee datos incorrectos sin problemas. Añade un bloque intentar y capturar. En intentar, lee un texto que no es JSON válido, como {no json, con un bloque de texto JSON a objeto. En capturar, muestra un mensaje con el error. Añade una línea finalmente.\n\nPaso 7: Muestra el widget. Añade un panel llamado Presupuesto. Dentro, un bloque de valor para spent, y un bloque HTML con el texto Gastado {{spent}} de {{budget}}, con dos parámetros.\n\nComprúebalo: pulsa Ejecutar. La consola enumera los apuntes, el mensaje informa del exceso, y el bloque intentar informa de los datos incorrectos sin detener la ejecución.\n\nPrueba después: sube el presupuesto a 15, y el mensaje de exceso desaparece."
       }
     }
   },
@@ -1292,6 +1467,11 @@
         "displayName": "Esempio: Interprete di comandi",
         "description": "Legge una lista di comandi, esegue ciascuno con una funzione e conserva il contatore tra le esecuzioni.",
         "detailedDescription": "Cosa costruisci: un piccolo interprete di comandi. Legge una lista di comandi, esegue ciascuno con una funzione con una catena di se, e conserva un contatore tra le esecuzioni. I comandi sconosciuti vengono segnalati, non ignorati. I comandi stessi (up, down, reset, show) sono in inglese, come nel blocco.\n\nCosa ti serve: niente. I comandi sono scritti nell'esempio, quindi puoi cambiarli ed eseguire di nuovo.\n\nPasso 1: definisci la funzione runCommand. Dal gruppo Funzioni aggiungi una funzione senza risultato, chiamata runCommand, con il parametro command. Mettici un blocco se con tre rami altrimenti-se e un ramo altrimenti: con il testo up aggiunge 1 a counter; con down ne toglie 1; con reset imposta counter a 0; con show mostra il testo Counter is e il contatore. Il ramo altrimenti segnala Unknown command e il comando.\n\nPasso 2: carica il contatore. Nel Pianificatore imposta counter su un blocco richiama di counter con predefinito 0. Questo valore viene dalle esecuzioni precedenti.\n\nPasso 3: dividi i comandi. Imposta commands su un blocco dividi sul testo up,up,down,show,reset,up,bogus,show, con una virgola come separatore.\n\nPasso 4: esegui ogni comando. Aggiungi un ciclo per ogni su commands, con la variabile command. Dentro richiama runCommand con command.\n\nPasso 5: conserva il contatore. Dopo il ciclo aggiungi un blocco ricorda chiamato counter, con il valore della variabile counter.\n\nPasso 6: mostra il widget. Aggiungi una dashboard chiamata Counter, con un blocco valore del contatore e un piè di pagina.\n\nVerifica: premi Esegui. La console mostra il contatore dopo i comandi show, e il comando sconosciuto bogus viene segnalato. Eseguilo di nuovo: il contatore parte da dove si era fermata l'esecuzione precedente.\n\nProva poi: aggiungi un comando double che moltiplica il contatore per 2, come un altro ramo altrimenti-se."
+      },
+      "es": {
+        "displayName": "Ejemplo: Intérprete de órdenes",
+        "description": "Lee una lista de órdenes, ejecuta cada una con una función, y guarda un contador entre ejecuciones.",
+        "detailedDescription": "Qué construyes: un pequeño intérprete de órdenes. Lee una lista de órdenes, ejecuta cada una con una función con una cadena de si, y guarda un contador entre ejecuciones. Las órdenes desconocidas se señalan, no se ignoran.\n\nQué necesitas: nada. Las órdenes están escritas en el ejemplo, así que puedes cambiarlas y volver a ejecutar.\n\nPaso 1: Define la función runCommand. En el grupo Funciones, añade una función sin resultado llamada runCommand, con el parámetro command. Dentro, añade un bloque si con tres ramas sino-si y una rama sino: up suma 1 a counter; down resta 1; reset pone counter a 0; show muestra Contador es y el contador. La rama sino muestra Orden desconocida y la orden.\n\nPaso 2: Carga el contador. En el Programador, fija counter a un bloque recuperar llamado counter con el predeterminado 0. Este valor se guarda de ejecuciones anteriores.\n\nPaso 3: Separa las órdenes. Fija commands a un bloque dividir sobre el texto up,up,down,show,reset,up,bogus,show, con una coma como separador.\n\nPaso 4: Ejecuta cada orden. Añade un para cada elemento sobre commands, con la variable command. Dentro, llama a runCommand con command.\n\nPaso 5: Guarda el contador. Añade un bloque recordar llamado counter, con el valor de la variable counter, después del bucle.\n\nPaso 6: Muestra el widget. Añade un panel llamado Contador, con un bloque de valor del contador y un pie de página.\n\nComprúebalo: pulsa Ejecutar. La consola muestra el contador después de las órdenes show, y la orden desconocida bogus se señala. Vuelve a ejecutar: el contador empieza donde terminó la última ejecución.\n\nPrueba después: añade una orden double que multiplique el contador por 2, como una rama sino-si más."
       }
     }
   }

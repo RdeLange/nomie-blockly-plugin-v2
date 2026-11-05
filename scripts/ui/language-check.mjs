@@ -19,9 +19,10 @@ const check = (label, ok) => {
 // the words each language shows: the list's Add, the card's Edit, the editor's Save, Run and Detailed tabs, the
 // Settings screen's Import and add, and Blockly's repeat block
 const LANGS = [
-  { code: 'nl', add: 'Toevoegen', edit: 'Bewerken', save: 'Opslaan', run: 'Uitvoeren', detailed: 'Uitgebreid', settings: 'Instellingen', importAdd: 'Importeren en toevoegen', repeat: 'keer herhalen', loops: 'Lussen', yesterday: 'Voorbeeld: Gisteren in één getal', example: 'Voorbeeld: Hallo, console', readNotes: 'LEES JE NOTITIES', open: 'Openen' },
-  { code: 'de', add: 'Hinzufügen', edit: 'Bearbeiten', save: 'Speichern', run: 'Ausführen', detailed: 'Ausführlich', settings: 'Einstellungen', importAdd: 'Importieren und hinzufügen', repeat: 'wiederhole', loops: 'Schleifen', yesterday: 'Beispiel: Gestern als eine Zahl', example: 'Beispiel: Hallo, Konsole', readNotes: 'NOTIZEN LESEN', open: 'Öffnen' },
-  { code: 'it', add: 'Aggiungi', edit: 'Modifica', save: 'Salva', run: 'Esegui', detailed: 'Approfondita', settings: 'Impostazioni', importAdd: 'Importa e aggiungi', repeat: 'ripeti', loops: 'Cicli', yesterday: 'Esempio: Ieri in un numero', example: 'Esempio: Ciao, console', readNotes: 'LEGGI LE NOTE', open: 'Apri' },
+  { code: 'nl', open: 'Openen', add: 'Toevoegen', edit: 'Bewerken', save: 'Opslaan', run: 'Uitvoeren', detailed: 'Uitgebreid', settings: 'Instellingen', importAdd: 'Importeren en toevoegen', repeat: 'keer herhalen', loops: 'Lussen', yesterday: 'Voorbeeld: Gisteren in één getal', example: 'Voorbeeld: Hallo, console', readNotes: 'LEES JE NOTITIES', open: 'Openen' },
+  { code: 'de', open: 'Öffnen', add: 'Hinzufügen', edit: 'Bearbeiten', save: 'Speichern', run: 'Ausführen', detailed: 'Ausführlich', settings: 'Einstellungen', importAdd: 'Importieren und hinzufügen', repeat: 'wiederhole', loops: 'Schleifen', yesterday: 'Beispiel: Gestern als eine Zahl', example: 'Beispiel: Hallo, Konsole', readNotes: 'NOTIZEN LESEN', open: 'Öffnen' },
+  { code: 'it', open: 'Apri', add: 'Aggiungi', edit: 'Modifica', save: 'Salva', run: 'Esegui', detailed: 'Approfondita', settings: 'Impostazioni', importAdd: 'Importa e aggiungi', repeat: 'ripeti', loops: 'Cicli', yesterday: 'Esempio: Ieri in un numero', example: 'Esempio: Ciao, console', readNotes: 'LEGGI LE NOTE', open: 'Apri' },
+  { code: 'es', open: 'Abrir', add: 'Añadir', edit: 'Editar', save: 'Guardar', run: 'Ejecutar', loops: 'Bucles', yesterday: 'Ejemplo: Ayer en un número', example: 'Ejemplo: Hola, consola', readNotes: 'LEE TUS NOTAS', detailed: 'Detallada', settings: 'Ajustes', importAdd: 'Importar y añadir', repeat: 'repetir' },
 ];
 
 try {

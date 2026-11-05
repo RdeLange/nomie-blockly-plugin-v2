@@ -5,9 +5,10 @@ import * as Blockly from 'blockly';
 import * as dutch from 'blockly/msg/nl';
 import * as german from 'blockly/msg/de';
 import * as italian from 'blockly/msg/it';
+import * as spanish from 'blockly/msg/es';
 import { i18n, type Language } from '../app/i18n.svelte';
 
-const TABLES: Partial<Record<Language, Record<string, unknown>>> = { nl: dutch, de: german, it: italian };
+const TABLES: Partial<Record<Language, Record<string, unknown>>> = { nl: dutch, de: german, it: italian, es: spanish };
 
 export const applyBlocklyLanguage = (lang: Language) => {
   const table = TABLES[lang];

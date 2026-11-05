@@ -4,10 +4,12 @@ import { TUTORIAL_EN } from './tutorials/en';
 import { TUTORIAL_NL } from './tutorials/nl';
 import { TUTORIAL_DE } from './tutorials/de';
 import { TUTORIAL_IT } from './tutorials/it';
+import { TUTORIAL_ES } from './tutorials/es';
 
-export const TUTORIALS: Record<'en' | 'nl' | 'de' | 'it', Record<string, string>> = {
+export const TUTORIALS: Record<'en' | 'nl' | 'de' | 'it' | 'es', Record<string, string>> = {
   en: TUTORIAL_EN,
   nl: TUTORIAL_NL,
   de: TUTORIAL_DE,
   it: TUTORIAL_IT,
+  es: TUTORIAL_ES,
 };

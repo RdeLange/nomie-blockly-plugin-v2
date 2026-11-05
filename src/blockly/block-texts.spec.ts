@@ -14,14 +14,14 @@ describe('the texts of the blocks follow the language', () => {
     setupBlockly();
     toolbox();
     expect(SEEN_BLOCK_TEXTS.size).toBeGreaterThan(100);
-    for (const lang of ['nl', 'de', 'it'] as const) {
+    for (const lang of ['nl', 'de', 'it', 'es'] as const) {
       const missing = [...SEEN_BLOCK_TEXTS].filter((text) => !BLOCK_TEXTS[lang]?.[text]);
       expect(missing, `${lang} is missing`).toEqual([]);
     }
   });
 
   it('a translation keeps the placeholders of its English text', () => {
-    for (const lang of ['nl', 'de', 'it'] as const) {
+    for (const lang of ['nl', 'de', 'it', 'es'] as const) {
       for (const [english, translated] of Object.entries(BLOCK_TEXTS[lang] ?? {})) {
         expect(placeholders(translated), `${lang}: ${english}`).toBe(placeholders(english));
       }

@@ -32,7 +32,7 @@ export type StoredExample = {
 
 const translationsOf = (name: string): Partial<Record<ExampleLanguage, StoredTranslation>> => {
   const out: Partial<Record<ExampleLanguage, StoredTranslation>> = {};
-  for (const lang of ['nl', 'de', 'it'] as const) {
+  for (const lang of ['nl', 'de', 'it', 'es'] as const) {
     const card = EXAMPLE_TRANSLATIONS[name]?.[lang];
     const tutorial = TUTORIALS[lang][name];
     if (card && tutorial) out[lang] = { ...card, detailedDescription: tutorial };

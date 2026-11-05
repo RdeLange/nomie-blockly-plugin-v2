@@ -19,7 +19,7 @@ describe('the language of the Nomie user', () => {
   });
 
   it('offers the languages DailyNomie 7 ships', () => {
-    expect([...LANGUAGES].sort()).toEqual(['de', 'en', 'it', 'nl']);
+    expect([...LANGUAGES].sort()).toEqual(['de', 'en', 'es', 'it', 'nl']);
   });
 
   it('translates the words the screens show, and keeps English where there is no translation', () => {
@@ -35,7 +35,7 @@ describe('the language of the Nomie user', () => {
   it('every language says the same things, so no screen falls back to English by accident', () => {
     const dutch = Object.keys(DICTIONARIES.nl ?? {}).sort();
     expect(dutch.length).toBeGreaterThan(50);
-    for (const lang of ['de', 'it'] as const) {
+    for (const lang of ['de', 'it', 'es'] as const) {
       const words = DICTIONARIES[lang] ?? {};
       expect(Object.keys(words).sort()).toEqual(dutch);
       for (const [key, value] of Object.entries(words)) expect(value.trim(), `${lang}: ${key}`).not.toBe('');
@@ -52,7 +52,7 @@ describe('the language of the Nomie user', () => {
       for (const m of source.matchAll(/\btf?\('((?:[^'\\]|\\.)*)'/g)) keys.add(m[1].replace(/\\'/g, "'"));
     }
     expect(keys.size).toBeGreaterThan(100);
-    for (const lang of ['nl', 'de', 'it'] as const) {
+    for (const lang of ['nl', 'de', 'it', 'es'] as const) {
       const words = DICTIONARIES[lang] ?? {};
       const missing = [...keys].filter((key) => !(words[key] ?? '').trim());
       expect(missing, `${lang} is missing`).toEqual([]);

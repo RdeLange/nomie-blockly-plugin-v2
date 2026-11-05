@@ -44,7 +44,7 @@ type Stored = {
 const stored = JSON.parse(readFileSync(FILE, 'utf8')) as Stored[];
 
 // the word each language uses for a step, as in "Step 1:" (see tutorials/)
-const STEP_WORD = { en: 'Step', nl: 'Stap', de: 'Schritt', it: 'Passo' } as const;
+const STEP_WORD = { en: 'Step', nl: 'Stap', de: 'Schritt', it: 'Passo', es: 'Paso' } as const;
 const stepsIn = (tutorial: string, lang: keyof typeof STEP_WORD) =>
   tutorial.match(new RegExp(`^${STEP_WORD[lang]} \\d+:`, 'gm'))?.length ?? 0;
 
@@ -106,7 +106,7 @@ describe('the example library', () => {
 
   it('every example has a name, a card line and a step-by-step tutorial in Dutch, German and Italian', () => {
     for (const example of EXAMPLES) {
-      for (const lang of ['nl', 'de', 'it'] as const) {
+      for (const lang of ['nl', 'de', 'it', 'es'] as const) {
         const translated = EXAMPLE_TRANSLATIONS[example.name]?.[lang];
         expect(translated?.displayName, `${example.name} ${lang}`).toBeTruthy();
         expect(translated?.description, `${example.name} ${lang}`).toBeTruthy();
@@ -120,7 +120,7 @@ describe('the example library', () => {
   it('the tutorials of the library are the ones in the stored examples, in each language', () => {
     for (const example of stored) {
       expect(example.detailedDescription).toBe(TUTORIALS.en[example.name]);
-      for (const lang of ['nl', 'de', 'it'] as const) {
+      for (const lang of ['nl', 'de', 'it', 'es'] as const) {
         expect(example.translations[lang]?.detailedDescription, `${example.name} ${lang}`).toBe(TUTORIALS[lang][example.name]);
       }
     }
