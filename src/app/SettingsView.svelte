@@ -177,7 +177,7 @@
   <p><strong>{t('Secrets')}</strong></p>
   <p class="muted">{t('A workspace uses a secret by name, such as an API key, so the key is not in its blocks. Secrets stay on this device: they are never in a backup or a shared workspace.')}</p>
   {#each secretNames as name (name)}
-    <div class="row" style="margin-top: 6px">
+    <div class="row secret-row" style="margin-top: 6px">
       <span class="grow">{name}</span>
       <span class="muted">••••</span>
       <button class="button plain" onclick={() => { secretName = name; secretValue = ''; secretError = ''; }}>{t('Change')}</button>
@@ -186,9 +186,9 @@
   {:else}
     <p class="muted">{t('No secrets yet.')}</p>
   {/each}
-  <div class="row" style="margin-top: 12px">
-    <input class="input" style="flex: 0 0 200px" placeholder={t('Name')} aria-label={t('Secret name')} bind:value={secretName} />
-    <input class="input" style="flex: 1 1 auto; min-width: 160px" type="password" placeholder={t('value')} aria-label={t('Secret value')} autocomplete="off" bind:value={secretValue} />
+  <div class="row secret-form" style="margin-top: 12px">
+    <input class="input secret-name" placeholder={t('Name')} aria-label={t('Secret name')} bind:value={secretName} />
+    <input class="input secret-value" type="password" placeholder={t('value')} aria-label={t('Secret value')} autocomplete="off" bind:value={secretValue} />
     <button class="button" onclick={saveSecret}>{t('Save')}</button>
   </div>
   {#if secretError}

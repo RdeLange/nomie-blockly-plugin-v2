@@ -47,6 +47,21 @@ try {
   await page.waitForTimeout(500);
   check('a tap on a workspace does not open the editor', (await page.locator('.ed-toolbar').count()) === 0);
   check('the list is still shown after a tap', (await page.locator('.card', { hasText: 'Kick Start' }).count()) >= 1);
+  // Settings on a phone: a secret is saved, and nothing in the secrets section runs past the screen's edge
+  await page.getByRole('button', { name: 'Settings', exact: true }).click();
+  await page.getByLabel('Secret name').fill('OPENWEATHER_KEY');
+  await page.getByLabel('Secret value').fill('not-shown');
+  await page.getByRole('button', { name: 'Save', exact: true }).click();
+  await page.waitForTimeout(400);
+  const outside = await page.evaluate(() => {
+    const vw = window.innerWidth;
+    return [...document.querySelectorAll('.card input, .card button, .card span')].filter((el) => {
+      const r = el.getBoundingClientRect();
+      return r.width > 0 && (r.right > vw + 1 || r.left < -1);
+    }).length;
+  });
+  check('on a phone the secrets fit inside the screen', outside === 0 && (await page.evaluate(() => document.documentElement.scrollWidth)) <= 391);
+  await page.screenshot({ path: 'screenshots/phone-settings-secrets.png' });
   await page.screenshot({ path: 'screenshots/phone-list.png' });
 } finally {
   await browser.close();

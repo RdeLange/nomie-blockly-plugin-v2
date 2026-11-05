@@ -77,6 +77,24 @@ body {
   gap: 12px;
 }
 
+/* the secrets on a phone: the rows and the form wrap, so nothing runs past the screen's edge */
+.secret-row,
+.secret-form {
+  flex-wrap: wrap;
+}
+.secret-form .input {
+  flex: 1 1 140px;
+  min-width: 0;
+}
+.secret-form .button {
+  flex: 0 0 auto;
+}
+.secret-row > span:first-child {
+  flex: 1 1 0;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
 .grow {
   flex: 1;
   min-width: 0;
