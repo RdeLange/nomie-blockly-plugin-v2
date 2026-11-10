@@ -209,6 +209,12 @@ body {
   inset: 0;
 }
 
+/* the canvas shows the page's own background (the app's colour, from its palette): Blockly paints no colour of its own,
+   only the grid lines. */
+.blockly-host svg.blocklySvg {
+  background: transparent !important;
+}
+
 /* the block search field, over the top of the drawer (the drawer leaves room for it, see blockly/search.ts) */
 .block-search {
   position: absolute;

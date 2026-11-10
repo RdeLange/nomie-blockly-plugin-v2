@@ -6,7 +6,7 @@
   height: 100dvh;
   display: flex;
   flex-direction: column;
-  background: var(--nb-canvas);
+  background: var(--ios-bg);
   color: var(--nb-ink);
   font-family: var(--nb-font);
 }
@@ -429,7 +429,7 @@
 
 /* on a phone the canvas ends above the run bar, so Blockly puts its zoom controls and trash above it */
 .editor:not(.wide) .blockly-frame {
-  background: var(--nb-canvas);
+  background: var(--ios-bg);
 }
 
 .editor:not(.wide) .blockly-host {
