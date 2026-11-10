@@ -43,6 +43,21 @@ body {
   overflow: hidden;
 }
 
+/* the header bars (the tabs of the list, and the title of Settings and About) are Liquid Glass: they stay at the top
+   and the content scrolls under them. Glass never sits on glass, so the buttons in them are solid. */
+.header,
+.tabs-row {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  margin: -16px -16px 12px;
+  padding: 16px 16px 10px;
+  background: var(--glass-fill);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  border-bottom: 1px solid var(--glass-edge);
+}
+
 .header {
   display: flex;
   align-items: center;

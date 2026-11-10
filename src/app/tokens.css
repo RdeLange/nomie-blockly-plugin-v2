@@ -15,6 +15,10 @@
   --nb-font-title: var(--nb-font);
   /* the monospace of DailyNomie 7 (its file browser and AI chat) */
   --nb-font-mono: 'Courier New', Courier, monospace;
+  /* Liquid Glass (D-glass) for the header bars: the same values as Daily Nomie 7's --glass-liquid tokens */
+  --glass-fill: rgba(255, 255, 255, 0.5);
+  --glass-edge: rgba(255, 255, 255, 0.7);
+  --glass-blur: blur(16px) saturate(180%);
 }
 
 :root.dark,
@@ -26,4 +30,6 @@
   --nb-line: #3a3532;
   --nb-control: #57534e;
   --nb-surface: #232020;
+  --glass-fill: rgba(40, 40, 44, 0.45);
+  --glass-edge: rgba(255, 255, 255, 0.22);
 }
