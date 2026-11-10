@@ -28,8 +28,9 @@ body {
 }
 
 .app {
+  --app-pad: 16px;
   min-height: 100vh;
-  padding: 16px;
+  padding: var(--app-pad);
   box-sizing: border-box;
   background: var(--ios-bg);
   color: var(--ios-label);
@@ -50,8 +51,9 @@ body {
   position: sticky;
   top: 0;
   z-index: 2;
-  margin: -16px -16px 12px;
-  padding: 16px 16px 10px;
+  /* the bar reaches the edges of the app's padding (16 px, 12 px on a phone), so it does not run past the screen */
+  margin: calc(var(--app-pad) * -1) calc(var(--app-pad) * -1) 12px;
+  padding: var(--app-pad) var(--app-pad) 10px;
   background: var(--glass-fill);
   -webkit-backdrop-filter: var(--glass-blur);
   backdrop-filter: var(--glass-blur);
@@ -255,7 +257,7 @@ body {
 
 @media (max-width: 480px) {
   .app {
-    padding: 12px;
+    --app-pad: 12px;
   }
 }
 
