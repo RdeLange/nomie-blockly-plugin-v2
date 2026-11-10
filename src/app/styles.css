@@ -215,6 +215,11 @@ body {
   background: transparent !important;
 }
 
+/* the block list on the left is part of the page, so it has the page's background (the blocks keep their own colours) */
+.blockly-host .blocklyToolboxDiv {
+  background-color: var(--ios-bg) !important;
+}
+
 /* the block search field, over the top of the drawer (the drawer leaves room for it, see blockly/search.ts) */
 .block-search {
   position: absolute;
@@ -333,7 +338,7 @@ body {
   padding: 12px;
   overflow-y: auto;
   border-right: 1px solid var(--nb-line, #e7e5e4);
-  background: var(--nb-surface, #ffffff);
+  background: var(--ios-card);
 }
 .ws-side-head {
   display: flex;
