@@ -9,6 +9,7 @@ import { STORAGE_KEY, readState } from '../app/state.svelte';
 import { compileStale, scheduleIfDue, runFromNote, runFromNotes } from '../app/actions';
 import { rememberWritten, wasWrittenHere } from '../app/written-notes';
 import { setTrackerPicker } from './picker';
+import { startSnapshots } from '../snapshot';
 
 declare const NomiePlugin: any;
 
@@ -68,6 +69,7 @@ export const startNomie = (): NomieHandle | undefined => {
     addToMoreMenu: true,
     addToWidgets: true,
   });
+  startSnapshots(plugin);
   // Nomie tells the plugin when the theme, the colours or the language change while it is open
   window.addEventListener('message', onPrefsChanged);
   const nomieApi = createNomieApi(plugin);
