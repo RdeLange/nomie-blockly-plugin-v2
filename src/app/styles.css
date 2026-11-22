@@ -70,14 +70,14 @@ body {
 
 .title {
   font-family: var(--nb-font-title);
-  font-size: 30px;
+  font-size: calc(30px * var(--font-scale, 1));
   font-weight: 600;
   margin: 0;
 }
 
 .muted {
   color: var(--ios-label2);
-  font-size: 14px;
+  font-size: calc(14px * var(--font-scale, 1));
 }
 
 .card {
@@ -122,7 +122,7 @@ body {
   border: 1px solid var(--ios-tint);
   border-radius: 8px;
   padding: 7px 13px;
-  font: 600 14px var(--nb-font);
+  font: 600 calc(14px * var(--font-scale, 1)) var(--nb-font);
   background: var(--ios-tint);
   color: var(--nb-canvas);
   cursor: pointer;
@@ -153,13 +153,13 @@ body {
   border: 1px solid var(--ios-separator);
   border-radius: 10px;
   padding: 10px 12px;
-  font-size: 16px;
+  font-size: calc(16px * var(--font-scale, 1));
   background: var(--ios-card);
   color: var(--ios-label);
 }
 
 .emoji {
-  font-size: 28px;
+  font-size: calc(28px * var(--font-scale, 1));
   width: 44px;
   height: 44px;
   display: flex;
@@ -170,7 +170,7 @@ body {
 
 .pill {
   display: inline-block;
-  font-size: 12px;
+  font-size: calc(12px * var(--font-scale, 1));
   font-weight: 600;
   padding: 2px 8px;
   border-radius: 999px;
@@ -185,7 +185,7 @@ body {
 
 .console {
   font-family: var(--nb-font-mono);
-  font-size: 13px;
+  font-size: calc(13px * var(--font-scale, 1));
   white-space: pre-wrap;
   max-height: 180px;
   overflow: auto;
@@ -244,7 +244,7 @@ body {
   border: 0;
   outline: none;
   background: transparent;
-  font: 500 14px var(--nb-font);
+  font: 500 calc(14px * var(--font-scale, 1)) var(--nb-font);
   color: var(--nb-ink);
 }
 
@@ -286,19 +286,19 @@ body {
 }
 .widget-label {
   grid-column: 1;
-  font-size: 13px;
+  font-size: calc(13px * var(--font-scale, 1));
   color: var(--nb-muted, #57534e);
 }
 .widget-value {
   grid-column: 1;
   font-family: var(--nb-font-title, Georgia, serif);
-  font-size: 30px;
+  font-size: calc(30px * var(--font-scale, 1));
   line-height: 1.1;
   color: var(--nb-ink, #1c1917);
 }
 .widget-time {
   grid-column: 1;
-  font-size: 12px;
+  font-size: calc(12px * var(--font-scale, 1));
   color: var(--nb-muted, #57534e);
 }
 .widget-tile .button {
@@ -308,7 +308,7 @@ body {
 
 /* the health line on a card (phase 17): when the last run was, and what failed in it */
 .health {
-  font-size: 13px;
+  font-size: calc(13px * var(--font-scale, 1));
   color: var(--nb-muted, #57534e);
 }
 .health.failed {
@@ -381,7 +381,7 @@ body {
   display: flex;
   flex-direction: column;
   min-width: 0;
-  font-size: 13px;
+  font-size: calc(13px * var(--font-scale, 1));
   gap: 2px;
 }
 .ws-item-text strong {
@@ -391,7 +391,7 @@ body {
 }
 .ws-side-empty {
   padding: 8px;
-  font-size: 13px;
+  font-size: calc(13px * var(--font-scale, 1));
 }
 
 /* a dashboard widget as the widget builder made it (phase 20), sized like DailyNomie 7's dashboard widgets */
@@ -403,7 +403,7 @@ body {
   border-radius: 16px;
   overflow: hidden;
   font-family: var(--nb-font);
-  font-size: 11px;
+  font-size: calc(11px * var(--font-scale, 1));
 }
 .wd-head {
   display: flex;
@@ -413,12 +413,12 @@ body {
   padding: 6px 10px 0;
 }
 .wd-emoji {
-  font-size: 12px;
+  font-size: calc(12px * var(--font-scale, 1));
 }
 .wd-title {
   flex: 1 1 auto;
   min-width: 0;
-  font-size: 12.2px;
+  font-size: calc(12.2px * var(--font-scale, 1));
   font-weight: 600;
   line-height: 15px;
   overflow: hidden;
@@ -432,7 +432,7 @@ body {
   border-radius: 999px;
   background: var(--nb-accent, #5e7abc);
   color: #ffffff;
-  font: 600 11px var(--nb-font);
+  font: 600 calc(11px * var(--font-scale, 1)) var(--nb-font);
   cursor: pointer;
 }
 .wd-main {
@@ -449,11 +449,11 @@ body {
   gap: 6px;
 }
 .wd-label {
-  font-size: 11px;
+  font-size: calc(11px * var(--font-scale, 1));
   color: var(--nb-muted);
 }
 .wd-num {
-  font-size: 15px;
+  font-size: calc(15px * var(--font-scale, 1));
   font-weight: 600;
 }
 .wd-chart {
@@ -480,7 +480,7 @@ body {
   display: flex;
   align-items: center;
   padding: 0 10px 6px;
-  font-size: 11px;
+  font-size: calc(11px * var(--font-scale, 1));
   color: var(--nb-muted);
 }
 .wd-footer:empty {
@@ -488,11 +488,11 @@ body {
 }
 @media (min-width: 1024px) {
   .wd-title {
-    font-size: 14px;
+    font-size: calc(14px * var(--font-scale, 1));
     line-height: 18px;
   }
   .wd-num {
-    font-size: 18px;
+    font-size: calc(18px * var(--font-scale, 1));
   }
 }
 .app.widget {

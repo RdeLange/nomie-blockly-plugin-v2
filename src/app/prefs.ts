@@ -35,13 +35,17 @@ export const paletteVariables = (palette: Palette): Record<string, string> => {
 // Applies the user preferences Nomie sent: the theme (light or dark), the colours and the language
 export const applyUserPrefs = (user: unknown) => {
   if (!user || typeof user !== 'object') return;
-  const prefs = user as { theme?: unknown; language?: unknown; backgroundColor?: unknown; colours?: { mode?: unknown; current?: Palette } };
+  const prefs = user as { theme?: unknown; language?: unknown; backgroundColor?: unknown; fontScale?: unknown; colours?: { mode?: unknown; current?: Palette } };
   const mode = prefs.colours?.mode ?? prefs.theme;
   ui.theme = mode === 'dark' ? 'dark' : 'light';
   setLanguage(prefs.language);
   // the card colour of a widget, as the dashboard uses it (DailyNomie sends it as backgroundColor)
   if (typeof document !== 'undefined' && typeof prefs.backgroundColor === 'string') {
     document.documentElement.style.setProperty('--widget-card', prefs.backgroundColor);
+  }
+  // the text size of the app (prefs.fontScale): every font size in the plugin is multiplied by it (PLG-13)
+  if (typeof document !== 'undefined' && typeof prefs.fontScale === 'number' && prefs.fontScale > 0) {
+    document.documentElement.style.setProperty('--font-scale', String(prefs.fontScale));
   }
   if (typeof document !== 'undefined' && prefs.colours?.current) {
     for (const [variable, value] of Object.entries(paletteVariables(prefs.colours.current))) {

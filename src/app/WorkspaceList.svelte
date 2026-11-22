@@ -294,7 +294,7 @@
     padding: 9px 10px;
     background: transparent;
     color: var(--ios-label);
-    font: 600 15px var(--nb-font);
+    font: 600 calc(15px * var(--font-scale, 1)) var(--nb-font);
     cursor: pointer;
   }
   .segments button span {
@@ -344,13 +344,13 @@
     align-items: center;
     gap: 2px 10px;
     margin: 0 0 8px;
-    font-size: 17px;
+    font-size: calc(17px * var(--font-scale, 1));
     font-weight: 700;
   }
   .level-head .muted {
     flex-basis: 100%;
     margin-left: 36px;
-    font-size: 13px;
+    font-size: calc(13px * var(--font-scale, 1));
     font-weight: 400;
   }
   .level-num {
@@ -363,7 +363,7 @@
     background: var(--level-colour);
     /* the level colours are bright: black text reaches 4.5:1 on each, white does not on green, blue, orange or violet */
     color: #000;
-    font-size: 13px;
+    font-size: calc(13px * var(--font-scale, 1));
   }
   .level-easy {
     --level-colour: #34c759;
@@ -396,7 +396,7 @@
   .tick {
     white-space: nowrap;
     color: #1f8f3d;
-    font-size: 13px;
+    font-size: calc(13px * var(--font-scale, 1));
     font-weight: 600;
   }
 

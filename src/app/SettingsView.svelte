@@ -138,7 +138,7 @@
 
 <div class="header">
   <button class="button plain" onclick={() => (ui.view = 'list')}>{t('Back')}</button>
-  <h1 class="title" style="font-size: 22px">{t('Settings')}</h1>
+  <h1 class="title" style="font-size: calc(22px * var(--font-scale, 1))">{t('Settings')}</h1>
   <span></span>
 </div>
 

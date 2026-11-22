@@ -35,7 +35,7 @@
 .ed-title h1 {
   margin: 0;
   font-family: var(--nb-font-title);
-  font-size: 21px;
+  font-size: calc(21px * var(--font-scale, 1));
   font-weight: 600;
   line-height: 1.2;
   white-space: nowrap;
@@ -44,7 +44,7 @@
 }
 
 .ed-status {
-  font-size: 12px;
+  font-size: calc(12px * var(--font-scale, 1));
   color: var(--nb-muted);
   white-space: nowrap;
   overflow: hidden;
@@ -67,7 +67,7 @@
   border-radius: 8px;
   background: var(--ios-card);
   color: var(--nb-ink);
-  font: 500 14px var(--nb-font);
+  font: 500 calc(14px * var(--font-scale, 1)) var(--nb-font);
   cursor: pointer;
   white-space: nowrap;
 }
@@ -170,7 +170,7 @@
   border-bottom: 2px solid transparent;
   background: none;
   color: var(--nb-muted);
-  font: 500 14px var(--nb-font);
+  font: 500 calc(14px * var(--font-scale, 1)) var(--nb-font);
   cursor: pointer;
 }
 
@@ -191,7 +191,7 @@
   border-radius: 999px;
   background: #b91c1c;
   color: #ffffff;
-  font-size: 11px;
+  font-size: calc(11px * var(--font-scale, 1));
   font-weight: 700;
   line-height: 18px;
   text-align: center;
@@ -205,7 +205,7 @@
   display: flex;
   flex-direction: column;
   gap: 14px;
-  font-size: 14px;
+  font-size: calc(14px * var(--font-scale, 1));
 }
 
 /* ---- details ---- */
@@ -219,13 +219,13 @@
   display: flex;
   flex-direction: column;
   gap: 5px;
-  font-size: 13px;
+  font-size: calc(13px * var(--font-scale, 1));
   color: var(--nb-muted);
 }
 
 .ed-field input,
 .ed-field textarea {
-  font: 400 14px var(--nb-font);
+  font: 400 calc(14px * var(--font-scale, 1)) var(--nb-font);
   color: var(--nb-ink);
   background: var(--nb-canvas);
   border: 1px solid var(--nb-control);
@@ -248,7 +248,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 24px;
+  font-size: calc(24px * var(--font-scale, 1));
 }
 
 .ed-emoji-input {
@@ -257,7 +257,7 @@
 
 .ed-hint {
   margin: -6px 0 0;
-  font-size: 12px;
+  font-size: calc(12px * var(--font-scale, 1));
   line-height: 1.5;
   color: var(--nb-muted);
 }
@@ -287,7 +287,7 @@
   padding-top: 12px;
   border-top: 1px solid var(--nb-line);
   color: var(--nb-muted);
-  font-size: 13px;
+  font-size: calc(13px * var(--font-scale, 1));
   line-height: 1.45;
 }
 
@@ -303,7 +303,7 @@
 }
 
 .ed-heading {
-  font-size: 13px;
+  font-size: calc(13px * var(--font-scale, 1));
 }
 
 .ed-ok {
@@ -333,7 +333,7 @@
   border-radius: 8px;
   background: #fffbeb;
   color: #92400e;
-  font: 400 13px/1.4 var(--nb-font);
+  font: 400 calc(13px * var(--font-scale, 1))/1.4 var(--nb-font);
   text-align: left;
   cursor: pointer;
 }
@@ -372,7 +372,7 @@
   border-radius: 8px;
   background: var(--ios-card);
   color: #e7e5e4;
-  font: 400 12.5px/1.6 var(--nb-font-mono);
+  font: 400 calc(12.5px * var(--font-scale, 1))/1.6 var(--nb-font-mono);
   white-space: pre-wrap;
   overflow: auto;
 }
@@ -402,7 +402,7 @@
   min-height: 40px;
   border: 0;
   border-radius: 999px;
-  font: 600 14px var(--nb-font);
+  font: 600 calc(14px * var(--font-scale, 1)) var(--nb-font);
   cursor: pointer;
 }
 
@@ -451,7 +451,7 @@
 }
 
 .editor:not(.wide) .ed-title h1 {
-  font-size: 18px;
+  font-size: calc(18px * var(--font-scale, 1));
 }
 
 .editor:not(.wide) .run-bar {
@@ -501,7 +501,7 @@
   border-radius: 8px;
   background: #f5f5f4;
   color: var(--nb-ink);
-  font: 400 13px/1.4 var(--nb-font);
+  font: 400 calc(13px * var(--font-scale, 1))/1.4 var(--nb-font);
   text-align: left;
   cursor: pointer;
   box-sizing: border-box;
@@ -599,7 +599,7 @@
   border-radius: 999px;
   background: var(--ios-card);
   color: var(--nb-ink);
-  font: 500 12.5px var(--nb-font);
+  font: 500 calc(12.5px * var(--font-scale, 1)) var(--nb-font);
 }
 
 .run-dot {
@@ -619,7 +619,7 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-size: 13px;
+  font-size: calc(13px * var(--font-scale, 1));
   white-space: nowrap;
   cursor: pointer;
 }
@@ -631,7 +631,7 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  font: 600 13px var(--nb-font);
+  font: 600 calc(13px * var(--font-scale, 1)) var(--nb-font);
   /* the run bar is dark */
   color: #f9fafb;
 }
@@ -659,7 +659,7 @@
 }
 .ed-problem-text {
   color: var(--nb-danger, #c0392b);
-  font-size: 13px;
+  font-size: calc(13px * var(--font-scale, 1));
 }
 
 /* the floating preview: a card over the canvas, in its top-right corner until it is dragged. Only the card takes
@@ -701,7 +701,7 @@
   border: 0;
   background: none;
   color: inherit;
-  font-size: 16px;
+  font-size: calc(16px * var(--font-scale, 1));
   padding: 4px 6px;
   cursor: pointer;
 }
