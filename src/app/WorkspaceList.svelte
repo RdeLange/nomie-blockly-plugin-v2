@@ -293,14 +293,13 @@
     border-radius: 9px;
     padding: 9px 10px;
     background: transparent;
-    color: var(--ios-label2);
+    color: var(--ios-label);
     font: 600 15px var(--nb-font);
     cursor: pointer;
   }
   .segments button span {
     margin-left: 6px;
     font-weight: 500;
-    opacity: 0.7;
   }
   .segments button.on {
     background: var(--ios-card);
@@ -362,7 +361,8 @@
     justify-content: center;
     border-radius: 50%;
     background: var(--level-colour);
-    color: #fff;
+    /* the level colours are bright: black text reaches 4.5:1 on each, white does not on green, blue, orange or violet */
+    color: #000;
     font-size: 13px;
   }
   .level-easy {
