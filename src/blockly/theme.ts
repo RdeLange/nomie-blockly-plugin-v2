@@ -72,26 +72,27 @@ const componentStyles = (c: typeof LIGHT): Blockly.Theme.ComponentStyle => ({
 // DailyNomie 7's font (--ios-font), as the rest of the plugin
 const fontStyle = { family: "-apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif", weight: '500', size: 11 };
 
-export const notebookTheme = Blockly.Theme.defineTheme('nomie-notebook', {
-  name: 'nomie-notebook',
-  base: Blockly.Themes.Classic,
-  blockStyles: blockStyles(LIGHT.canvas, 0.1, (c) => c),
-  categoryStyles: {},
-  componentStyles: componentStyles(LIGHT),
-  fontStyle,
-  startHats: false,
-});
-
-// In the dark the fill is stronger, and the outline lighter so it shows against the dark canvas
-export const notebookDarkTheme = Blockly.Theme.defineTheme('nomie-notebook-dark', {
-  name: 'nomie-notebook-dark',
-  base: Blockly.Themes.Classic,
-  blockStyles: blockStyles(DARK.canvas, 0.18, (c) => mix(c, 0.7, '#FFFFFF')),
-  categoryStyles: {},
-  componentStyles: componentStyles(DARK),
-  fontStyle,
-  startHats: false,
-});
+// The canvas themes at the app's text size (PLG-13). Blockly lays blocks out with the font size of its theme, so the
+// size is set in the theme: one theme per mode and size, built once. Blockly re-lays the blocks when the theme changes.
+const BASE_FONT_SIZE = fontStyle.size;
+const themes = new Map<string, Blockly.Theme>();
+export const notebookTheme = (dark: boolean, scale = 1): Blockly.Theme => {
+  const key = `${dark ? 'dark' : 'light'}-${scale}`;
+  let theme = themes.get(key);
+  if (!theme) {
+    theme = Blockly.Theme.defineTheme(`nomie-notebook-${key}`, {
+      name: `nomie-notebook-${key}`,
+      base: Blockly.Themes.Classic,
+      blockStyles: dark ? blockStyles(DARK.canvas, 0.18, (c) => mix(c, 0.7, '#FFFFFF')) : blockStyles(LIGHT.canvas, 0.1, (c) => c),
+      categoryStyles: {},
+      componentStyles: componentStyles(dark ? DARK : LIGHT),
+      fontStyle: { ...fontStyle, size: BASE_FONT_SIZE * scale },
+      startHats: false,
+    });
+    themes.set(key, theme);
+  }
+  return theme;
+};
 
 export const GRID = { light: LIGHT.grid, dark: DARK.grid };
 

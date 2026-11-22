@@ -44,8 +44,9 @@ export const applyUserPrefs = (user: unknown) => {
     document.documentElement.style.setProperty('--widget-card', prefs.backgroundColor);
   }
   // the text size of the app (prefs.fontScale): every font size in the plugin is multiplied by it (PLG-13)
-  if (typeof document !== 'undefined' && typeof prefs.fontScale === 'number' && prefs.fontScale > 0) {
-    document.documentElement.style.setProperty('--font-scale', String(prefs.fontScale));
+  if (typeof prefs.fontScale === 'number' && prefs.fontScale > 0) {
+    ui.fontScale = prefs.fontScale;
+    if (typeof document !== 'undefined') document.documentElement.style.setProperty('--font-scale', String(prefs.fontScale));
   }
   if (typeof document !== 'undefined' && prefs.colours?.current) {
     for (const [variable, value] of Object.entries(paletteVariables(prefs.colours.current))) {

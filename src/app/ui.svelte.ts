@@ -4,6 +4,8 @@ export type View = 'list' | 'editor' | 'settings' | 'info';
 class UiState {
   mode = $state<'modal' | 'widget'>('modal');
   theme = $state<'light' | 'dark'>('light');
+  // the text size of the app (prefs.fontScale): the canvas themes are built at this size (PLG-13)
+  fontScale = $state(1);
   view = $state<View>('list');
   editingId = $state<string | null>(null);
   // the dashboard widget the widget frame shows (a workspace id), when DailyNomie placed one (phase 20)

@@ -6,7 +6,7 @@
   import { onMount, onDestroy, untrack } from 'svelte';
   import * as Blockly from 'blockly';
   import { javascriptGenerator } from 'blockly/javascript';
-  import { notebookTheme, notebookDarkTheme, GRID } from '../blockly/theme';
+  import { notebookTheme, GRID } from '../blockly/theme';
   import { registerRail } from '../blockly/rail';
   import { attachSearch } from '../blockly/search';
   import '../blockly/notebook.css';
@@ -126,7 +126,7 @@
   // the Blockly canvas follows the theme of the app, also when it changes while the editor is open
   $effect(() => {
     const dark = ui.theme === 'dark';
-    workspace?.setTheme(dark ? notebookDarkTheme : notebookTheme);
+    workspace?.setTheme(notebookTheme(dark, ui.fontScale));
   });
 
   onMount(() => {
@@ -145,7 +145,7 @@
     const palette = toolbox();
     workspace = Blockly.inject(host, {
       toolbox: palette,
-      theme: dark ? notebookDarkTheme : notebookTheme,
+      theme: notebookTheme(dark, ui.fontScale),
       renderer: 'thrasos',
       // Blockly's icons and sounds ship with the plugin, so they work without static.blockly.com
       media: './blockly-media/',
